@@ -1,6 +1,6 @@
 # DaAPI - DHCP and API
 
-DaAPI is modern, cross-platform, web-based DHCPv6 (DHCPv4 is in the roadmap) designed with the need of ISP in mind. 
+DaAPI is modern, cross-platform, web-based DHCPv6 (DHCPv4 is in the roadmap) server designed with the need of ISP in mind. 
 It enabled you to assign IPv6 addresses and networks to your customers dynamically. Unlike a lot of other solutions, there is no need (and possibility) to write a config file - and learning all the possible syntax.
 The integrated HTTP REST API lets you integrate DaAPI in your existing workflow seamlessly.
 

@@ -1,0 +1,91 @@
+﻿@inject IModalService _modalService
+@inject DHCPv6PacketResponseCodeHelper _responseCodeHelper
+@inject IStringLocalizer<DHCPv6LatestPacketTable> L
+
+<div class="card">
+    <div class="card-header border-0">
+        <h3 class="card-title">@L["Title"]</h3>
+        @*<div class="card-tools">
+                <a href="#" class="btn btn-tool btn-sm">
+                    <i class="fas fa-download"></i>
+                </a>
+                <a href="#" class="btn btn-tool btn-sm">
+                    <i class="fas fa-bars"></i>
+                </a>
+            </div>*@
+    </div>
+    <div class="card-body table-responsive">
+        <LoadingWhileContentNull Item="Packets">
+            @if (Packets.Any() == true)
+            {
+                <DataTable TModel="DHCPv6PacketHandledEntryViewModel" PageSize="20" Items="Packets" UsePaging="true" SearchOnApplyHeaderFilter="true" IncludeHeaderFilters="true" IncludeAdvancedFilters="false">
+                    @if (DisplayScopes == true)
+                    {
+                        <DataTableColumn TModel="DHCPv6PacketHandledEntryViewModel" IsSortable="true" IsFilterable="true" Property="(e) => e.Scope.Name" CustomTitle="@L["TableHeaderCaptionScope"]" />
+                    }
+                    <DataTableColumn TModel="DHCPv6PacketHandledEntryViewModel" IsSortable="true" IsFilterable="true" Property="(e) => e.Timestamp" CustomTitle="@L["TableHeaderCaptionTimestamp"]" />
+                    <DataTableColumn TModel="DHCPv6PacketHandledEntryViewModel" IsSortable="true" IsFilterable="true" Property="(e) => e.Request.Header.Source" CustomTitle="@L["TableHeaderCaptionSource"]" />
+                    <DataTableColumn TModel="DHCPv6PacketHandledEntryViewModel" IsSortable="true" IsFilterable="true" Property="(e) => e.RequestType" CustomTitle="@L["TableHeaderCaptionRequestType"]">
+                        <RowTemplate Context="entry">
+                            <ul class="list-unstyled">
+                                <DHCPv6PacketTypeTree Packet="entry.Request.GetPacket()" />
+                            </ul>
+                        </RowTemplate>
+                    </DataTableColumn>
+                    <DataTableColumn TModel="DHCPv6PacketHandledEntryViewModel" IsSortable="false" IsFilterable="false" HeaderFilterType="Sve.Blazor.Core.Models.ObjectFilter.IsNotNull" Property="(e) => e.RequestType" CustomTitle="@L["TableHeaderCaptionRequest"]">
+                        <RowTemplate Context="entry">
+                            <button type="button" class="btn btn-link" @onclick="() => ShowPacketContent(entry.Request)" @onclick:stopPropagation> @entry.Request.Content.Length Bytes </button>
+                        </RowTemplate>
+                    </DataTableColumn>
+                    <DataTableColumn TModel="DHCPv6PacketHandledEntryViewModel" IsSortable="true" IsFilterable="true" Property="(e) => e.ResultCode" CustomTitle="@L["TableHeaderCaptionResponseCode"]">
+                        <RowTemplate Context="entry">
+                            @if (entry.ResultCode == 0)
+                            {
+                                <i class="fas fa-check-circle" style="color: green;"></i>
+                            }
+                            else
+                            {
+                                <span>
+                                    <i class="far fa-times-circle" style="color: red;"></i>
+                                    @_responseCodeHelper.GetErrorName(entry.RequestType, entry.ResultCode)
+                                </span>
+                            }
+                        </RowTemplate>
+                    </DataTableColumn>
+                    <DataTableColumn TModel="DHCPv6PacketHandledEntryViewModel" IsSortable="true" IsFilterable="true" Property="(e) => e.ResponseType" CustomTitle="@L["TableHeaderCaptionResponseType"]" />
+                    <DataTableColumn TModel="DHCPv6PacketHandledEntryViewModel" IsSortable="false" IsFilterable="false" Property="(e) => e.ResponseType" HeaderFilterType="Sve.Blazor.Core.Models.ObjectFilter.IsNotNull" CustomTitle="@L["TableHeaderCaptionResponse"]">
+                        <RowTemplate Context="entry">
+                            @if (entry.Response != null)
+                            {
+                                <button type="button" class="btn btn-link" @onclick="(() => ShowPacketContent(entry.Response))"> @entry.Response.Content.Length Bytes </button>
+                            }
+                            else
+                            {
+                                <span>No data</span>
+                            }
+                        </RowTemplate>
+                    </DataTableColumn>
+                </DataTable>
+            }
+            else
+            {
+                <div class="tab-pane active">
+                    @L["TableContentNoDataFound"]
+                </div>
+            }
+        </LoadingWhileContentNull>
+    </div>
+</div>
+
+@code {
+    [Parameter] public IList<DHCPv6PacketHandledEntryViewModel> Packets { get; set; }
+    [Parameter] public Boolean DisplayScopes { get; set; } = true;
+
+    public void ShowPacketContent(DHCPv6PacketInformation info)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(DHCPv6PacketDetailsModal.Packet), info.GetPacket());
+
+        _modalService.Show<DHCPv6PacketDetailsModal>($"{L["ModalHeaderForPacketDetails"]}", parameters, new ModalOptions { Class = "blazored-modal modal-lg modal-content" });
+    }
+}

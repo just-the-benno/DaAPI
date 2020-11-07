@@ -1,0 +1,288 @@
+﻿@inherits AdvancedFormComponent<CreateNotificationPipelineViewModel>
+@implements IDisposable
+
+@page "/pipelines/create"
+@layout AdminLayout
+@attribute [Authorize]
+@inject DaAPIService _service
+@inject LayoutService _layoutService
+@inject IToastService _toastService
+@inject NavigationManager _navigator
+@inject IJSRuntime _jsRuntime
+@inject IStringLocalizer<CreateNotificationPipelinePage> L
+
+
+<CascadingValue Name="DisableFormElements" Value="@_sendingRequestInProgress">
+
+    <EditForm EditContext="@EditContext" OnValidSubmit="SendCreateUserRequest">
+        <ObjectGraphDataAnnotationsValidator />
+        <div class="container-fluid">
+            <div class="row">
+
+                @if (_serviceErrorOccured == true)
+                {
+                    <div class="col-12">
+                        <div class="alert alert-danger">
+                            <h5><i class="icon fas fa-ban"></i> @L["ErrorCaption"]</h5>
+                            @L["ErrorText"]
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">@L["GenerellPropertiesCaption"]</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group row">
+                                <CustomLabel For="@(() => Model.Name)" class="col-sm-2 col-form-label" />
+                                <div class="col-sm-10">
+                                    <BootstrapInputText @bind-Value="Model.Name" class="form-control" placeholder="@L["PipelineNamePlaceholder"]" />
+                                    <div class="invalid-feedback mb-3">
+                                        <ValidationMessage For="@(() => Model.Name)" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <CustomLabel For="@(() => Model.Description)" class="col-sm-2 col-form-label" />
+                                <div class="col-sm-10">
+                                    <BootstrapInputTextArea @bind-Value="Model.Description" class="form-control" placeholder="@L["PipelineDescriptionPlaceholder"]" />
+                                    <div class="invalid-feedback mb-3">
+                                        <ValidationMessage For="@(() => Model.Description)" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.login-card-body -->
+                    </div>
+                </div>
+                @*End of column*@
+            </div>
+            <LoadingWhileContentNull Item="_pipelineDescriptions">
+                <div class="row">
+                    <div class="col-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">@L["TriggerCaption"]</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group row">
+                                    <CustomLabel For="@(() => Model.TriggerName)" />
+
+                                    <BootstrapInputSelect @bind-Value=Model.TriggerName class="form-control">
+                                        <option value="null">@L["TriggerNotSelectedLabel"]</option>
+                                        @foreach (var item in _pipelineDescriptions.MapperEnries)
+                                        {
+                                            <option value="@item.TriggerName"><NotificationTriggerDisplay Typename="@item.TriggerName" /></option>
+                                        }
+                                    </BootstrapInputSelect>
+                                    <div class="invalid-feedback mb-3">
+                                        <ValidationMessage For="@(() => Model.TriggerName)" />
+                                    </div>
+                                </div>
+
+                            </div>
+                            @*End of card body*@
+                        </div>
+                        @*End of card*@
+                    </div>
+                    @*End of col*@
+                    <div class="col-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">@L["ConditionCaption"]</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group row">
+                                    <CustomLabel For="@(() => Model.ConditionName)" />
+
+                                    <BootstrapInputSelect @bind-Value=Model.ConditionName class="form-control">
+                                        <option value="null">@L["ConditionNotSelectedLabel"]</option>
+                                        @foreach (var item in Model.PossibleCondtions)
+                                        {
+                                            <option value="@item"><NotificationConditionDisplay ContiditionName="@item" /></option>
+                                        }
+                                    </BootstrapInputSelect>
+                                    <div class="invalid-feedback mb-3">
+                                        <ValidationMessage For="@(() => Model.ConditionName)" />
+                                    </div>
+                                </div>
+
+                                @for (int i = 0; i < Model.ConditionsProperties.Count; i++)
+                                {
+                                    var index = i;
+                                    var item = Model.ConditionsProperties[i];
+                                    String inputid = $"conditions-property-{@i}";
+
+                                    <div class="form-group row">
+                                        @if (item.Type != NotificationCondititonDescription.ConditionsPropertyTypes.Boolean)
+                                        {
+                                            <label for="@inputid"><NotificationCondititonDescriptionDisplay ConditionName="@Model.ConditionName" PropertyName="@item.Name" /></label>
+                                        }
+
+                                        @if (item.Type == NotificationCondititonDescription.ConditionsPropertyTypes.Boolean)
+                                        {
+                                            <div class="icheck-primary">
+                                                <BootstrapInputCheckbox @bind-Value="Model.ConditionsProperties[index].ValueAsBoolean" id="@inputid" />
+                                                <label for="@inputid"><NotificationCondititonDescriptionDisplay ConditionName="@Model.ConditionName" PropertyName="@item.Name" /></label>
+                                            </div>
+                                        }
+                                        else if (item.Type == NotificationCondititonDescription.ConditionsPropertyTypes.DHCPv6ScopeList)
+                                        {
+                                            <LoadingWhileContentNull Item="_scopes">
+                                                <BootstrapInputMultipleSelect @bind-Value=Model.ConditionsProperties[index].Values class="select2" data-placeholder="Select scopes" style="width: 100%;">
+                                                    @foreach (var item in _scopes)
+                                                    {
+                                                        <option value="@item.Id.ToString()">@item.Name</option>
+                                                    }
+                                                </BootstrapInputMultipleSelect>
+                                            </LoadingWhileContentNull>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                            @*End of card body*@
+                        </div>
+                        @*End of card*@
+                    </div>
+                    <div class="col-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">@L["ActorCaption"]</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group row">
+                                    <CustomLabel For="@(() => Model.ActorName)" />
+
+                                    <BootstrapInputSelect @bind-Value=Model.ActorName class="form-control">
+                                        <option value="null">@L["ActorNotSelectedLabel"]</option>
+                                        @foreach (var item in Model.PossibleActors)
+                                        {
+                                            <option value="@item"><NotificationActorDisplay ActorName="@item" /></option>
+                                        }
+                                    </BootstrapInputSelect>
+                                    <div class="invalid-feedback mb-3">
+                                        <ValidationMessage For="@(() => Model.ActorName)" />
+                                    </div>
+                                </div>
+
+                                @for (int i = 0; i < Model.ActorProperties.Count; i++)
+                                {
+                                    var index = i;
+                                    var item = Model.ActorProperties[i];
+                                    String inputid = $"actor-property-{@i}";
+
+                                    <div class="form-group row">
+                                        <label for="@inputid"><NotificationActorPropertyDisplay ActorName="@Model.ActorName" PropertyName="@item.Name" /></label>
+                                        <BootstrapInputText @bind-Value="Model.ActorProperties[index].Value" id="@inputid" class="form-control" type="@(item.Type == NotifcationActorDescription.ActorPropertyTypes.Password ? "password" : "text"  )" />
+                                        <div class="invalid-feedback mb-3">
+                                            <ValidationMessage For="@(() => Model.ActorProperties[index].Value)" />
+                                        </div>
+                                    </div>
+
+                                }
+                            </div>
+                            @*End of card body*@
+                        </div>
+                        @*End of card*@
+                    </div>
+                </div>
+                @*End of row*@
+
+                <div class="d-flex flex-row">
+                    <div class="d-flex flex-fill"> </div>
+                    <SendingAwareSubmitFormButton Caption="@L["CreateButtonCaption"]" ExecutingCaption="@L["CreateInProgressButtonCaption"]" FormIsSending="_sendingRequestInProgress" FormIsValid="FormIsValid" />
+                </div>
+
+            </LoadingWhileContentNull>
+        </div>
+        @*End of container*@
+    </EditForm>
+</CascadingValue>
+
+@code {
+    #region Fields
+
+    private Boolean _sendingRequestInProgress = false;
+    private Boolean _serviceErrorOccured = false;
+    private NotificationPipelineDescriptions _pipelineDescriptions;
+    private IEnumerable<ScopeItem> _scopes;
+
+    #endregion
+
+    #region Properties
+
+    #endregion
+
+    #region Lifecycles
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        _layoutService.UpdatePageTitle(L["PageTitle"]);
+        _layoutService.UpdateBreadcrumbs(new BreadcrumbViewModel[]
+        {
+            new BreadcrumbViewModel { Caption = L["BreadcrumbHomeCaption"], Link = "dashboard" },
+            new BreadcrumbViewModel { Caption = L["BreadcrumbPipelineCaption"], Link = "pipelines" },
+            new BreadcrumbViewModel { Caption = L["BreadcrumbSelfCaption"], Link = "pipelines/create" }
+                                                                                                                                                                                                                                                            });
+
+        base.EditContext.OnFieldChanged += OnFieldChanged;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        _pipelineDescriptions = await _service.GetpipelineDescriptions();
+        Model.AddDescriptions(_pipelineDescriptions);
+    }
+
+    public override void Dispose()
+    {
+        base.Dispose();
+        EditContext.OnFieldChanged -= OnFieldChanged;
+    }
+
+    #endregion
+
+    #region Methods
+
+    private async void OnFieldChanged(object sender, FieldChangedEventArgs args)
+    {
+        if (args.FieldIdentifier.FieldName == nameof(CreateNotificationPipelineViewModel.TriggerName))
+        {
+
+        }
+        else if (args.FieldIdentifier.FieldName == nameof(CreateNotificationPipelineViewModel.ConditionName))
+        {
+            if (_scopes == null &&
+                Model.ConditionsProperties.Count(x => x.Type == NotificationCondititonDescription.ConditionsPropertyTypes.DHCPv6ScopeList) > 0)
+            {
+                _scopes = await _service.GetScopesAsList();
+                base.StateHasChanged();
+            }
+        }
+    }
+
+    public async Task SendCreateUserRequest()
+    {
+        var request = Model.GetRequest();
+        _serviceErrorOccured = false;
+        _sendingRequestInProgress = true;
+
+        Boolean serviceResult = await _service.CreateNotificationPipeline(request);
+        _serviceErrorOccured = !serviceResult;
+        _sendingRequestInProgress = false;
+        if (serviceResult == true)
+        {
+            _toastService.ShowSuccess($"pipeline {Model.Name} created", "Success");
+            _navigator.NavigateTo("/pipelines");
+        }
+    }
+
+    #endregion
+}

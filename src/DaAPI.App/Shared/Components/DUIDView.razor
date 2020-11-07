@@ -1,0 +1,32 @@
+﻿@using DaAPI.Core.Common
+@inject IStringLocalizer<DUIDView> L
+
+@switch (Item)
+{
+    case UUIDDUID duid:
+        <span>@duid.UUID.ToString()</span>
+        break;
+    case VendorBasedDUID duid:
+        <span>@L["VendorCaption"]: @duid.EnterpriseNumber</span>
+        <br />
+        <span>@L["ValueCaption"]: @ByteHelper.ToString(duid.Identifier)</span>
+        break;
+    case LinkLayerAddressDUID duid:
+        <span>@L["L2Caption"] @duid.AddressType</span>
+        <br />
+        <span>@ByteHelper.ToString(duid.LinkLayerAddress, '-')</span>
+        break;
+    case LinkLayerAddressAndTimeDUID duid:
+        <span>@L["L2Caption"] @duid.LinkType</span>
+        <br />
+        <span>@ByteHelper.ToString(duid.LinkLayerAddress, '-')</span>
+        <br />
+        <span>@duid.Time</span>
+        break;
+    default:
+        break;
+}
+
+@code {
+    [Parameter] public DUID Item { get; set; }
+}

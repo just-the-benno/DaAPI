@@ -1,0 +1,367 @@
+﻿
+@inject IStringLocalizer<GroupedTimeSeriesCard> L
+
+<div class="card">
+    <div class="card-header d-flex p-0">
+        <h3 class="card-title p-3">@Title</h3>
+
+        <div class="d-flex flex-fill">
+        </div>
+        @if (GroupedBy.HasValue == true)
+        {
+            <DateRangePicker class="form-control mt-2 max" placeholder="@L["SelectingDatePlaceholder"]"
+                             @bind-StartDate="StartDate" @bind-EndDate="EndDate" MaxDate="DateTime.UtcNow" style="width:auto;" OnRangeSelect="@( async (x) => await LoadDataSets() )" />
+        }
+        <ul class="nav nav-pills ml-auto p-2">
+            @foreach (var item in _groupings)
+            {
+                <li class="nav-item">
+                    <a class="nav-link @(item.value == GroupedBy ? "active" : String.Empty)" @onclick=@(  async () => { GroupedBy = item.value; await LoadDataSets(); } )>@item.display</a>
+                </li>
+            }
+        </ul>
+    </div><!-- /.card-header -->
+    <div class="card-body">
+        <div class="tab-content">
+            <LoadingWhileContentNull Item="_loadingDummy" OnlyHide="true">
+                @if (ChartDisplayType == ChartDisplayTypes.Both)
+                {
+                    <div class="d-flex flex-column align-content-center align-items-end">
+                        <div class="icheck-primary d-inline">
+                            @{ Guid displayBarCheckBoxId = Guid.NewGuid(); }
+                            <input type="checkbox" id="@displayBarCheckBoxId" @bind-value="UseBarChart">
+                            <label for="@displayBarCheckBoxId">
+                                Display Bars
+                            </label>
+                        </div>
+                    </div>
+                }
+
+                @if (LineCouldBeDisplayed() == true)
+                {
+                    <div style="@(UseBarChart == true ? "display: none" : "display: block")">
+                        <Chart @ref="_lineChartJs"
+                               Config="@_lineConfig"
+                               TConfig="LineConfig"
+                               Width="600"
+                               Height="300" />
+                    </div>
+                }
+                @if (BarCouldBeDisplayed() == true)
+                {
+                    <div style="@(UseBarChart == false && ChartDisplayType != ChartDisplayTypes.OnlyBar ? "display: none" : "display: block")">
+                        <Chart @ref="_barChartJs"
+                               Config="@_barConfig"
+                               TConfig="BarConfig"
+                               Width="600"
+                               Height="300" />
+                    </div>
+                }
+            </LoadingWhileContentNull>
+            <!-- /.tab-pane -->
+        </div>
+        <!-- /.tab-content -->
+    </div><!-- /.card-body -->
+</div>
+
+
+@code {
+
+    public enum ChartDisplayTypes
+    {
+        Both = 1,
+        OnlyLine = 2,
+        OnlyBar = 3,
+    };
+
+    private Boolean BarCouldBeDisplayed() => ChartDisplayType == ChartDisplayTypes.Both || ChartDisplayType == ChartDisplayTypes.OnlyBar;
+    private Boolean LineCouldBeDisplayed() => ChartDisplayType == ChartDisplayTypes.Both || ChartDisplayType == ChartDisplayTypes.OnlyLine;
+
+    private System.Threading.SemaphoreSlim semaphore = new System.Threading.SemaphoreSlim(1, 1);
+    private DateTime _lastLoad;
+
+    private List<(String display, GroupStatisticsResultBy? value)> _groupings;
+
+    private Object _loadingDummy;
+
+    private Chart<LineConfig> _lineChartJs;
+
+
+    private LineConfig _lineConfig;
+    private BarConfig _barConfig;
+
+    private Chart<BarConfig> _barChartJs;
+
+    [Parameter]
+    public GroupStatisticsResultBy? GroupedBy { get; set; }
+
+    [Parameter]
+    public ChartDisplayTypes ChartDisplayType { get; set; } = ChartDisplayTypes.Both;
+
+    private DateTime? ConvertFromDataTimeOffset(DateTimeOffset? input) => input == null ? new DateTime?() : input.Value.UtcDateTime;
+
+    [Parameter]
+    public Boolean HasRecent { get; set; } = true;
+
+    [Parameter]
+    public Boolean UseBarChart { get; set; } = false;
+
+    [Parameter]
+    public DateTimeOffset? StartDate { get; set; }
+
+    [Parameter]
+    public DateTimeOffset? EndDate { get; set; }
+
+    [Parameter]
+    public String Title { get; set; }
+
+    [Parameter]
+    public Func<DateTime?, DateTime?, GroupStatisticsResultBy, Task<IDictionary<DateTime, Int32>>> GroupedDatasetLoad { get; set; }
+
+    [Parameter]
+    public CardBasedTabControl TabControl { get; set; }
+
+    [Parameter]
+    public IDictionary<DateTime, Int32> Recent { get; set; }
+
+    [Parameter]
+    public DataSeriesDescription DataSeriesDescription { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        _groupings = new List<(String display, GroupStatisticsResultBy? value)>
+{
+                    (L["DayCaption"],GroupStatisticsResultBy.Day),
+                    (L["WeekCaption"],GroupStatisticsResultBy.Week),
+                    (L["MonthCaption"],GroupStatisticsResultBy.Month),
+            };
+
+        if (HasRecent == true)
+        {
+            _groupings.Insert(0, (L["RecentCaption"], null));
+        }
+
+        if (LineCouldBeDisplayed() == true)
+        {
+            _lineConfig = new LineConfig
+            {
+                Options = new LineOptions
+                {
+                    Responsive = true,
+                    Title = new OptionsTitle
+                    {
+                        Display = false,
+                    },
+                    Legend = new Legend
+                    {
+                        Display = false,
+                    },
+                    Tooltips = new Tooltips
+                    {
+                        Mode = InteractionMode.Index,
+                        Intersect = false
+                    },
+                    Hover = new Hover
+                    {
+                        Intersect = true,
+                        Mode = InteractionMode.Index
+                    },
+                    Scales = new Scales
+                    {
+                        XAxes = new List<CartesianAxis>
+{
+                        new TimeAxis
+                        {
+                            Distribution = TimeDistribution.Linear,
+                            Ticks = new TimeTicks
+                            {
+                                Source = TickSource.Auto,
+                            },
+                            Time = new TimeOptions
+                            {
+                                Unit = TimeMeasurement.Millisecond,
+                                Round = TimeMeasurement.Millisecond,
+                                TooltipFormat = "DD.MM.YYYY HH:mm:ss",
+                            },
+                            ScaleLabel = new ScaleLabel
+                            {
+                                LabelString = "Time"
+                            }
+                        }
+                    }
+                    }
+                }
+            };
+        }
+
+        if (BarCouldBeDisplayed() == true)
+        {
+            _barConfig = new BarConfig
+            {
+                Options = new BarOptions
+                {
+                    Tooltips = new Tooltips
+                    {
+                        Mode = InteractionMode.Index,
+                        Intersect = true,
+                    },
+                    Hover = new Hover
+                    {
+                        Intersect = true,
+                        Mode = InteractionMode.Index
+                    },
+                    Legend = new Legend
+                    {
+                        Display = false,
+                    },
+                    Title = new OptionsTitle
+                    {
+                        Display = false,
+                    },
+                    Scales = new BarScales
+                    {
+                        XAxes = new List<CartesianAxis>
+                    {
+                                new BarTimeAxis
+                                {
+                                    BarPercentage = 1,
+                                    Time = new TimeOptions
+                                    {
+                                        Unit = TimeMeasurement.Hour
+                                    },
+                                    Ticks = new TimeTicks
+                                    {
+                                        FontColor = "#495057",
+                                        Source = TickSource.Auto,
+                                    },
+                                    GridLines = new GridLines
+                                    {
+                                        Display = false,
+                                    }
+                                }
+                            },
+                        YAxes = new List<CartesianAxis>
+{
+                        new BarLinearCartesianAxis
+                        {
+                            Ticks = new LinearCartesianTicks
+                            {
+                                BeginAtZero = true
+                            },
+                            GridLines = new GridLines
+                            {
+                                Display = false,
+                                LineWidth = 4,
+                                Color = ColorUtil.ColorString(0, 0, 0, .2),
+                                ZeroLineColor = "transparent",
+                            }
+                        }
+                    }
+                    },
+                    Responsive = true
+                }
+            };
+        }
+    }
+
+    private async Task LoadDataSets()
+    {
+        try
+        {
+            await semaphore.WaitAsync();
+
+            if ((DateTime.Now - _lastLoad).TotalSeconds < 1)
+            {
+                return;
+            }
+
+            if (_loadingDummy != null)
+            {
+                if (BarCouldBeDisplayed() == true)
+                {
+                    _barConfig.Data.Datasets.Clear();
+                    await _barChartJs.Update();
+                }
+
+                if (LineCouldBeDisplayed() == true)
+                {
+                    _lineConfig.Data.Datasets.Clear();
+                    await _lineChartJs.Update();
+                }
+
+                _loadingDummy = null;
+                StateHasChanged();
+            }
+
+            var dataSeries = GroupedBy.HasValue == false ?
+                Recent :
+                await GroupedDatasetLoad(ConvertFromDataTimeOffset(StartDate), ConvertFromDataTimeOffset(EndDate), GroupedBy.Value);
+
+            _loadingDummy = new Object();
+            _lastLoad = DateTime.Now;
+
+            Dictionary<GroupStatisticsResultBy?, (TimeMeasurement tick, String display)> unitMaper = new Dictionary<GroupStatisticsResultBy?, (TimeMeasurement tick, string display)>
+{
+                { GroupStatisticsResultBy.Day, (TimeMeasurement.Day,"DD.MM.YY") },
+                { GroupStatisticsResultBy.Week, (TimeMeasurement.Week,"W") },
+                { GroupStatisticsResultBy.Month, (TimeMeasurement.Month,"MM.YY") },
+            };
+
+            if (LineCouldBeDisplayed() == true)
+            {
+                var series = new LineDataset<TimePoint>
+                {
+                    BackgroundColor = "transparent",
+                    BorderColor = "#007bff",
+                    PointBorderColor = "#007bff",
+                    PointBackgroundColor = "#007bff",
+                    Fill = FillingMode.Start,
+                    SteppedLine = SteppedLine.False
+                };
+
+                var firstTimeAxis = _lineConfig.Options.Scales.XAxes[0] as TimeAxis;
+                firstTimeAxis.Time.Unit = GroupedBy.HasValue == false ? TimeMeasurement.Hour : unitMaper[GroupedBy].tick;
+                firstTimeAxis.Time.Round = firstTimeAxis.Time.Unit;
+                firstTimeAxis.Time.TooltipFormat = GroupedBy.HasValue == false ? "DD.MM.YY HH:mm" : unitMaper[GroupedBy].display;
+
+                series.AddRange(dataSeries.Select(p => new TimePoint(p.Key, p.Value)));
+                _lineConfig.Data.Datasets.Add(series);
+                await _lineChartJs.Update();
+            }
+
+            if (BarCouldBeDisplayed() == true)
+            {
+                var barSet = new BarDataset<TimePoint>
+                {
+                    BackgroundColor = "#007bff",
+                    BorderColor = "#007bff"
+                };
+
+                var secondTimeAxis = _barConfig.Options.Scales.XAxes[0] as TimeAxis;
+                secondTimeAxis.Time.Unit = GroupedBy.HasValue == false ? TimeMeasurement.Hour : unitMaper[GroupedBy].tick;
+                secondTimeAxis.Time.Round = secondTimeAxis.Time.Unit;
+                secondTimeAxis.Time.TooltipFormat = GroupedBy.HasValue == false ? "DD.MM.YY HH:mm" : unitMaper[GroupedBy].display;
+
+                barSet.AddRange(dataSeries.Select(p => new TimePoint(p.Key, p.Value)));
+                _barConfig.Data.Datasets.Add(barSet);
+
+                await _barChartJs.Update();
+            }
+
+            StateHasChanged();
+        }
+        finally
+        {
+            semaphore.Release();
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadDataSets();
+    }
+}

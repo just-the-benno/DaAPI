@@ -1,0 +1,32 @@
+﻿
+<li class="nav-item@(Item.SubItems.Any() == true ? " has-treeview" : String.Empty)">
+    <NavLink class="nav-link" href="@Item.Link" ActiveClass="active">
+        <i class="nav-icon @Item.IconClass"></i>
+        <p>
+            @Item.Caption
+            @if (Item.NotifictionAmount > 0)
+            {
+                <span class="badge badge-info right">@Item.NotifictionAmount</span>
+            }
+            @if (Item.SubItems.Any() == true)
+            {
+                <i class="right fas fa-angle-left"></i>
+            }
+        </p>
+    </NavLink>
+    @if (Item.SubItems.Any() == true)
+    {
+        <ul class="nav nav-treeview">
+            @foreach (var child in Item.SubItems)
+            {
+                <NavItem Item="child" />
+            }
+        </ul>
+    }
+</li>
+
+@code {
+
+    [Parameter]
+    public NavItemViewModel Item { get; set; }
+}

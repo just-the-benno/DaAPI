@@ -1,0 +1,110 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="FrontendAssets\fonts\source-sans-pro-v13-latin-300.woff" />
+    <None Remove="FrontendAssets\fonts\source-sans-pro-v13-latin-300.woff2" />
+    <None Remove="FrontendAssets\fonts\source-sans-pro-v13-latin-700.woff" />
+    <None Remove="FrontendAssets\fonts\source-sans-pro-v13-latin-700.woff2" />
+    <None Remove="FrontendAssets\fonts\source-sans-pro-v13-latin-italic.woff" />
+    <None Remove="FrontendAssets\fonts\source-sans-pro-v13-latin-italic.woff2" />
+    <None Remove="FrontendAssets\fonts\source-sans-pro-v13-latin-regular.woff" />
+    <None Remove="FrontendAssets\fonts\source-sans-pro-v13-latin-regular.woff2" />
+  </ItemGroup>
+
+  <Target Name="NPMandGrunt" BeforeTargets="CoreCompile" Condition="'$(Configuration)' != 'Debug'">
+    <!-- Ensure Node.js is installed -->
+    <Exec Command="node --version" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
+    </Exec>
+    <Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run this project. To continue, please install Node.js from https://nodejs.org/, and then restart your command prompt or IDE." />
+    <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
+    <Exec Command="npm install" />
+    <Exec Command="npm run build" />
+  </Target>
+
+  <ItemGroup>
+    <Content Include="FrontendAssets\fonts\source-sans-pro-v13-latin-300.woff">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="FrontendAssets\fonts\source-sans-pro-v13-latin-300.woff2">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="FrontendAssets\fonts\source-sans-pro-v13-latin-700.woff">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="FrontendAssets\fonts\source-sans-pro-v13-latin-700.woff2">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="FrontendAssets\fonts\source-sans-pro-v13-latin-italic.woff">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="FrontendAssets\fonts\source-sans-pro-v13-latin-italic.woff2">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="FrontendAssets\fonts\source-sans-pro-v13-latin-regular.woff">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="FrontendAssets\fonts\source-sans-pro-v13-latin-regular.woff2">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="FrontendAssets\js\bootsrap-validation-helper.js" />
+    <Content Include="FrontendAssets\js\signin-redirect.js" />
+    <Content Include="FrontendAssets\js\signout-redirect.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediatR" Version="9.0.0" />
+    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="9.0.0" />
+    
+    <PackageReference Include="IdentityServer4.AspNetIdentity" Version="4.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="3.2.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="3.1.9" />
+
+    <PackageReference Include="System.Security.Principal.Windows" Version="4.7.0" />
+    
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="3.1.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="3.1.9" />
+
+    <PackageReference Include="Serilog.AspNetCore" Version="3.4.0" />
+
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.9">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.9">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DaAPI.App\DaAPI.App.csproj" />
+    <ProjectReference Include="..\DaAPI.Core\DaAPI.Core.csproj" />
+    <ProjectReference Include="..\DaAPI.Infrastructure\DaAPI.Infrastructure.csproj" />
+    <ProjectReference Include="..\DaAPI.Shared\DaAPI.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="FrontendAssets\images\" />
+    <Folder Include="FrontendAssets\temp\" />
+    <Folder Include="FrontendAssets\temp\js\" />
+  </ItemGroup>
+</Project>

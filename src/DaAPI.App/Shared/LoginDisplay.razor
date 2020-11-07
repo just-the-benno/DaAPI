@@ -1,0 +1,30 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+
+@inject SignOutService _signOutService
+@inject IStringLocalizer<LoginDisplay> L
+<AuthorizeView>
+    <Authorized>
+        <div class="d-flex flex-row align-items-center" style="align-items: center;">
+            <i class="ml-3 far fa-2x fa-user img-circle elevation-2" alt="User Image" style="color: white;"></i>
+            <div class="ml-2 info">
+                @*href="authentication/profile"*@
+                <a class="d-block">@context.User.Identity.Name</a>
+                <button class="p-0 btn btn-link" @onclick="BeginSignOut">
+                    <!--!-->
+                    @L["LogoutCaption"]
+                </button>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <a href="authentication/register">@L["RegisterCaption"]</a>
+        <a href="authentication/login">@L["LoginCaption"]</a>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private async Task BeginSignOut(MouseEventArgs args)
+    {
+        await _signOutService.BeginSignOut();
+    }
+}

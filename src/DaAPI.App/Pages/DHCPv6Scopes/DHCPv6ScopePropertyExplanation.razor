@@ -1,0 +1,113 @@
+﻿@inject IStringLocalizer<DHCPv6ScopePropertyExplanation> L
+
+<ToolTipButton Content="@_content" Title="@_title" />
+
+@code {
+
+    private String _title;
+    private String _content;
+
+    [Parameter] public DHCPv6ScopePropertyExplanationValues Property { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        String keyForTitle = "";
+        String keyForContent = "";
+
+        switch (Property)
+        {
+            case DHCPv6ScopePropertyExplanationValues.HasParent:
+                keyForTitle = "ScopePropertyParentName";
+                keyForContent = "ScopePropertyParentContent";
+                break;
+            case DHCPv6ScopePropertyExplanationValues.Start:
+                keyForTitle = "ScopePropertyStartName";
+                keyForContent = "ScopePropertyStartContent";
+                break;
+            case DHCPv6ScopePropertyExplanationValues.End:
+                keyForTitle = "ScopePropertyEndName";
+                keyForContent = "ScopePropertyEndContent";
+                break;
+            case DHCPv6ScopePropertyExplanationValues.AddressRelated:
+                keyForTitle = "ScopePropertyAddressRelatedName";
+                keyForContent = "ScopePropertyAddressRelatedContent";
+                break;
+            case DHCPv6ScopePropertyExplanationValues.ExcludedAddresses:
+                keyForTitle = "ScopePropertyExcludedAddressesName";
+                keyForContent = "ScopePropertyExcludedAddressesContent";
+                break;
+            case DHCPv6ScopePropertyExplanationValues.PrefixDelegation:
+                keyForTitle = "ScopePropertyPrefixDelegationName";
+                keyForContent = "ScopePropertyPrefixDelegationName";
+                break;
+            case DHCPv6ScopePropertyExplanationValues.Prefix:
+                keyForTitle = "ScopePropertyPrefixName";
+                keyForContent = "ScopePropertyPrefixContent";
+                break;
+            case DHCPv6ScopePropertyExplanationValues.PrefixLength:
+                keyForTitle = "ScopePropertyPrefixLengthName";
+                keyForContent = "ScopePropertyPrefixLengthContent";
+                break;
+            case DHCPv6ScopePropertyExplanationValues.AssignedPrefixLength:
+                keyForTitle = "ScopePropertyAssignedPrefixLengthName";
+                keyForContent = "ScopePropertyAssignedPrefixLengthContent";
+                break;
+            case DHCPv6ScopePropertyExplanationValues.PreferredLifetime:
+                keyForTitle = "ScopePropertyPreferredLifetimeName";
+                keyForContent = "ScopePropertyPreferredLifetimeContent";
+                break;
+            case DHCPv6ScopePropertyExplanationValues.ValidLifetime:
+                keyForTitle = "ScopePropertyValidLifetimeName";
+                keyForContent = "ScopePropertyValidLifetimeContent";
+                break;
+            case DHCPv6ScopePropertyExplanationValues.T1:
+                keyForTitle = "ScopePropertyT1Name";
+                keyForContent = "ScopePropertyT1Content";
+                break;
+            case DHCPv6ScopePropertyExplanationValues.T2:
+                keyForTitle = "ScopePropertyT2Name";
+                keyForContent = "ScopePropertyT2Content";
+                break;
+            case DHCPv6ScopePropertyExplanationValues.SupportDirectUnicast:
+                keyForTitle = "ScopePropertySupportDirectUnicastName";
+                keyForContent = "ScopePropertySupportDirectUnicastContent";
+                break;
+            case DHCPv6ScopePropertyExplanationValues.AccpetDeclines:
+                keyForTitle = "ScopePropertyAcceptDeclinesName";
+                keyForContent = "ScopePropertyAcceptDeclinesContent";
+                break;
+            case DHCPv6ScopePropertyExplanationValues.AccpetInforms:
+                keyForTitle = "ScopePropertyAcceptInformsName";
+                keyForContent = "ScopePropertyAcceptInformsContent";
+                break;
+            case DHCPv6ScopePropertyExplanationValues.RapidCommit:
+                keyForTitle = "ScopePropertyRapidCommitName";
+                keyForContent = "ScopePropertyRapidCommitContent";
+                break;
+            case DHCPv6ScopePropertyExplanationValues.ReuseAddress:
+                keyForTitle = "ScopePropertyReuseAddressName";
+                keyForContent = "ScopePropertyReuseAddressContent";
+                break;
+            case DHCPv6ScopePropertyExplanationValues.AddressAllocationStrategy:
+                keyForTitle = "ScopePropertyAddressAllocationStrategyName";
+                keyForContent = "ScopePropertyAddressAllocationStrategyContent";
+                break;
+            case DHCPv6ScopePropertyExplanationValues.ScopeOptions:
+                keyForTitle = "ScopePropertyOptionName";
+                keyForContent = "ScopePropertyOptionContent";
+                break;
+            case DHCPv6ScopePropertyExplanationValues.Resolver:
+                keyForTitle = "ScopePropertyResolverName";
+                keyForContent = "ScopePropertyResolverContent";
+                break;
+            default:
+                break;
+        }
+
+        _title = L[keyForTitle];
+        _content = L[keyForContent];
+    }
+
+}

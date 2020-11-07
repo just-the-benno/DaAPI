@@ -1,0 +1,31 @@
+﻿
+@implements IDisposable
+
+<h1>@Title</h1>
+
+@code {
+    [Inject]
+    private LayoutService _layoutService { get; set; }
+
+    [Parameter]
+    public String Title { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        Title = _layoutService.PageTitle;
+        _layoutService.PageTitleChanged += ChangePageTitle;
+    }
+
+    void IDisposable.Dispose()
+    {
+        _layoutService.PageTitleChanged -= ChangePageTitle;
+    }
+
+    protected void ChangePageTitle(Object sender, EventArgs args)
+    {
+        Title = _layoutService.PageTitle;
+        StateHasChanged();
+    }
+}

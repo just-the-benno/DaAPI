@@ -1,0 +1,127 @@
+﻿@inherits BootstrapInputBase<Nullable<TValue>>
+@typeparam TValue
+
+@if (TableMode == true)
+{
+<td>
+    <div class="icheck-primary">
+        <BootstrapInputCheckbox @bind-Value="HasValue" id="@_nullableCheckBoxId" />
+        <label for="@_nullableCheckBoxId">@EnabledCaption</label>
+    </div>
+</td>
+<td>
+    @if(HasValue == true)
+    {
+        <BootstrapInputSelect @bind-Value="NonNullableValue" class="form-control">
+            @Options
+        </BootstrapInputSelect>
+    }
+</td>
+}
+else
+{
+<div class="d-flex flex-row">
+    <div class="icheck-primary">
+        <BootstrapInputCheckbox @bind-Value="HasValue" id="@_nullableCheckBoxId" />
+        <label for="@_nullableCheckBoxId">@EnabledCaption</label>
+    </div>
+
+    @if (FillSpace == true)
+    {
+    <div class="flex-fill"></div>
+    }
+    @if (_hasValue == true)
+    {
+    <BootstrapInputSelect @bind-Value="NonNullableValue" class="form-control">
+        @Options
+    </BootstrapInputSelect>
+    }
+</div>
+}
+
+@code {
+
+    private readonly Type _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));
+
+    [Parameter] public String EnabledCaption { get; set; } = "Enabled";
+    [Parameter] public Boolean FillSpace { get; set; } = false;
+    [Parameter] public Boolean TableMode { get; set; } = true;
+
+    [Parameter] public RenderFragment Options { get; set; }
+
+    private Boolean _hasValue;
+
+
+    [Parameter]
+    public Boolean HasValue
+    {
+        get => _hasValue;
+        set
+        {
+            _hasValue = value;
+            if (value == true)
+            {
+                CurrentValue = _nonNullableValue;
+            }
+            else
+            {
+                CurrentValue = new TValue?();
+            }
+        }
+    }
+
+    private TValue _nonNullableValue;
+
+    [Parameter]
+    public TValue NonNullableValue
+    {
+        get => _nonNullableValue;
+        set
+        {
+            _nonNullableValue = value;
+            CurrentValue = value;
+        }
+    }
+
+    [Parameter] public string ParsingErrorMessage { get; set; } = "The {0} field must be a number.";
+
+
+    protected override bool TryParseValueFromString(string value, out TValue? result, out string validationErrorMessage)
+    {
+        if (typeof(TValue) == typeof(string))
+        {
+            result = (TValue)(object)value;
+            validationErrorMessage = null;
+            return true;
+        }
+        else if (typeof(TValue).IsEnum || (_nullableUnderlyingType != null && _nullableUnderlyingType.IsEnum))
+        {
+            var success = BindConverter.TryConvertTo<TValue>(value, System.Globalization.CultureInfo.CurrentCulture, out var parsedValue);
+            if (success)
+            {
+                result = parsedValue;
+                validationErrorMessage = null;
+                return true;
+            }
+            else
+            {
+                result = default;
+                validationErrorMessage = $"The {FieldIdentifier.FieldName} field is not valid.";
+                return false;
+            }
+        }
+
+        throw new InvalidOperationException($"{GetType()} does not support the type '{typeof(TValue)}'.");
+
+    }
+
+    private String _nullableCheckBoxId;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        _nullableCheckBoxId = $"hasvalue-{Guid.NewGuid()}";
+    }
+
+}

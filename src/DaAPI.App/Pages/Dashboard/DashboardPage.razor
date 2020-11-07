@@ -1,0 +1,162 @@
+﻿
+
+@page "/"
+@page "/dashboard"
+@layout AdminLayout
+@attribute [Authorize]
+@inject DaAPIService _service
+@inject LayoutService _layoutService
+@inject IStringLocalizer<DashboardPage> L
+
+<LoadingWhileContentNull Item="_vm.Response">
+    <div class="container-fluid">
+        <div class="row">
+
+            @{
+
+                var items = new List<(String icon, String color, String caption, Int32 value, String additionalValue)>
+                {
+                    ("far fa-handshake","bg-info",@L["BoxCaptionForLeases"],_vm.Response.DHCPv6.ActiveLeases.Count(),"DHCPv6"),
+                    ("fas fa-project-diagram","bg-danger",@L["BoxCaptionForScopes"], _vm.Response.DHCPv6.ScopeAmount,"DHCPv6"),
+                    ("fas fa-network-wired","bg-success",@L["BoxCaptionForInterfaces"], _vm.Response.DHCPv6.ActiveInterfaces,"DHCPv6"),
+                    ("fas fa-bell","bg-warning",@L["BoxCaptionForPipelines"], _vm.Response.AmountOfPipelines,null),
+                };
+            }
+
+            @foreach (var item in items)
+            {
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon @item.color elevation-1"><i class="@item.icon"></i></span>
+
+                        <div class="info-box-content">
+                            <span class="info-box-text">@item.caption</span>
+                            <span class="info-box-number">
+                                @item.value
+
+                                @if (String.IsNullOrEmpty(item.additionalValue) == false)
+                                {
+                                    <small>DHCPv6</small>
+                                }
+                            </span>
+                        </div>
+                        <!-- /.info-box-content -->
+                    </div>
+                    <!-- /.info-box -->
+                </div>
+
+                <div class="clearfix hidden-md-up"></div>
+            }
+        </div>
+        <!-- /.row -->
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <GroupedTimeSeriesCard Title="@L["ActiveLeasesCardTitle"]" DataSeriesDescription="_leaseDescription" GroupedBy="GroupStatisticsResultBy.Day" GroupedDatasetLoad="_service.GetActiveDHCPv6Leases" HasRecent="false" />
+        </div>
+        <div class="col-lg-6">
+            <GroupedTimeSeriesCard Title="@L["IncomingPacketsCardTitle"]" DataSeriesDescription="_leaseDescription" GroupedBy="GroupStatisticsResultBy.Day" GroupedDatasetLoad="_service.GetIncomingDHCPv6PacketAmount" HasRecent="false" />
+        </div>
+        <!-- /.col -->
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header border-0">
+                    <h3 class="card-title">@L["LeasesToExpireCaption"]</h3>
+                    @*<div class="card-tools">
+                            <a href="#" class="btn btn-tool btn-sm">
+                                <i class="fas fa-download"></i>
+                            </a>
+                            <a href="#" class="btn btn-tool btn-sm">
+                                <i class="fas fa-bars"></i>
+                            </a>
+                        </div>*@
+                </div>
+                <div class="card-body table-responsive p-0">
+                    @if (_vm.Response.DHCPv6.ActiveLeases?.Any() == true)
+                    {
+                        <DataTable TModel="DHCPv6LeaseEntryViewModel" PageSize="20" Items="_vm.Response.DHCPv6.ActiveLeases" UsePaging="true" SearchOnApplyHeaderFilter="true" IncludeHeaderFilters="true" IncludeAdvancedFilters="false">
+                            <DataTableColumn TModel="DHCPv6LeaseEntryViewModel" IsSortable="true" IsFilterable="true" Property="(e) => e.Scope.Name" CustomTitle="@L["ActiveLeaseTableHeaderForScope"]" />
+                            <DataTableColumn TModel="DHCPv6LeaseEntryViewModel" IsSortable="true" IsFilterable="true" Property="(e) => e.Address" CustomTitle="@L["ActiveLeaseTableHeaderForLeasedAddress"]" />
+                            <DataTableColumn TModel="DHCPv6LeaseEntryViewModel" IsSortable="true" HeaderFilterType="Sve.Blazor.Core.Models.ObjectFilter.Contains" IsFilterable="true" Property="(e) => e.Prefix" CustomTitle="@L["ActiveLeaseTableHeaderForLeasedPrefix"]">
+                                <RowTemplate Context="lease">
+                                    @if (String.IsNullOrEmpty(lease.Prefix) == true)
+                                    {
+                                        <span> - </span>
+                                    }
+                                    else
+                                    {
+                                        <span>@($"{lease.Prefix}/{lease.PrefixLength}")</span>
+                                    }
+                                </RowTemplate>
+                            </DataTableColumn>
+                            <DataTableColumn TModel="DHCPv6LeaseEntryViewModel" IsSortable="true" IsFilterable="true" Property="(e) => e.Start" CustomTitle="@L["ActiveLeaseTableHeaderForStarted"]" />
+                            <DataTableColumn TModel="DHCPv6LeaseEntryViewModel" IsSortable="true" IsDefaultSortColumn="true" DefaultSortDirection="Sve.Blazor.Core.Models.SortDirection.Descending" IsFilterable="true" Property="(e) => e.End" CustomTitle="@L["ActiveLeaseTableHeaderForExpectedEnd"]" />
+                        </DataTable>
+                    }
+                    else
+                    {
+                        <div class="tab-pane active">
+                            @L["ActiveLeaseNotFoundContent"]
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <GroupedStackedTimeSeriesCard Title="@L["IncomingPacketTypesCardTitle"]" DataSeriesDescription="_leaseDescription" GroupedBy="GroupStatisticsResultBy.Day" GroupedDatasetLoad="_service.GetIncomingDHCPv6PacketTypes" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <DHCPv6LatestPacketTable Packets="_vm.Response.DHCPv6.Packets" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <GroupedTimeSeriesCard Title="@L["FilteredPacketCardTitle"]" DataSeriesDescription="_leaseDescription" GroupedBy="GroupStatisticsResultBy.Day" GroupedDatasetLoad="_service.GetFileredDHCPv6Packets" HasRecent="false" ChartDisplayType="GroupedTimeSeriesCard.ChartDisplayTypes.OnlyBar" />
+        </div>
+        <div class="col-lg-6">
+            <GroupedTimeSeriesCard Title="@L["InvalidPacketCardTitle"]" DataSeriesDescription="_leaseDescription" GroupedBy="GroupStatisticsResultBy.Day" GroupedDatasetLoad="_service.GetErrorDHCPv6Packets" HasRecent="false" ChartDisplayType="GroupedTimeSeriesCard.ChartDisplayTypes.OnlyBar" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <GroupedPacketTypeTimeSeriesCard Title="@L["ResponseCardCardTitle"]" DataSeriesDescription="_leaseDescription" GroupedDatasetLoad="_service.GetErrorCodesPerDHCPV6RequestType" />
+        </div>
+    </div>
+
+</LoadingWhileContentNull>
+
+@code {
+
+    private DataSeriesDescription _leaseDescription = new DataSeriesDescription
+    {
+        ChartName = null,
+    };
+
+    private DashboardPageViewModel _vm = new DashboardPageViewModel();
+
+    protected override void OnParametersSet()
+    {
+        _layoutService.UpdatePageTitle(L["DashboardPageTitle"]);
+        _layoutService.UpdateBreadcrumbs(new BreadcrumbViewModel[] { new BreadcrumbViewModel { Caption = L["BreadcrumbCaptionForHome"] } });
+
+        base.OnParametersSet();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _vm.Response = await _service.GetDashboard<DashboardViewModelResponse>();
+        var scopes = await _service.GetScopesAsList();
+        _vm.SetScopes(scopes);
+
+        await base.OnInitializedAsync();
+    }
+
+}

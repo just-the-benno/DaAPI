@@ -1,0 +1,24 @@
+﻿
+@if (FormIsSending == false)
+{
+    <button type="submit" class="px-3 d-flex btn btn-primary" disabled="@( ValidateOnSubmit == false &&  FormIsValid == false)">@Caption</button>
+}
+else
+{
+    <button class="px-3 btn d-flex flex-row align-items-center btn-primary" type="button" disabled>
+        <span class="spinner-grow spinner-grow-sm mr-3" role="status" aria-hidden="true"></span>
+        @ExecutingCaption
+    </button>
+}
+
+@code {
+    [Parameter] public Boolean FormIsValid { get; set; }
+    [Parameter] public Boolean FormIsSending { get; set; }
+    [Parameter] public String Caption { get; set; }
+    [Parameter] public String ExecutingCaption { get; set; } = "Sending...";
+
+    [Parameter] public Boolean ValidateOnSubmit { get; set; } = false;
+
+    [CascadingParameter] public EditContext Context { get; set; }
+
+}

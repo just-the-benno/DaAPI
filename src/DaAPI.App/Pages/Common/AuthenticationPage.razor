@@ -1,0 +1,61 @@
+﻿@page "/authentication/{action}"
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@inject IStringLocalizer<AuthenticationPage> L
+
+@layout SinglePageLayout
+
+<RemoteAuthenticatorView Action="@Action">
+    <LoggingIn>
+        <LoadingCentered Title="@L["SigninTitle"]" Text="@L["SigninText"]" />
+    </LoggingIn>
+    <LogInFailed>
+        <ErrorCentered Text="@L["LoginFailedTitle"]" />
+    </LogInFailed>
+    <CompletingLoggingIn>
+        <LoadingCentered Title="@L["CompletingLogginInTitle"]" Text="@L["CompletingLogginInText"]" />
+    </CompletingLoggingIn>
+
+    <LogOutSucceeded>
+        <div class="login-page flex-fill heigth-auto">
+            <div class="d-flex flex-row justify-content-center">
+                <div class="card" style="min-width:200px">
+                    <div class="card-header">
+                        <h3 class="card-title">@L["LogoutSuccessTitle"]</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <p class="card-text">
+                            @L["LogoutSuccessContent"]
+                        </p>
+                        <div class="d-flex flex-row">
+                            @*<button type="submit" class="px-3 d-flex btn btn-default" onclick="window.close();return false;">Close</button>*@
+                            <div class="d-flex flex-fill"> </div>
+                            <!-- /.col -->
+                            <a href="/" type="submit" class="px-3 d-flex btn btn-primary">@L["LogoutLoginAgainCaption"]</a>
+                        </div>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        </div>
+    </LogOutSucceeded>
+    <LogOutFailed>
+        <ErrorCentered Text="@L["LogoutFailed"]" />
+    </LogOutFailed>
+    <LogOut>
+        <LoadingCentered Title="@L["LogoutTitle"]" Text="@L["LogoutText"]" />
+    </LogOut>
+    <CompletingLogOut>
+        <LoadingCentered Title="@L["CompletingLogOutTitle"]" Text="@L["CompletingLogOutText"]" />
+    </CompletingLogOut>
+    <UserProfile>
+        <LoadingCentered Title="@L["UserProfileTitle"]" Text="@L["UserProfileText"]" />
+    </UserProfile>
+
+</RemoteAuthenticatorView>
+
+@code {
+    [Parameter]
+    public string Action { get; set; }
+}

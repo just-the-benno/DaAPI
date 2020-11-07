@@ -1,0 +1,99 @@
+﻿
+@page "/pipelines"
+@layout AdminLayout
+@attribute [Authorize]
+@inject DaAPIService service
+@inject LayoutService _layoutService
+@inject IModalService _modalService
+@inject IToastService _toastService
+@inject IStringLocalizer<NotificationPipelinesPage> L
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Default box -->
+            <div class="card">
+                <div class="card-header border-0 d-flex flex-row align-items-center">
+                    <h3 class="card-title"> @L["Headline"] </h3>
+                    <span class="flex-fill"></span>
+                    <div class="card-tools">
+                        <NavLink href="/pipelines/create" class="btn btn-primary">
+                            <i class="fas fa-plus mr-2"></i>
+                            @L["NewPipelineButtonCaption"]
+                        </NavLink>
+                    </div>
+                </div>
+                <div class="card-body table-responsive p-0">
+                    <LoadingWhileContentNull Item="_items">
+                        <table class="table table-striped table-valign-middle">
+                            <thead>
+                                <tr>
+                                    <th>@L["TableHeaderName"]</th>
+                                    <th>@L["TableHeaderTrigger"]</th>
+                                    <th>@L["TableHeaderCondition"]</th>
+                                    <th>@L["TableHeaderActor"]</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in _items)
+                                {
+                                    <tr>
+                                        <td>@item.Name</td>
+                                        <td><NotificationTriggerDisplay Typename="@item.TrigerName" /></td>
+                                        <td><NotificationConditionDisplay ContiditionName="@item.ConditionName" /></td>
+                                        <td><NotificationActorDisplay ActorName="@item.ActorName" /></td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button role="button" class="btn btn-default" @onclick="(() => ShowDeleteModal(item))"><i class="fas fa-trash mr-2"></i>@L["DeletePipelineButtonCaption"]</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </LoadingWhileContentNull>
+                </div>
+            </div>
+            <!-- /.card -->
+        </div>
+    </div>
+</div>
+
+@code {
+
+    private ICollection<NotificationPipelineReadModel> _items;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        _layoutService.UpdatePageTitle(L["PageTitle"]);
+        _layoutService.UpdateBreadcrumbs(new BreadcrumbViewModel[] {
+            new BreadcrumbViewModel { Caption = L["BreadcrumbHome"], Link = "dashboard" },
+            new BreadcrumbViewModel { Caption = L["BreadcrumbSelf"], Link = "pipeline" }
+        });
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _items = (await service.GetNotifactionPipelines())?.ToList();
+
+        await base.OnInitializedAsync();
+    }
+
+    public async Task ShowDeleteModal(NotificationPipelineReadModel item)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(DeleteNotificationPipelineModal.Item), item);
+
+        var messageForm = _modalService.Show<DeleteNotificationPipelineModal>($"{L["DeletePipelineModalTitle"]} {item.Name}", parameters);
+        var result = await messageForm.Result;
+
+        if (result.Cancelled == false && result.Data is Boolean && (Boolean)result.Data == true)
+        {
+            _toastService.ShowSuccess(String.Format(L["DeletePipelineSucessContent"], item.Name), L["DeletePipelineSuccessTitle"]);
+            _items.Remove(item);
+        }
+    }
+
+}

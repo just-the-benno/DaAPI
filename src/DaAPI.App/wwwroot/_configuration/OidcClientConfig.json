@@ -1,0 +1,8 @@
+{
+  "authority": "https://localhost:5001",
+  "client_id": "daapi-app",
+  "redirect_uri": "https://localhost:5001/authentication/login-callback",
+  "post_logout_redirect_uri": "https://localhost:5001/authentication/logout-callback",
+  "response_type": "code",
+  "scope": "daapi openid profile"
+}

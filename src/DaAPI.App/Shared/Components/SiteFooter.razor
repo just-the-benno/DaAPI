@@ -1,0 +1,23 @@
+﻿@using System.Reflection
+
+<footer class="main-footer">
+    <!-- To the right -->
+    <div class="float-right d-none d-sm-inline">
+        <span>
+            Version: @_version
+        </span>
+        <br />
+        <span>
+            Layout based on <a href="https://github.com/ColorlibHQ/AdminLTE" target="_blank">AdminLTE</a> 
+        </span>
+    </div>
+    <!-- Default to the left -->
+    <strong><a href="https://github.com/just-the-benno/daapi" target="_blank">DaAPI</a></strong> | DHCP and API.
+</footer>
+
+@code {
+
+    private String _version = typeof(SiteFooter).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version;
+    private String _runtimeVersion = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription;
+
+}

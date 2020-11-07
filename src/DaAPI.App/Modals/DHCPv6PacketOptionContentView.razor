@@ -1,0 +1,200 @@
+﻿@using DaAPI.Core.Packets.DHCPv6
+
+@inject DHCPv6PacketOptionCodeToNameConverter _codeToNameConverter
+@inject IStringLocalizer<DHCPv6PacketOptionContentView> L
+
+@switch (Option)
+{
+    case DHCPv6PacketIdentifierOption castedOption:
+        <DUIDView Item="castedOption.DUID" />
+        break;
+    case DHCPv6PacketReconfigureOption castedOption:
+        <span>@castedOption.MessageType</span>
+        break;
+
+    case DHCPv6PacketIdentityAssociationNonTemporaryAddressesOption castedOption:
+        <dl class="row">
+            <dt class="col-sm-2">@L["NonTemporaryAddressesOption_Identifier"]</dt>
+            <dd class="col-sm-10">@castedOption.Id</dd>
+            <dt class="col-sm-2">@L["NonTemporaryAddressesOption_T1"]</dt>
+            <dd class="col-sm-10">@castedOption.T1</dd>
+            <dt class="col-sm-2">@L["NonTemporaryAddressesOption_T2"]</dt>
+            <dd class="col-sm-10">@castedOption.T2</dd>
+            <dt class="col-sm-2">@L["NonTemporaryAddressesOption_Suboptions"]</dt>
+            <dd class="col-sm-10">
+                @if (castedOption.Suboptions.Any())
+                {
+                    <dl class="row">
+                        @foreach (var item in castedOption.Suboptions.OfType<DHCPv6PacketIdentityAssociationAddressSuboption>())
+                        {
+                            <DHCPv6PacketIdentityAssociationAddressSuboptionView Item="item" />
+                        }
+                    </dl>
+                }
+                else
+                {
+                    <span>@L["NonTemporaryAddressesOption_NoSuboptions"]</span>
+                }
+            </dd>
+        </dl>
+        break;
+    case DHCPv6PacketIdentityAssociationTemporaryAddressesOption castedOption:
+        <dl class="row">
+            <dt class="col-sm-2">@L["TemporaryAddressesOption_Identifier"]</dt>
+            <dd class="col-sm-10">@castedOption.Id</dd>
+            <dt class="col-sm-2">@L["TemporaryAddressesOption_Suboptions"]</dt>
+            <dd class="col-sm-10">
+                @if (castedOption.Suboptions.Any())
+                {
+                <dl class="row">
+                    @foreach (var item in castedOption.Suboptions.OfType<DHCPv6PacketIdentityAssociationAddressSuboption>())
+                    {
+                        <DHCPv6PacketIdentityAssociationAddressSuboptionView Item="item" />
+                    }
+                </dl>
+                }
+                else
+                {
+                    <span>@L["TemporaryAddressesOption_NoSuboptions"]</span>
+                }
+            </dd>
+        </dl>
+        break;
+    case DHCPv6PacketIdentityAssociationPrefixDelegationOption castedOption:
+        <dl class="row">
+            <dt class="col-sm-2">@L["PrefixDelegationOption_Identifier"]</dt>
+            <dd class="col-sm-10">@castedOption.Id</dd>
+            <dt class="col-sm-2">@L["PrefixDelegationOption_T1"]</dt>
+            <dd class="col-sm-10">@castedOption.T1</dd>
+            <dt class="col-sm-2">@L["PrefixDelegationOption_T2"]</dt>
+            <dd class="col-sm-10">@castedOption.T2</dd>
+            <dt class="col-sm-2">@L["PrefixDelegationOption_Suboptions"]</dt>
+            <dd class="col-sm-10">
+                @if (castedOption.Suboptions.Any())
+                {
+                    <dl class="row">
+                        @foreach (var item in castedOption.Suboptions.OfType<DHCPv6PacketIdentityAssociationPrefixDelegationSuboption>())
+                        {
+                            <dt class="col-sm-2">@L["PrefixDelegationSuboption_Prefix"]</dt>
+                            <dd class="col-sm-10"><span>@item.Address</span>/<span>@item.PrefixLength</span></dd>
+                            <dt class="col-sm-2">@L["PrefixDelegationSuboption_ValidLifetime"]</dt>
+                            <dd class="col-sm-10">@item.PreferredLifetime</dd>
+                            <dt class="col-sm-2">@L["PrefixDelegationSuboption_PreferredLifetime"]</dt>
+                            <dd class="col-sm-10">@item.ValidLifetime</dd>
+                            <dt class="col-sm-2">@L["PrefixDelegationSuboption_Suboptions"]</dt>
+                            <dd class="col-sm-10">
+                                @if (item.Suboptions.Any())
+                                {
+                                    <dl class="row">
+                                        @foreach (var subItem in item.Suboptions.OfType<DHCPv6PacketStatusCodeSuboption>())
+                                        {
+                                            <DHCPv6PacketStatusCodeSuboptionView Item="subItem" />
+                                        }
+                                    </dl>
+                                }
+                                else
+                                {
+                                    <span>@L["PrefixDelegationSuboption_NoSuboptions"]</span>
+                                }
+                            </dd>
+                        }
+                    </dl>
+                }
+                else
+                {
+                    <span>@L["PrefixDelegationOption_NoSuboptions"]</span>
+                }
+            </dd>
+        </dl>
+        break;
+    case DHCPv6PacketOptionRequestOption castedOption:
+        <ul class="list-unstyled">
+            @foreach (var item in castedOption.RequestedOptions)
+            {
+                <li>@_codeToNameConverter.GetName(@item)</li>
+            }
+        </ul>
+        break;
+    case DHCPv6PacketIPAddressListOption castedOption:
+        <ul class="list-unstyled">
+            @foreach (var item in castedOption.Addresses)
+            {
+                <li>@item</li>
+            }
+        </ul>
+        break;
+    case DHCPv6PacketByteOption castedOption:
+        <span>@castedOption.Value</span>
+        break;
+    case DHCPv6PacketTimeOption castedOption:
+        <span>@castedOption.Value</span>
+        break;
+    case DHCPv6PacketIPAddressOption castedOption:
+        <span>@castedOption.Address</span>
+        break;
+    case DHCPv6PacketTrueOption castedOption:
+        <i class="fas fa-check"></i>
+        break;
+    case DHCPv6PacketRemoteIdentifierOption castedOption:
+        <span>@DaAPI.Core.Common.ByteHelper.ToString(castedOption.Value)</span>
+        break;
+    case DHCPv6PacketUInt32Option castedOption:
+        <span>@castedOption.Value</span>
+        break;
+    case DHCPv6PacketUInt16Option castedOption:
+        <span>@castedOption.Value</span>
+        break;
+    case DHCPv6PacketUserClassOption castedOption:
+        <ul class="list-unstyled">
+            @foreach (var item in castedOption.UserClassData)
+            {
+                <li>@DaAPI.Core.Common.ByteHelper.ToString(item)</li>
+            }
+        </ul>
+        break;
+    case DHCPv6PacketVendorClassOption castedOption:
+        <dl class="row">
+            <dt class="col-sm-2">@L["DHCPv6PacketVendorClassOption_Enterprise"]</dt>
+            <dd class="col-sm-10">@castedOption.EnterpriseNumber</dd>
+            <dt class="col-sm-2">@L["DHCPv6PacketVendorClassOption_Data"]</dt>
+            <dd class="col-sm-10">
+                <ul class="list-unstyled">
+                    @foreach (var item in castedOption.VendorClassData)
+                    {
+                        <li>@DaAPI.Core.Common.ByteHelper.ToString(item)</li>
+                    }
+                </ul>
+            </dd>
+        </dl>
+        break;
+    case DHCPv6PacketVendorSpecificInformationOption castedOption:
+        <dl class="row">
+            <dt class="col-sm-2">@L["VendorSpecificInformationOption_Enterprise"]</dt>
+            <dd class="col-sm-10">@castedOption.EnterpriseNumber</dd>
+            <dt class="col-sm-2">@L["VendorSpecificInformationOption_Data"]</dt>
+            <dd class="col-sm-10">
+                <dl class="row">
+                    @foreach (var item in castedOption.Options)
+                    {
+                        <dt class="col-sm-2">@L["DHCPv6VendorOptionData_Code"]</dt>
+                        <dd class="col-sm-10">@item.Code</dd>
+                        <dt class="col-sm-2">@L["DHCPv6VendorOptionData_Data"]</dt>
+                        <dd class="col-sm-10">@DaAPI.Core.Common.ByteHelper.ToString(@item.Data)</dd>
+                    }
+                </dl>
+            </dd>
+        </dl>
+        break;
+    case DHCPv6PacketByteArrayOption castedOption:
+        <span>@DaAPI.Core.Common.ByteHelper.ToString(castedOption.Data)</span>
+        break;
+
+    default:
+        break;
+}
+
+
+@code {
+    [Parameter] public DHCPv6PacketOption Option { get; set; }
+
+}

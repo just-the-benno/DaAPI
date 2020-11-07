@@ -1,0 +1,9 @@
+﻿@inject IStringLocalizer<NotificationConditionDisplay> L
+
+@L[ContiditionName ?? String.Empty]
+
+@code {
+
+    [Parameter]public String ContiditionName { get; set; }
+
+}

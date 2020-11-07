@@ -1,0 +1,12 @@
+﻿@using DaAPI.Core.Packets.DHCPv6
+
+@inject IStringLocalizer<DHCPv6PacketStatusCodeSuboptionView> L
+
+<dt class="col-sm-2">@L["StatusCodeSuboption_Status"]</dt>
+<dd class="col-sm-10">@Item.StatusCode</dd>
+<dt class="col-sm-2">@L["StatusCodeSuboption_Message"]</dt>
+<dd class="col-sm-10">@Item.Message</dd>
+
+@code {
+    [Parameter] public DHCPv6PacketStatusCodeSuboption Item { get; set; }
+}

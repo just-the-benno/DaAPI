@@ -1,0 +1,25 @@
+﻿
+    <BSButton Id="@_id" @onclick="onclick" Color="Color.Light" Size="Size.Small"><i class="fas fa-question-circle"></i></BSButton>
+    <BSPopover Target="@_id" IsOpen="@_isOpen" Placement="Placement.Right">
+        <BSPopoverHeader>@Title</BSPopoverHeader>
+        <BSPopoverBody>@Content</BSPopoverBody>
+    </BSPopover>
+
+
+@code {
+
+    private String _id = Guid.NewGuid().ToString();
+
+    private Boolean _isOpen;
+
+    [Parameter] public String Title { get; set; } = "Info";
+
+    [Parameter] public String Content { get; set; } = String.Empty;
+
+    void onclick(MouseEventArgs e)
+    {
+        _isOpen = !_isOpen;
+        StateHasChanged();
+    }
+
+}

@@ -1,0 +1,40 @@
+﻿
+@if (Value.HasValue == true)
+{
+    <span>
+        @if (Value.Value.Days > 0)
+        {
+            <span>@Value.Value.Days @DaysCaption</span>
+        }
+        @if (Value.Value.Hours > 0)
+        {
+            <span>@Value.Value.Hours @HoursCaption</span>
+        }
+        @if (Value.Value.Minutes > 0)
+        {
+            <span>@Value.Value.Minutes @MinutesCaption</span>
+        }
+        @if (Value.Value.Seconds > 0)
+        {
+            <span>@Value.Value.Seconds @SecondsCaption</span>
+        }
+
+    </span>
+}
+
+@code {
+    [Parameter]
+    public TimeSpan? Value { get; set; }
+
+    [Parameter]
+    public String DaysCaption { get; set; } = "days";
+
+    [Parameter]
+    public String HoursCaption { get; set; } = "hours";
+
+    [Parameter]
+    public String MinutesCaption { get; set; } = "minutes";
+
+    [Parameter]
+    public String SecondsCaption { get; set; } = "seconds";
+}

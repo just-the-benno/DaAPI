@@ -1,0 +1,9 @@
+﻿@inject IStringLocalizer<NotificationTriggerDisplay> L
+
+@L[Typename ?? String.Empty]
+
+@code {
+
+    [Parameter]public String Typename { get; set; }
+
+}

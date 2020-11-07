@@ -1,0 +1,101 @@
+﻿@model LoginViewModel
+
+
+<div class="login-page flex-fill heigth-auto">
+    <div class="d-flex flex-md-row flex-column justify-content-center">
+        <partial name="_ValidationSummary" />
+
+        @if (Model.EnableLocalLogin)
+        {
+            <div class="card">
+                <div class="card-header">
+                    <h2>Login</h2>
+                </div>
+                <div class="card-body login-card-body">
+                    <p class="login-box-msg">Sign in to get access to DaAPI</p>
+                    <form asp-route="Login">
+                        <input type="hidden" asp-for="ReturnUrl" />
+
+                        <div class="input-group mb-3">
+                            <input type="text" asp-for="Username" class="form-control" placeholder="Username">
+
+                            <div class="input-group-append">
+                                <div class="input-group-text">
+                                    <span class="fas fa-user"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="input-group mb-3">
+                            <input type="password" asp-for="Password" class="form-control" placeholder="Password">
+                            <div class="input-group-append">
+                                <div class="input-group-text">
+                                    <span class="fas fa-lock"></span>
+                                </div>
+                            </div>
+                        </div>
+                        @if (Model.AllowRememberLogin)
+                        {
+                            <div class="icheck-primary">
+                                <input asp-for="RememberLogin" type="checkbox">
+                                <label asp-for="RememberLogin">
+                                    Remember Me
+                                </label>
+                            </div>
+                        }
+
+                        <div class="d-flex flex-row">
+                            <button type="submit" class="px-3 d-flex btn btn-default" name="button" value="cancel">Cancel</button>
+                            <div class="d-flex flex-fill"> </div>
+                            <!-- /.col -->
+                            <button type="submit" class="px-3 d-flex btn btn-primary" name="button" value="login">Login</button>
+                        </div>
+                        <!-- /.col -->
+                    </form>
+
+                </div>
+                <!-- /.login-card-body -->
+            </div>
+        }
+        else
+        {
+            @if (Model.VisibleExternalProviders.Any())
+            {
+                <div class="col-md-6 col-sm-6 external-providers">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">External Login</h3>
+                        </div>
+                        <div class="panel-body">
+                            <ul class="list-inline">
+                                @foreach (var provider in Model.VisibleExternalProviders)
+                                {
+                                    <li>
+                                        <a class="btn btn-default"
+                                           asp-controller="External"
+                                           asp-action="Challenge"
+                                           asp-route-provider="@provider.AuthenticationScheme"
+                                           asp-route-returnUrl="@Model.ReturnUrl">
+                                            @provider.DisplayName
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (!Model.EnableLocalLogin && !Model.VisibleExternalProviders.Any())
+            {
+                <div class="alert alert-warning">
+                    <strong>Invalid login request</strong>
+                    There are no login schemes configured for this client.
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@section Scripts {
+
+}

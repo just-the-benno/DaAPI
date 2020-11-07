@@ -1,0 +1,79 @@
+﻿
+@page "/scopes/dhcpv6"
+@layout AdminLayout
+@attribute [Authorize]
+@inject DaAPIService service
+@inject LayoutService _layoutService
+@inject IModalService _modalService
+@inject IToastService _toastService
+@inject IStringLocalizer<DHCPv6ScopesPage> L 
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Default box -->
+            <div class="card">
+                <div class="card-header border-0 d-flex flex-row align-items-center">
+                    <h3 class="card-title">@L["Headline"]</h3>
+                    <span class="flex-fill"></span>
+                    <div class="card-tools">
+                        <NavLink href="scopes/dhcpv6/create" class="btn btn-primary">
+                            <i class="fas fa-plus mr-2"></i>
+                            @L["NewScopeButtonCaption"]
+                        </NavLink>
+                    </div>
+                </div>
+                <div class="card-body table-responsive p-0">
+                    <LoadingWhileContentNull Item="_scopes">
+                        <ul class="nav nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" data-accordion="false">
+                            @foreach (var item in _scopes)
+                            {
+                                <ScopeTreeItem Item="item" DeleteExecutor="ShowDeleteModal" />
+                            }
+                        </ul>
+                    </LoadingWhileContentNull>
+                </div>
+            </div>
+            <!-- /.card -->
+        </div>
+    </div>
+</div>
+
+@code {
+
+    private IEnumerable<ScopeTreeViewItem> _scopes;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        _layoutService.UpdatePageTitle(L["PageTitle"]);
+        _layoutService.UpdateBreadcrumbs(new BreadcrumbViewModel[] {
+            new BreadcrumbViewModel { Caption = L["BreadcrumbHomeCaption"], Link = "dashboard" },
+            new BreadcrumbViewModel { Caption = L["BreadcrumbSelfCaption"], Link = "scopes/dhcpv6" } });
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _scopes = await service.GetScopesAsTree();
+
+        await base.OnInitializedAsync();
+    }
+
+    public async Task ShowDeleteModal(ScopeTreeViewItem item)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(DeleteDHCPv6ScopeModal.Entry), item);
+
+        var messageForm = _modalService.Show<DeleteDHCPv6ScopeModal>(String.Format(L["DeleteScopeModalHeader"],item.Name), parameters);
+        var result = await messageForm.Result;
+
+        if (result.Cancelled == false && result.Data is Boolean && (Boolean)result.Data == true)
+        {
+            _toastService.ShowSuccess(String.Format(L["DeleteScopeSuccessText"],item.Name), L["DeleteScopeSuccessCaption"]) ;
+            _scopes = null;
+            StateHasChanged();
+            _scopes = await service.GetScopesAsTree();
+            StateHasChanged();
+        }
+    }
+}

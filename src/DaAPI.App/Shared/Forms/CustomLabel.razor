@@ -1,0 +1,56 @@
+﻿@*thanks to https://stackoverflow.com/questions/57202354/how-to-get-display-name-on-the-label-of-in-blazors-razor-page*@
+
+@using System.Reflection
+@using System.ComponentModel.DataAnnotations
+@using System.Linq.Expressions;
+@typeparam T
+
+@if (ChildContent == null)
+{
+    <label @attributes="AdditionalAttributes" for="@GetPropertyName()">@label</label>
+}
+else
+{
+    <label @attributes="AdditionalAttributes" for="@GetPropertyName()">
+        @label
+        @ChildContent
+    </label>
+}
+
+@code {
+    [Parameter] public Expression<Func<T>> For { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object> AdditionalAttributes { get; set; }
+
+    private string label => GetDisplayName();
+
+    private String GetPropertyName()
+    {
+        var expression = (MemberExpression)For.Body;
+        return expression.Member.Name;
+    }
+
+    private string GetDisplayName()
+    {
+        var expression = (MemberExpression)For.Body;
+
+        var value = expression.Member.GetCustomAttribute(typeof(DisplayAttribute)) as DisplayAttribute;
+
+        if (value != null && value.ResourceType != null)
+        {
+            String name = value.Name;
+            var member = value.ResourceType.GetProperty(name, BindingFlags.Static | BindingFlags.Public);
+            if (member == null) { return ""; }
+
+            return (String)member.GetValue(null, null);
+        }
+        else
+        {
+            return value?.Name ?? expression.Member.Name ?? "";
+
+        }
+
+    }
+}

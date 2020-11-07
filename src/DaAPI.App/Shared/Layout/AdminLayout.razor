@@ -1,0 +1,206 @@
+﻿@inherits LayoutComponentBase
+
+@inject IStringLocalizer<AdminLayout> L
+
+@layout MainLayout
+    <!-- Site wrapper -->
+<div class="wrapper">
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <!-- Left navbar links -->
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
+        </ul>
+    </nav>
+    <!-- /.navbar -->
+
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <!-- Brand Logo -->
+        <a href="/dashboard" class="brand-link">
+            @*<img src="../../dist/img/AdminLTELogo.png"
+        alt="AdminLTE Logo"
+        class="brand-image img-circle elevation-3"
+        style="opacity: .8">*@
+
+            <span class="brand-text font-weight-light">DaAPI</span>
+        </a>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Sidebar user (optional) -->
+            <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                @*<div class="image">
+            <img src="../../dist/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
+        </div>*@
+                <LoginDisplay />
+            </div>
+
+            <!-- Sidebar Menu -->
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                    <!-- Add icons to the links using the .nav-icon class
+                    with font-awesome or any other icon font library -->
+
+                    <NavItems Groups="_sideNavMenu" />
+                </ul>
+            </nav>
+            <!-- /.sidebar-menu -->
+        </div>
+        <!-- /.sidebar -->
+    </aside>
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <PageTitle />
+                    </div>
+                    <div class="col-sm-6">
+                        <Breadcrumbs />
+                    </div>
+                </div>
+            </div><!-- /.container-fluid -->
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+            @Body
+        </section>
+        <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+
+    <SiteFooter />
+
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+        <!-- Control sidebar content goes here -->
+    </aside>
+    <!-- /.control-sidebar -->
+</div>
+<!-- ./wrapper -->
+
+
+@code
+{
+    #region Fields
+
+    [Inject]
+    private IJSRuntime _jsRuntime { get; set; }
+
+    private IEnumerable<NavItemGroupViewModel> _sideNavMenu;
+
+    #endregion
+
+    #region Properties
+
+
+    #endregion
+
+    #region Constructor and Life cycle
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        _sideNavMenu = new List<NavItemGroupViewModel>
+            {
+                new NavItemGroupViewModel
+                {
+                    Caption = L["MenuMainMenuCaption"],
+                    DisplayCaption = false,
+                    NavItems = new List<NavItemViewModel>
+                    {
+                        new NavItemViewModel
+                        {
+                            Link = "Dashboard",
+                            IconClass = "fas fa-tachometer-alt",
+                            Caption = L["MenuMainDashboardCaption"],
+                            NotifictionAmount = 0,
+                        },
+                        new NavItemViewModel
+                        {
+                            Link = "users",
+                            IconClass = "fas fa-users",
+                            Caption = L["MenuMainUsersCaption"],
+                            NotifictionAmount = 0,
+                        },
+                        new NavItemViewModel
+                        {
+                            Link = "pipelines",
+                            IconClass = "fas fa-bell",
+                            Caption = L["MenuMainPipelinesCaption"],
+                            NotifictionAmount = 0,
+                        },
+                        //new NavItemViewModel
+                        //{
+                        //    Link = "test3",
+                        //    IconClass = "far fa-envelope",
+                        //    Caption = "Mailbox",
+                        //    NotifictionAmount = 0,
+                        //    SubItems = new List<NavItemViewModel>
+                        //    {
+                        //        new NavItemViewModel
+                        //        {
+                        //            Link = "/test2/blub2",
+                        //            IconClass = "far fa-circle nav-icon",
+                        //            Caption = "Inbox",
+                        //            NotifictionAmount = 0,
+                        //        },
+                        //        new NavItemViewModel
+                        //        {
+                        //            Link = "/test2/blub4",
+                        //            IconClass = "far fa-circle nav-icon",
+                        //            Caption = "Compose",
+                        //            NotifictionAmount = 0,
+                        //        },
+                        //    }
+                        //},
+                    }
+                },
+                new NavItemGroupViewModel
+                {
+                    Caption = L["DHCPv6MenuMainCaption"],
+                    DisplayCaption = true,
+                    NavItems = new List<NavItemViewModel>
+                    {
+                        new NavItemViewModel
+                        {
+                            Link = "interfaces/dhcpv6",
+                            IconClass = "fas fa-network-wired",
+                            Caption = L["DHCPv6MenuInterfacesCaption"],
+                            NotifictionAmount = 0,
+                        },
+                        new NavItemViewModel
+                        {
+                            Link = "scopes/dhcpv6",
+                            IconClass = "fas fa-project-diagram",
+                            Caption = L["DHCPv6MenuScopesCaption"],
+                            NotifictionAmount = 0,
+                        },
+                    }
+                }
+            };
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _jsRuntime.InvokeVoidAsync("InitAdminLayout");
+        }
+    }
+
+    #endregion
+
+    #region Methods
+
+
+    #endregion
+
+}

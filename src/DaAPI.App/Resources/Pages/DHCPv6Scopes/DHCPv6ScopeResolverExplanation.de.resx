@@ -1,0 +1,264 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="DHCPv6ClientDUIDResolver_ClientDuid_Caption" xml:space="preserve">
+    <value>Client DUID</value>
+  </data>
+  <data name="DHCPv6ClientDUIDResolver_ClientDuid_Content" xml:space="preserve">
+    <value>Die Bytefolge (ohne weitere Zeichen und ohne 0x) der DUID des Clients. Diese muss auch mit dem DUID Identifizierungsfolge, etwa 0003 für L2 Adresse starten</value>
+  </data>
+  <data name="DHCPv6ClientDUIDResolver_DHCPv6ClientDUIDResolver_Caption" xml:space="preserve">
+    <value>Client DUID</value>
+  </data>
+  <data name="DHCPv6ClientDUIDResolver_DHCPv6ClientDUIDResolver_Content" xml:space="preserve">
+    <value>Prüft ob die Nachricht von einem bestimmten DHCPv6 Client aus versendet wurde. Der Client wir dabei anhand seiner DUID identifiziert. Dies kann genutzt werden um dem selben Client immer die selbe Adresse zuzuweisen</value>
+  </data>
+  <data name="DHCPv6MilegateResolver_DHCPv6MilegateResolver_Caption" xml:space="preserve">
+    <value>DHCPv6 Milegate</value>
+  </data>
+  <data name="DHCPv6MilegateResolver_DHCPv6MilegateResolver_Content" xml:space="preserve">
+    <value>Dieser Zuordner kann für Milegate Geräte des Herstellers Keymile verwendet werden. Diese Geräte erlauben es einen Text einzugeben, der dann in die remote-id Option geschrieben wird. Dieser Zuordner prüft ob eine eingehende Nachricht exakt diesen Wert aufweist.</value>
+  </data>
+  <data name="DHCPv6MilegateResolver_Index_Caption" xml:space="preserve">
+    <value>Relay-Agent-Index</value>
+  </data>
+  <data name="DHCPv6MilegateResolver_Index_Content" xml:space="preserve">
+    <value>Dieser Wert gibt an, dass eine Übereinstimmung an der Stelle eines bestimmten Relay Agent zutreffen muss. Der Relay Agent mit dem Index 0 ist der dem Client am nächsten. Ein Relay Agent mit dem Index 1 ist der zweite Relay Agent auf dem zum Server</value>
+  </data>
+  <data name="DHCPv6MilegateResolver_IsCaseSenstiveMatch_Caption" xml:space="preserve">
+    <value>Übereinstimmung soll Groß- und Kleinschreibung prüfen</value>
+  </data>
+  <data name="DHCPv6MilegateResolver_IsCaseSenstiveMatch_Content" xml:space="preserve">
+    <value>Diese Option wird als Text interpretiert. Wenn diese Eigenschaft  aktiviert ist und ene Option den Wert "eth1/001 INTERface 1" hat, wird dies nicht mit dem eingehenden Wert von "eth1/001 interface 1" übereinstimmen. Wenn diese Option jedoch nicht aktiv ist, wird die Groß- und Kleinschreibung ignoriert.</value>
+  </data>
+  <data name="DHCPv6MilegateResolver_Value_Caption" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="DHCPv6MilegateResolver_Value_Content" xml:space="preserve">
+    <value>Hierbei handet es sich um den eigentlich Wert der eigefügten Option. Für gewöhnlich ist dies etwa "eth1/001 interface 1". Es kann jedoch auch jeder anderer Wert gewählt werden.</value>
+  </data>
+  <data name="DHCPv6PeerAddressResolver_DHCPv6PeerAddressResolver_Caption" xml:space="preserve">
+    <value>Peer Adresse</value>
+  </data>
+  <data name="DHCPv6PeerAddressResolver_DHCPv6PeerAddressResolver_Content" xml:space="preserve">
+    <value>Diese Zuordner prüft ob der Wert der Eigenschaft "peer address" in irgendeinem Relay Packet den eingegeben Wert hat.</value>
+  </data>
+  <data name="DHCPv6PeerAddressResolver_IsUnique_Caption" xml:space="preserve">
+    <value>Ist einzigartig</value>
+  </data>
+  <data name="DHCPv6PeerAddressResolver_IsUnique_Content" xml:space="preserve">
+    <value>Wenn diese Eigenshaft aktiviert ist, wird die Peer Adress als einzigartig betrachtet. Dies in Verbindung mit der Option "Wiederverwenden der Adresse" führt dazu, dass ein Lease von der selben Peer Adress auch dann neuvergeben wird, wenn es eine andere Client DUID hat. Ist die Eigenschaft deaktiviert, wird ein neues Lease generiert.</value>
+  </data>
+  <data name="DHCPv6PeerAddressResolver_PeerAddress_Caption" xml:space="preserve">
+    <value>Eigenschaft: Peer Adresse</value>
+  </data>
+  <data name="DHCPv6PeerAddressResolver_PeerAddress_Content" xml:space="preserve">
+    <value>Die Peer Adresse (in den meisten Fällen, die Link Lokale Adresse) die einen Treffer für diesen Zuordner bedeutet. Jegliche gültige IPv6 Adresse kann hier eingetragen werden</value>
+  </data>
+  <data name="DHCPv6PseudoResolver_DHCPv6PseudoResolver_Caption" xml:space="preserve">
+    <value>Pseudo Zuordner</value>
+  </data>
+  <data name="DHCPv6PseudoResolver_DHCPv6PseudoResolver_Content" xml:space="preserve">
+    <value>Der Pseudo-Zuordner wird immer als gültig betrachetet, egal für welches Paket. Er kann genutzt werden um Bereiche mit gleichen Eigenschaften zu gruppieren. Im Gegensatz zu anderen DHCP Servern, kann man bei DaAPI keine globalen Eigenschaften setzen. Stattdessen, kann ein Wurzelbereich erstellt werden. Werden diesem dann Kindbereiche zugeordnet, werden die Eigenschaften vererbt. Da der Pseudo-Zuordner immer wahr ist, können spezifischere Zuordner für Kindbereiche gewählt werden. Um mehr über das Konzept des Bereichtsbaum zu erfahren, lesen sie in der DaAPI documentation nach.</value>
+  </data>
+  <data name="DHCPv6RelayAgentResolver_DHCPv6RelayAgentResolver_Caption" xml:space="preserve">
+    <value>Relay Agent Adress</value>
+  </data>
+  <data name="DHCPv6RelayAgentResolver_DHCPv6RelayAgentResolver_Content" xml:space="preserve">
+    <value>Der Relay Agent Adress Zuordnen prüft ob die Nachricht exakt von der genannten Adressse verschickt wurde</value>
+  </data>
+  <data name="DHCPv6RelayAgentResolver_RelayAgentAddress_Caption" xml:space="preserve">
+    <value>Relay Agent Adress</value>
+  </data>
+  <data name="DHCPv6RelayAgentResolver_RelayAgentAddress_Content" xml:space="preserve">
+    <value>Die Adresse des erwarteten Realy Agent</value>
+  </data>
+  <data name="DHCPv6RelayAgentSubnetResolver_DHCPv6RelayAgentSubnetResolver_Caption" xml:space="preserve">
+    <value>Relay Agent Subnetz</value>
+  </data>
+  <data name="DHCPv6RelayAgentSubnetResolver_DHCPv6RelayAgentSubnetResolver_Content" xml:space="preserve">
+    <value>Diese Zuordner prüft ob die Quelle der DHCPv6 Nachricht in einem bestimmten Subnetz liegt</value>
+  </data>
+  <data name="DHCPv6RelayAgentSubnetResolver_NetworkAddress_Caption" xml:space="preserve">
+    <value>Netzwerkadresse</value>
+  </data>
+  <data name="DHCPv6RelayAgentSubnetResolver_NetworkAddress_Content" xml:space="preserve">
+    <value>Das Subnetz von dem gewünschten Relay Agent</value>
+  </data>
+  <data name="DHCPv6RelayAgentSubnetResolver_SubnetMask_Caption" xml:space="preserve">
+    <value>Subnetzmaske</value>
+  </data>
+  <data name="DHCPv6RelayAgentSubnetResolver_SubnetMask_Content" xml:space="preserve">
+    <value>Die Subnetzmaske (0...128) für das korrespondierende Netz</value>
+  </data>
+  <data name="DHCPv6RemoteIdentifierEnterpriseNumberResolver_DHCPv6RemoteIdentifierEnterpriseNumberResolver_Caption" xml:space="preserve">
+    <value>DHCPv6 Remote identifier Enterprise Number</value>
+  </data>
+  <data name="DHCPv6RemoteIdentifierEnterpriseNumberResolver_DHCPv6RemoteIdentifierEnterpriseNumberResolver_Content" xml:space="preserve">
+    <value>Prüft ob die Enterprise Nummer in der remote identifier Option den angegebene Wert hat. Eine einfaches Anwendungszenario dafür zu prüfen, ob ein Gerät von einer bestimmten Organisation hergestellt wurde. Für weitere Details nehmen Sie die Dokumentation zur Hand.</value>
+  </data>
+  <data name="DHCPv6RemoteIdentifierEnterpriseNumberResolver_EnterpriseNumber_Caption" xml:space="preserve">
+    <value>Enterprise Nummer</value>
+  </data>
+  <data name="DHCPv6RemoteIdentifierEnterpriseNumberResolver_EnterpriseNumber_Content" xml:space="preserve">
+    <value>Füge die Nummer der Organisation ein, die von der IANA zugewiesen wurde.</value>
+  </data>
+  <data name="DHCPv6RemoteIdentifierEnterpriseNumberResolver_RelayAgentIndex_Caption" xml:space="preserve">
+    <value>Relay Agent Index</value>
+  </data>
+  <data name="DHCPv6RemoteIdentifierEnterpriseNumberResolver_RelayAgentIndex_Content" xml:space="preserve">
+    <value>Dieser Wert gibt an, dass eine Übereinstimmung an der Stelle eines bestimmten Relay Agent zutreffen muss. Der Relay Agent mit dem Index 0 ist der dem Client am nächsten. Ein Relay Agent mit dem Index 1 ist der zweite Relay Agent auf dem zum Server</value>
+  </data>
+  <data name="DHCPv6SimpleZyxelIESResolver_DeviceMacAddress_Caption" xml:space="preserve">
+    <value>MAC Adresse des Gerätes</value>
+  </data>
+  <data name="DHCPv6SimpleZyxelIESResolver_DeviceMacAddress_Content" xml:space="preserve">
+    <value>Fügen Sie die MAC Adresse des Zyxel Gerätes ohne 0x oder andere Zeichen ein. Um die MAC Adresse auszulesen schauen Sie auf die System Informations Seite oder benutzen Sie die CLI</value>
+  </data>
+  <data name="DHCPv6SimpleZyxelIESResolver_DHCPv6SimpleZyxelIESResolver_Caption" xml:space="preserve">
+    <value>Einfaches Zyxel IES</value>
+  </data>
+  <data name="DHCPv6SimpleZyxelIESResolver_DHCPv6SimpleZyxelIESResolver_Content" xml:space="preserve">
+    <value>Dieser Zuordner kann benutzt werden wenn Zyxel Geräte der  Reihe IES5x oder IES6x von Zyxel as "Layer 2 Relay Agent" (LDRA) verwendet werden. Diese Zuordner erwartet dass die Variablen "%slotid/%portid" als "interface option" und die Variable "%dmac3" als "remote-id" verwendet werden. Für mehr Informationen und ein Konfigurationsbeispiel schauen Sie in der DaAPI Dokumentation nach.</value>
+  </data>
+  <data name="DHCPv6SimpleZyxelIESResolver_Index_Caption" xml:space="preserve">
+    <value>Relay Agent Index</value>
+  </data>
+  <data name="DHCPv6SimpleZyxelIESResolver_Index_Content" xml:space="preserve">
+    <value>Dieser Wert gibt an, dass eine Übereinstimmung an der Stelle eines bestimmten Relay Agent zutreffen muss. Der Relay Agent mit dem Index 0 ist der dem Client am nächsten. Ein Relay Agent mit dem Index 1 ist der zweite Relay Agent auf dem zum Server</value>
+  </data>
+  <data name="DHCPv6SimpleZyxelIESResolver_PortId_Caption" xml:space="preserve">
+    <value>Portnummer</value>
+  </data>
+  <data name="DHCPv6SimpleZyxelIESResolver_PortId_Content" xml:space="preserve">
+    <value>Nummer des Ports, an dem das Gerät bzw. der Kunde angeschlossen sind</value>
+  </data>
+  <data name="DHCPv6SimpleZyxelIESResolver_SlotId_Caption" xml:space="preserve">
+    <value>Schachtnummer</value>
+  </data>
+  <data name="DHCPv6SimpleZyxelIESResolver_SlotId_Content" xml:space="preserve">
+    <value>Die Nummer des Schachtes in dem sich die Schnittstellenkarte befinden, an der das Geräte bzw. der Kunde angeschlossen sind.</value>
+  </data>
+  <data name="PropertyCaption" xml:space="preserve">
+    <value>Eigenschaft</value>
+  </data>
+  <data name="ResolverCaption" xml:space="preserve">
+    <value>Zuordner</value>
+  </data>
+</root>

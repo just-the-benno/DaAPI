@@ -1,0 +1,30 @@
+﻿@using DaAPI.Core.Packets.DHCPv6
+
+@inject IStringLocalizer<DHCPv6PacketIdentityAssociationAddressSuboptionView> L
+
+<dt class="col-sm-2">@L["IdentityAssociationAddressSuboption_Address"]</dt>
+<dd class="col-sm-10">@Item.Address</dd>
+<dt class="col-sm-2">@L["IdentityAssociationAddressSuboption_ValidUntil"]</dt>
+<dd class="col-sm-10">@Item.PreferredLifetime</dd>
+<dt class="col-sm-2">@L["IdentityAssociationAddressSuboption_PreferredLifetime"]</dt>
+<dd class="col-sm-10">@Item.ValidLifetime</dd>
+<dt class="col-sm-2">@L["IdentityAssociationAddressSuboption_Suboptions"]</dt>
+<dd class="col-sm-10">
+    @if (Item.Suboptions.Any())
+    {
+        <dl class="row">
+            @foreach (var subItem in Item.Suboptions.OfType<DHCPv6PacketStatusCodeSuboption>())
+            {
+                <DHCPv6PacketStatusCodeSuboptionView Item="subItem" />
+            }
+        </dl>
+    }
+    else
+    {
+        <span>@L["IdentityAssociationAddressSuboption_NoSuboptions"]</span>
+    }
+</dd>
+
+@code {
+    [Parameter]public DHCPv6PacketIdentityAssociationAddressSuboption Item { get; set; }
+}

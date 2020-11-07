@@ -1,0 +1,9 @@
+﻿@inject IStringLocalizer<NotificationActorDisplay> L
+
+@L[ActorName ?? String.Empty]
+
+@code {
+
+    [Parameter]public String ActorName { get; set; }
+
+}

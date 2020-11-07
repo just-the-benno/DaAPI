@@ -1,0 +1,74 @@
+﻿@inherits AdvancedFormComponent<Boolean>
+@inject DaAPIService _service
+@inject IStringLocalizer<DeleteDHCPv6ScopeModal> L
+
+<CascadingValue Name="DisableFormElements" Value="@_sendingRequestInProgress">
+    <EditForm EditContext="@EditContext" OnValidSubmit="SendDeleteDHCPv6InterfaceRequest">
+        <div class="modal-body">
+            <p>@L["DeleteQuestion"]  @Entry.Name?</p>
+            @if (_serviceErrorOccured)
+            {
+                <div class="alert alert-danger">
+                   @L["DeleteErrorMessage"]
+                </div>
+            }
+            @if (Entry.ChildScopes.Count() > 0)
+            {
+                <div class="form-row">
+                    <div class="icheck-primary">
+                        <BootstrapInputCheckbox @bind-Value="Model" id="deleteChildren" />
+                        <label for="deleteChildren">@L["DeleteChildScopeQuestion"]</label>
+                    </div>
+                </div>
+            }
+
+        </div>
+        <div class="modal-footer">
+            <div class="flex-fill"></div>
+            <button type="button" @onclick="Cancel" class="btn btn-secondary">@L["CancelButtonCaption"]</button>
+            <SendingAwareSubmitFormButton Caption="@L["DeleteButtonCaption"]" ExecutingCaption="@L["DeleteButtonExecutingCaption"]" FormIsSending="_sendingRequestInProgress"  FormIsValid="FormIsValid" />
+        </div>
+    </EditForm>
+</CascadingValue>
+@code {
+
+    #region Fields
+
+    private Boolean _sendingRequestInProgress = false;
+    private Boolean _serviceErrorOccured = false;
+
+    #endregion
+
+    #region Properties
+
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+    [Parameter] public ScopeTreeViewItem Entry { get; set; }
+
+    #endregion
+
+    #region Methods
+
+    public void Cancel() => BlazoredModal.Cancel();
+
+    public async Task SendDeleteDHCPv6InterfaceRequest()
+    {
+        _serviceErrorOccured = false;
+        _sendingRequestInProgress = true;
+
+        Boolean serviceResult = await _service.SendDeleteDHCPv6ScopeRequest(new DHCPv6ScopeDeleteRequest
+        {
+            Id = Entry.Id,
+            IncludeChildren = Model,
+        });
+
+        _serviceErrorOccured = !serviceResult;
+        _sendingRequestInProgress = false;
+        if (serviceResult == true)
+        {
+            await BlazoredModal.Close(ModalResult.Ok<Boolean>(true));
+        }
+    }
+
+    #endregion
+
+}

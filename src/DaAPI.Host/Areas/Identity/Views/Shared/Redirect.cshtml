@@ -1,0 +1,21 @@
+@model RedirectViewModel
+
+
+<div class="login-page flex-fill heigth-auto">
+    <div class="d-flex flex-md-row flex-column justify-content-center">
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Redirection</h2>
+            </div>
+            <div class="card-body login-card-body">
+                <p class="login-box-msg">You are now being returned to the application.</p>
+                <p class="login-box-msg">Once complete, you may close this tab</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<meta http-equiv="refresh" content="0;url=@Model.RedirectUrl" data-url="@Model.RedirectUrl">
+<script src="~/js/signin-redirect.min.js"></script>

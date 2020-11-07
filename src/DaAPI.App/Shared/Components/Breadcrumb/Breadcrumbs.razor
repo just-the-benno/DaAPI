@@ -1,0 +1,44 @@
+﻿@implements IDisposable
+
+@if (Items.Any() == true)
+{
+    <ol class="breadcrumb float-sm-right">
+        @foreach (var item in Items.Take(Items.Count() - 1))
+        {
+            <li class="breadcrumb-item">
+                <NavLink class="breadcrumb-item-link" href="@item.Link">
+                    @item.Caption
+                </NavLink>
+            </li>
+        }
+        <li class="breadcrumb-item active">@Items.Last().Caption</li>
+    </ol>
+}
+
+
+@code {
+    [Inject]
+    private LayoutService _layoutService { get; set; }
+
+    [Parameter]
+    public IEnumerable<BreadcrumbViewModel> Items { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        Items = _layoutService.Breadcrumbs;
+        _layoutService.BreadcrumbsChanged += ChangeBreadcrumbs;
+    }
+
+    void IDisposable.Dispose()
+    {
+        _layoutService.BreadcrumbsChanged -= ChangeBreadcrumbs;
+    }
+
+    protected void ChangeBreadcrumbs(Object sender, EventArgs args)
+    {
+        Items = _layoutService.Breadcrumbs;
+        StateHasChanged();
+    }
+}

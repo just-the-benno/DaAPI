@@ -1,0 +1,16 @@
+﻿
+<li>@Packet.PacketType</li>
+
+@if (Packet is DaAPI.Core.Packets.DHCPv6.DHCPv6RelayPacket)
+{
+    var relayPacket = (DaAPI.Core.Packets.DHCPv6.DHCPv6RelayPacket)Packet;
+
+    <DHCPv6PacketTypeTree Packet="@relayPacket.InnerPacket" />
+}
+
+
+@code {
+
+    [Parameter]
+    public DaAPI.Core.Packets.DHCPv6.DHCPv6Packet Packet { get; set; }
+}

@@ -1,0 +1,104 @@
+﻿@using DaAPI.Core.Packets.DHCPv6
+@inject IStringLocalizer<DHCPv6PacketDetailsModal> L
+
+<div class="modal-scrollable">
+    <div class="modal-body" style="@($"width: {_packetDepth * 275}px")">
+        <DHCPv6PacketView Packet="Packet" />
+    </div>
+</div>
+<div class="modal-footer">
+    <div class="flex-fill"></div>
+    <button type="button" @onclick="Close" class="btn btn-primary">@L["CloseButtonCaption"]</button>
+</div>
+@code {
+
+    #region Fields
+
+    private Int32 _packetDepth;
+
+    #endregion
+
+    #region Properties
+
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+    [Parameter] public DHCPv6Packet Packet { get; set; }
+
+    #endregion
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        if (Packet == null) { return; }
+
+        _packetDepth = 1;
+
+        var innerPacket = Packet;
+        if (Packet is DHCPv6RelayPacket relayPacket)
+        {
+            innerPacket = relayPacket.GetInnerPacket();
+            _packetDepth += relayPacket.GetRelayPacketChain().Count - 1;
+        }
+
+        Boolean hasSublevel = innerPacket.HasOption((UInt16)DHCPv6PacketOptionTypes.VendorClass);
+        Int32 nonTemporaryOptionDepth = 0;
+
+        var nonTemporaryAddressOption = innerPacket.GetOption<DHCPv6PacketIdentityAssociationNonTemporaryAddressesOption>(DHCPv6PacketOptionTypes.IdentityAssociation_NonTemporary);
+        if (nonTemporaryAddressOption != null)
+        {
+            hasSublevel = true;
+            if (nonTemporaryAddressOption.Suboptions.Any())
+            {
+                nonTemporaryOptionDepth += 1;
+                var subOption = nonTemporaryAddressOption.GetAddressSuboption();
+                if (subOption != null)
+                {
+                    if (subOption.Suboptions.Any() == true)
+                    {
+                        nonTemporaryOptionDepth += 1;
+                    }
+                }
+            }
+        }
+
+        Int32 prefixOptionDepth = 0;
+        var prefixAddressOption = innerPacket.GetOption<DHCPv6PacketIdentityAssociationPrefixDelegationOption>(DHCPv6PacketOptionTypes.IdentityAssociation_PrefixDelegation);
+        if (prefixAddressOption != null)
+        {
+            hasSublevel = true;
+            if (prefixAddressOption.Suboptions.Any())
+            {
+                prefixOptionDepth += 1;
+                var subOption = prefixAddressOption.GetPrefixSuboption();
+                if (subOption != null)
+                {
+                    if (subOption.Suboptions.Any() == true)
+                    {
+                        prefixOptionDepth += 1;
+                    }
+                }
+            }
+        }
+
+        if (nonTemporaryOptionDepth > prefixOptionDepth)
+        {
+            _packetDepth += nonTemporaryOptionDepth;
+        }
+        else
+        {
+            _packetDepth += prefixOptionDepth;
+        }
+
+        if (hasSublevel == true)
+        {
+            _packetDepth += 1;
+        }
+    }
+
+    #region Methods
+
+    public async void Close() => await BlazoredModal.Close();
+
+    #endregion
+
+}

@@ -1,0 +1,118 @@
+﻿@inherits BootstrapInputBase<Nullable<Boolean>>
+
+@if (TableMode == true)
+{
+    <td>
+        <div class="icheck-primary">
+            <BootstrapInputCheckbox @bind-Value="HasValue" id="@_nullableCheckBoxId" />
+            <label for="@_nullableCheckBoxId">@EnabledCaption</label>
+        </div>
+    </td>
+    <td>
+        @if (HasValue == true)
+        {
+            <div class="icheck-primary">
+                <BootstrapInputCheckbox @bind-Value="NonNullableValue" id="@_nullableValueCheckBoxId" />
+                <label for="@_nullableValueCheckBoxId">@ValueCaption</label>
+            </div>
+        }
+    </td>
+}
+else
+{
+    <div class="d-flex flex-row">
+        <div class="icheck-primary">
+            <BootstrapInputCheckbox @bind-Value="HasValue" id="@_nullableCheckBoxId" />
+            <label for="@_nullableCheckBoxId">@EnabledCaption</label>
+        </div>
+
+        @if (FillSpace == true)
+        {
+            <div class="flex-fill"></div>
+        }
+        @if (_hasValue == true)
+        {
+            <div class="icheck-primary">
+                <BootstrapInputCheckbox @bind-Value="NonNullableValue" id="@_nullableValueCheckBoxId" />
+                <label for="@_nullableValueCheckBoxId">@ValueCaption</label>
+            </div>
+        }
+    </div>
+}
+
+@code {
+
+    [Parameter] public String EnabledCaption { get; set; } = "Enabled";
+    [Parameter] public String ValueCaption { get; set; } = "";
+    [Parameter] public Boolean FillSpace { get; set; } = false;
+    [Parameter] public Boolean TableMode { get; set; } = true;
+
+    private Boolean _hasValue;
+
+
+    [Parameter]
+    public Boolean HasValue
+    {
+        get => _hasValue;
+        set
+        {
+            _hasValue = value;
+            if (value == true)
+            {
+                CurrentValue = _nonNullableValue;
+            }
+            else
+            {
+                CurrentValue = new Boolean?();
+            }
+        }
+    }
+
+    private Boolean _nonNullableValue;
+
+    [Parameter]
+    public Boolean NonNullableValue
+    {
+        get => _nonNullableValue;
+        set
+        {
+            _nonNullableValue = value;
+            CurrentValue = value;
+        }
+    }
+
+    [Parameter] public string ParsingErrorMessage { get; set; } = "The {0} field must be a number.";
+
+    protected override bool TryParseValueFromString(string value, out Boolean? result, out string validationErrorMessage)
+    {
+        if (BindConverter.TryConvertToNullableBool(value, System.Globalization.CultureInfo.InvariantCulture, out result))
+        {
+            validationErrorMessage = null;
+            return true;
+        }
+        else
+        {
+            validationErrorMessage = string.Format(ParsingErrorMessage, FieldIdentifier.FieldName);
+            return false;
+        }
+
+    }
+
+    private String _nullableValueCheckBoxId;
+    private String _nullableCheckBoxId;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        _nullableValueCheckBoxId = $"hasvalue-field-{Guid.NewGuid()}";
+        _nullableCheckBoxId = $"hasvalue-{Guid.NewGuid()}";
+
+        if (CurrentValue.HasValue == true)
+        {
+            _nonNullableValue = CurrentValue.Value;
+            _hasValue = true;
+        }
+    }
+
+}

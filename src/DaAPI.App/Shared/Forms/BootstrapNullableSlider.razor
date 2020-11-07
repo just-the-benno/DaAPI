@@ -1,0 +1,101 @@
+﻿@inherits BootstrapInputBase<Nullable<Double>>
+
+@if (TableMode == true)
+{
+    <td>
+        <div class="icheck-primary">
+            <BootstrapInputCheckbox @bind-Value="HasValue" id="@_nullableCheckBoxId" />
+            <label for="@_nullableCheckBoxId">@EnabledCaption</label>
+        </div>
+    </td>
+    <td>
+        @if (HasValue == true)
+        {
+            <BootstrapInputNumber @bind-Value="NonNullableValue" class="custom-range" type="range" min="0.1" step="0.05" max="0.95" />
+            @Validation
+        }
+    </td>
+}
+else
+{
+<div class="d-flex flex-row">
+    <div class="icheck-primary">
+        <BootstrapInputCheckbox @bind-Value="HasValue" id="@_nullableCheckBoxId" />
+        <label for="@_nullableCheckBoxId">@EnabledCaption</label>
+    </div>
+
+    @if (FillSpace == true)
+    {
+        <div class="flex-fill"></div>
+    }
+    @if (_hasValue == true)
+    {
+        <BootstrapInputNumber @bind-Value="NonNullableValue" class="custom-range" type="range" min="0.1" step="0.05" max="0.95" />
+        @Validation
+    }
+</div>
+}
+
+@code {
+
+    [Parameter] public String EnabledCaption { get; set; } = "Enabled";
+    [Parameter] public Boolean FillSpace { get; set; } = false;
+    [Parameter] public Boolean TableMode { get; set; } = true;
+
+    [Parameter] public Boolean IsValid { get; set; }
+
+    [Parameter] public RenderFragment Validation { get; set; }
+
+    private Boolean _hasValue;
+
+
+    [Parameter]
+    public Boolean HasValue
+    {
+        get => _hasValue;
+        set
+        {
+            _hasValue = value;
+            if (value == true)
+            {
+                CurrentValue = _nonNullableValue;
+            }
+            else
+            {
+                CurrentValue = new Double?();
+            }
+        }
+    }
+
+    private Double _nonNullableValue;
+
+    [Parameter]
+    public Double NonNullableValue
+    {
+        get => _nonNullableValue;
+        set
+        {
+            _nonNullableValue = value;
+            CurrentValue = value;
+        }
+    }
+
+    protected override bool TryParseValueFromString(string value, out Double? result, out string validationErrorMessage)
+       => throw new NotImplementedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
+
+    private String _nullableCheckBoxId;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        _nullableCheckBoxId = $"hasvalue-{Guid.NewGuid()}";
+
+        if (CurrentValue.HasValue == true)
+        {
+            _nonNullableValue = CurrentValue.Value;
+            _hasValue = true;
+        }
+    }
+
+}

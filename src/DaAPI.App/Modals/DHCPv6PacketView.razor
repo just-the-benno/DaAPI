@@ -1,0 +1,49 @@
+﻿@inject DHCPv6PacketOptionCodeToNameConverter _codeToNameConverter
+
+<dl class="row">
+    <dt class="col-sm-2">Type</dt>
+    <dd class="col-sm-10">@Packet.PacketType</dd>
+    @if (Packet.TransactionId > 0)
+    {
+        <dt class="col-sm-2">Transaction</dt>
+        <dd class="col-sm-10">@Packet.TransactionId</dd>
+    }
+
+    @foreach (var item in Packet.Options)
+    {
+
+        <dt class="col-sm-2">@_codeToNameConverter.GetName(item.Code)</dt>
+        <dd class="col-sm-10">
+            <DHCPv6PacketOptionContentView Option="item" />
+        </dd>
+    }
+
+    @if (Packet is DaAPI.Core.Packets.DHCPv6.DHCPv6RelayPacket)
+    {
+        var relayPacket = (DaAPI.Core.Packets.DHCPv6.DHCPv6RelayPacket)Packet;
+
+        <dt class="col-sm-2">Link address</dt>
+        <dd class="col-sm-10">
+            <span>@relayPacket.LinkAddress</span>
+        </dd>
+        <dt class="col-sm-2">Peer address</dt>
+        <dd class="col-sm-10">
+            <span>@relayPacket.PeerAddress</span>
+        </dd>
+        <dt class="col-sm-2">Hop Count</dt>
+        <dd class="col-sm-10">
+            <span>@relayPacket.HopCount</span>
+        </dd>
+        <dt class="col-sm-2">Inner</dt>
+        <dd class="col-sm-10">
+            <DHCPv6PacketView Packet="relayPacket.InnerPacket" />
+        </dd>
+    }
+
+</dl>
+
+
+@code {
+    [Parameter] public DaAPI.Core.Packets.DHCPv6.DHCPv6Packet Packet { get; set; }
+
+}

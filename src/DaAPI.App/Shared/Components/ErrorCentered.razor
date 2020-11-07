@@ -1,0 +1,18 @@
+﻿<div class="login-page flex-fill heigth-auto">
+    <div class="d-flex flex-row justify-content-center">
+        <div class="alert alert-danger">
+            <h5><i class="icon fas fa-ban"></i> @Title</h5>
+            @Text
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public String Title { get; set; } = "Error";
+
+    [Parameter]
+    public String Text { get; set; }
+
+}

@@ -1,0 +1,46 @@
+﻿
+@inject AnnomynousDaAPIService _service
+@inject NavigationManager _navManager
+@inject IStringLocalizer<ServerInitilizedState> L
+
+<CascadingValue Value="@ServerInitilizedResponse" Name="@nameof(ServerInitilizedResponse)">
+    @if (ServerInitilizedResponse != null)
+    {
+        @if (ServerInitilizedResponse.IsInitialized == true)
+        {
+            @ChildContent
+        }
+        else
+        {
+            <FirstStepsPage></FirstStepsPage>
+        }
+    }
+    else
+    {
+        <LayoutView Layout="@typeof(SinglePageLayout)">
+            <LoadingCentered Title="@L["LoadingTitle"]" Text="@L["LoadingText"]" />
+        </LayoutView>
+    }
+</CascadingValue>
+
+@code {
+    [Parameter]
+    public ServerInitilizedResponse ServerInitilizedResponse { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ServerInitilizedResponse = await _service.ServerIsInitilized();
+        if (ServerInitilizedResponse.IsInitialized == false)
+        {
+            _navManager.NavigateTo("/first-steps");
+        }
+        else
+        {
+        }
+
+        await base.OnInitializedAsync();
+    }
+}

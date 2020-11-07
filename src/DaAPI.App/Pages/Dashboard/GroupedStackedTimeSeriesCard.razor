@@ -1,0 +1,244 @@
+﻿@using DaAPI.Core.Packets.DHCPv6
+@inject IStringLocalizer<GroupedStackedTimeSeriesCard> L
+
+<div class="card">
+    <div class="card-header d-flex p-0">
+        <h3 class="card-title p-3">@Title</h3>
+
+        <div class="d-flex flex-fill">
+        </div>
+        <DateRangePicker class="form-control mt-2 max" placeholder="@L["SelectingDatePlaceholder"]"
+                         @bind-StartDate="StartDate" @bind-EndDate="EndDate" MaxDate="DateTime.UtcNow" style="width:auto;" OnRangeSelect="@( async (x) => await LoadDataSets() )" />
+
+        <ul class="nav nav-pills ml-auto p-2">
+            @foreach (var item in _groupings)
+            {
+                <li class="nav-item">
+                    <a class="nav-link @(item.value == GroupedBy ? "active" : String.Empty)" @onclick=@(  async () => { GroupedBy = item.value; await LoadDataSets(); } )>@item.display</a>
+                </li>
+            }
+        </ul>
+    </div><!-- /.card-header -->
+    <div class="card-body">
+        <div class="tab-content">
+            <LoadingWhileContentNull Item="_loadingDummy" OnlyHide="true">
+                <Chart @ref="_barChartJs"
+                       Config="@_barConfig"
+                       TConfig="BarConfig"
+                       Width="600"
+                       Height="300" />
+
+            </LoadingWhileContentNull>
+            <!-- /.tab-pane -->
+        </div>
+        <!-- /.tab-content -->
+    </div><!-- /.card-body -->
+</div>
+
+
+@code {
+
+
+    private System.Threading.SemaphoreSlim semaphore = new System.Threading.SemaphoreSlim(1, 1);
+    private DateTime _lastLoad;
+
+    private List<(String display, GroupStatisticsResultBy value)> _groupings;
+
+    private Object _loadingDummy;
+
+    private BarConfig _barConfig;
+
+    private Chart<BarConfig> _barChartJs;
+
+    [Parameter]
+    public GroupStatisticsResultBy GroupedBy { get; set; }
+
+    private DateTime? ConvertFromDataTimeOffset(DateTimeOffset? input) => input == null ? new DateTime?() : input.Value.UtcDateTime;
+
+    [Parameter]
+    public DateTimeOffset? StartDate { get; set; }
+
+    [Parameter]
+    public DateTimeOffset? EndDate { get; set; }
+
+    [Parameter]
+    public String Title { get; set; }
+
+    [Parameter]
+    public Func<DateTime?, DateTime?, GroupStatisticsResultBy, Task<IDictionary<DateTime, IDictionary<DHCPv6PacketTypes, Int32>>>> GroupedDatasetLoad { get; set; }
+
+    [Parameter]
+    public DataSeriesDescription DataSeriesDescription { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        _groupings = new List<(String display, GroupStatisticsResultBy value)>
+{
+                    (L["DayCaption"],GroupStatisticsResultBy.Day),
+                    (L["WeekCaption"],GroupStatisticsResultBy.Week),
+                    (L["MonthCaption"],GroupStatisticsResultBy.Month),
+            };
+
+        _barConfig = new BarConfig
+        {
+            Options = new BarOptions
+            {
+                Tooltips = new Tooltips
+                {
+                    Mode = InteractionMode.Index,
+                    Intersect = true,
+                },
+                Hover = new Hover
+                {
+                    Intersect = true,
+                    Mode = InteractionMode.Index
+                },
+                Legend = new Legend
+                {
+                    Display = true,
+                },
+                Title = new OptionsTitle
+                {
+                    Display = false,
+                },
+                Scales = new BarScales
+                {
+                    XAxes = new List<CartesianAxis>
+        {
+                                new BarTimeAxis
+                                {
+                                    Stacked = false,
+                                    BarPercentage = 1,
+                                    Time = new TimeOptions
+                                    {
+                                        Unit = TimeMeasurement.Hour
+                                    },
+                                    Ticks = new TimeTicks
+                                    {
+                                        FontColor = "#495057",
+                                        Source = TickSource.Auto,
+                                    },
+                                    GridLines = new GridLines
+                                    {
+                                        Display = false,
+                                    }
+                                }
+                            },
+                    YAxes = new List<CartesianAxis>
+{
+                        new BarLinearCartesianAxis
+                        {
+                            Ticks = new LinearCartesianTicks
+                            {
+                                BeginAtZero = true
+                            },
+                            GridLines = new GridLines
+                            {
+                                Display = false,
+                                LineWidth = 4,
+                                Color = ColorUtil.ColorString(0, 0, 0, .2),
+                                ZeroLineColor = "transparent",
+                            }
+                        }
+                    }
+                },
+                Responsive = true
+            }
+        };
+    }
+
+    private async Task LoadDataSets()
+    {
+        try
+        {
+            await semaphore.WaitAsync();
+
+            if ((DateTime.Now - _lastLoad).TotalSeconds < 1)
+            {
+                return;
+            }
+
+            if (_loadingDummy != null)
+            {
+                _barConfig.Data.Datasets.Clear();
+                await _barChartJs.Update();
+
+                _loadingDummy = null;
+                StateHasChanged();
+            }
+
+            var dataSeries =
+                await GroupedDatasetLoad(ConvertFromDataTimeOffset(StartDate), ConvertFromDataTimeOffset(EndDate), GroupedBy);
+
+            _loadingDummy = new Object();
+            _lastLoad = DateTime.Now;
+
+            Dictionary<GroupStatisticsResultBy?, (TimeMeasurement tick, String display)> unitMaper = new Dictionary<GroupStatisticsResultBy?, (TimeMeasurement tick, string display)>
+{
+                { GroupStatisticsResultBy.Day, (TimeMeasurement.Day,"DD.MM.YY") },
+                { GroupStatisticsResultBy.Week, (TimeMeasurement.Week,"W") },
+                { GroupStatisticsResultBy.Month, (TimeMeasurement.Month,"MM.YY") },
+            };
+
+            var timeAxis = _barConfig.Options.Scales.XAxes[0] as TimeAxis;
+            timeAxis.Time.Unit = unitMaper[GroupedBy].tick;
+            timeAxis.Time.Round = timeAxis.Time.Unit;
+            timeAxis.Time.TooltipFormat = unitMaper[GroupedBy].display;
+
+            var rawExistingTypes = dataSeries.Values.Select(x => x.Select(y => y.Key));
+            HashSet<DHCPv6PacketTypes> existingTypes = new HashSet<DHCPv6PacketTypes>();
+            foreach (var types in rawExistingTypes)
+            {
+                foreach (var type in types)
+                {
+                    existingTypes.Add(type);
+                }
+            }
+
+            Dictionary<DHCPv6PacketTypes, String> packetTypeColorMapper = new Dictionary<DHCPv6PacketTypes, string>
+            {
+                { DHCPv6PacketTypes.Solicit, "#007bff" },
+                { DHCPv6PacketTypes.REQUEST, "#17a2b8" },
+                { DHCPv6PacketTypes.RENEW, "#28a745" },
+                { DHCPv6PacketTypes.REBIND, "#3d9970" },
+                { DHCPv6PacketTypes.RELEASE, "#fd7e14" },
+                { DHCPv6PacketTypes.DECLINE, "#dc3545" },
+                { DHCPv6PacketTypes.Unkown, "#e83e8c" },
+                { DHCPv6PacketTypes.CONFIRM, "#6c757d" },
+            };
+
+            foreach (var item in existingTypes)
+            {
+                String color = packetTypeColorMapper.ContainsKey(item) ? packetTypeColorMapper[item] : ColorUtil.RandomColorString();
+
+                var barSet = new BarDataset<TimePoint>
+                {
+                    Label = item.ToString(),
+                    BackgroundColor = color,
+                    BorderColor = color,
+                };
+
+                var points = dataSeries.Select(p => new TimePoint(p.Key, p.Value.ContainsKey(item) ? p.Value[item] : 0));
+                barSet.AddRange(points);
+                _barConfig.Data.Datasets.Add(barSet);
+            }
+
+            await _barChartJs.Update();
+
+            StateHasChanged();
+        }
+        finally
+        {
+            semaphore.Release();
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadDataSets();
+    }
+}

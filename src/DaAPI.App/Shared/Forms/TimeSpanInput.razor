@@ -1,0 +1,170 @@
+﻿@inherits InputBase<TimeSpan>
+@inject IStringLocalizer<TimeSpanInput> L
+
+<div class="input-group @GetCssClass()">
+    <InputNumber type="number" min="0" max="100" @attributes=AdditionalAttributes class=@CssClass @bind-Value=Days disabled=@DisableFormElements />
+    <div class="input-group-append">
+        <span class="input-group-text">@L["DaysCaption"]</span>
+    </div>
+    <InputNumber type="number" min="0" max="24" @attributes=AdditionalAttributes class=@CssClass @bind-Value=Hours disabled=@DisableFormElements />
+    <div class="input-group-append">
+        <span class="input-group-text">@L["HoursCaption"]</span>
+    </div>
+    <InputNumber type="number" min="0" max="60" @attributes=AdditionalAttributes class=@CssClass @bind-Value=Minutes disabled=@DisableFormElements />
+    <div class="input-group-append">
+        <span class="input-group-text">@L["MinutesCaptions"]</span>
+    </div>
+    @if (ShowSeconds)
+    {
+        <InputNumber type="number" min="0" max="60" @attributes=AdditionalAttributes class=@CssClass @bind-Value=Seconds disabled=@DisableFormElements />
+        <div class="input-group-append">
+            <span class="input-group-text">@L["SecondsCaption"]</span>
+        </div>
+    }
+</div>
+
+@code {
+
+
+    private String GetCssClass()
+    {
+        if (ValidationIsBasedOnCssClasses == true)
+        {
+            if (CssClass.Contains("modified invalid") == true)
+            {
+                return InvalidCssClass;
+            }
+            else if (CssClass.Contains("modified valid") == true)
+            {
+                return ValidCssClass;
+            }
+            else
+            {
+                return String.Empty;
+            }
+        }
+        else
+        {
+            return IsValid == true ? ValidCssClass : InvalidCssClass;
+        }
+    }
+
+    [Parameter] public Boolean ValidationIsBasedOnCssClasses { get; set; } = true;
+    [Parameter] public Boolean IsValid { get; set; } = true;
+
+
+    [Parameter]
+    public String InvalidCssClass { get; set; } = "pseudo-form-control-invalid";
+
+    [Parameter]
+    public String ValidCssClass { get; set; } = "pseudo-form-control-valid";
+
+    [CascadingParameter(Name = "DisableFormElements")]
+    protected Boolean DisableFormElements { get; set; } = false;
+
+    [Parameter] public Boolean ShowSeconds { get; set; } = false;
+
+    private void SetValue()
+    {
+        var newValue = new TimeSpan(_days, _hours, _minutes, _seconds);
+        if (newValue == base.Value)
+        {
+            return;
+        }
+
+        base.CurrentValue = newValue;
+    }
+
+    private Int32 _days;
+
+    [Parameter]
+    public Int32 Days
+    {
+        get => _days;
+        set
+        {
+            if (value != _days)
+            {
+                _days = value;
+                SetValue();
+            }
+        }
+    }
+
+    private Int32 _hours;
+
+    [Parameter]
+    public Int32 Hours
+    {
+        get => _hours;
+        set
+        {
+            if (value != _hours)
+            {
+                _hours = value;
+                SetValue();
+            }
+        }
+    }
+
+    private Int32 _minutes;
+
+    [Parameter]
+    public Int32 Minutes
+    {
+        get => _minutes;
+        set
+        {
+            if (value != _minutes)
+            {
+
+                _minutes = value;
+                SetValue();
+            }
+        }
+    }
+
+    private Int32 _seconds;
+
+    [Parameter]
+    public Int32 Seconds
+    {
+        get => _seconds;
+        set
+        {
+            if (value != _seconds)
+            {
+                _seconds = value;
+                SetValue();
+            }
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        Days = Value.Days;
+        Hours = Value.Hours;
+        Minutes = Value.Minutes;
+        Seconds = Value.Seconds;
+
+        base.OnParametersSet();
+    }
+
+    protected override string FormatValueAsString(TimeSpan value)
+    {
+        return value.ToString();
+    }
+
+    protected override bool TryParseValueFromString(string value, out TimeSpan result, out string validationErrorMessage)
+    {
+        validationErrorMessage = String.Empty;
+        if (TimeSpan.TryParse(value, out TimeSpan parseResult) == false)
+        {
+            validationErrorMessage = "input is not a valid timespan";
+        }
+
+        result = TimeSpan.Parse(value);
+        return true;
+    }
+
+}

@@ -1,0 +1,7 @@
+﻿[*.{cs,vb}]
+
+# IDE0037: Use inferred member name
+dotnet_style_prefer_inferred_anonymous_type_member_names = false:suggestion
+
+# IDE0063: Use simple 'using' statement
+csharp_prefer_simple_using_statement = false:suggestion

@@ -1,0 +1,298 @@
+﻿@using Humanizer
+
+@page "/scopes/dhcpv6/details/{id}"
+@layout AdminLayout
+@attribute [Authorize]
+@inject DaAPIService service
+@inject LayoutService _layoutService
+@inject DHCPv6PacketOptionCodeToNameConverter _codeToNameConverter
+@inject IStringLocalizer<DHCPv6ScopesDetailPage> L
+
+<div class="container-fluid">
+
+    <div class="row">
+        <div class="col-12">
+            <DHCPv6LeaseOverviewTable IncludeChildren="false" ScopeId="@Id" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <DHCPv6LatestPacketTable Packets="_handledPackets" DisplayScopes="false" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <LoadingWhileContentNull Items="@(new Object[] { _scopeWithParentProperties, _scope } )">
+                <div class="card">
+                    <div class="card-header border-0 d-flex flex-row align-items-center">
+                        <h3 class="card-title">@String.Format(L["Headline"], @_scopeWithParentProperties?.Name)</h3>
+                        <span class="flex-fill"></span>
+                        <div class="card-tools">
+                            <NavLink href="@($"scopes/dhcpv6/update/{Id}")" class="btn btn-primary">
+                                <i class="fas fa-edit mr-2"></i>
+                                @L["EditButtonCaption"]
+                            </NavLink>
+                        </div>
+                    </div>
+                    <div class="card-body table-responsive">
+                        <h4>@L["AddressRelatedPropertiesCaption"]</h4>
+                        <dl class="row">
+                            <dt class="col-2">@L["NameCaption"]</dt>
+                            <dd class="col-10">@_scopeWithParentProperties.Name</dd>
+
+                            <dt class="col-2">@L["DescriptionCaption"]</dt>
+                            <dd class="col-10">
+                                <p>@_scopeWithParentProperties.Description</p>
+                            </dd>
+
+                            <dt class="col-2">
+                                @L["ParentCaption"]
+                                <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.HasParent" />
+                            </dt>
+                            <dd class="col-10">
+                                @if (_parentScope == null)
+                                {
+                                    <span>@L["NoParentCaption"]</span>
+                                }
+                                else
+                                {
+                                    <a class="btn btn-link" href="@($"scopes/dhcpv6/details/{_scope.ParentId.Value}")">@_parentScope.Name</a>
+                                }
+                            </dd>
+
+                            <dt class="col-2">@L["AddressRangeCaption"]</dt>
+                            <dd class="col-10">
+                                <dl class="row">
+                                    <dt class="col-2">
+                                        @L["AddressRangeStartCaption"]
+                                        <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.Start" />
+                                    </dt>
+                                    <dd class="col-4">@_scopeWithParentProperties.AddressRelated.Start</dd>
+                                    <dt class="col-2">
+                                        @L["AddressRangeEndCaption"]
+                                        <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.End" />
+                                    </dt>
+                                    <dd class="col-4">@_scopeWithParentProperties.AddressRelated.End</dd>
+                                </dl>
+                            </dd>
+                            <dt class="col-2">
+                                @L["AddressRangePrefixCaption"]
+                                <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.PrefixDelegation" />
+                            </dt>
+                            <dd class="col-10">
+                                <p>
+                                    @if (_scopeWithParentProperties.AddressRelated.PrefixDelegationInfo == null)
+                                    {
+                                        <span>@L["AddressRangeNoPrefixCaption"]</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@_scopeWithParentProperties.AddressRelated.PrefixDelegationInfo.Prefix/@_scopeWithParentProperties.AddressRelated.PrefixDelegationInfo.PrefixLength with /@_scopeWithParentProperties.AddressRelated.PrefixDelegationInfo.AssingedPrefixLength </span>
+                                    }
+                                </p>
+                            </dd>
+                            <dt class="col-2">
+                                @L["AddressRangeExcludedAddressesCaption"]
+                                <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.ExcludedAddresses" />
+                            </dt>
+                            <dd class="col-10">
+                                @if (_scopeWithParentProperties.AddressRelated.ExcludedAddresses.Any())
+                                {
+                                    <ul class="list-unstyled">
+                                        @foreach (var item in _scopeWithParentProperties.AddressRelated.ExcludedAddresses)
+                                        {
+                                            <li>@item</li>
+                                        }
+                                    </ul>
+                                }
+                                else
+                                {
+                                    @L["AddressRangeExcludedAddressesNone"]
+                                }
+                            </dd>
+                        </dl>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>@L["AddressRelatedPropertyTableHeaderForProperty"]</th>
+                                    <th>@L["AddressRelatedTableHeaderForValue"]</th>
+                                    <th>@L["AddressRelatedTableHeaderForSetByParent"]</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in GetAddressRelatedProperties())
+                                {
+                                    <tr>
+                                        <td>
+                                            @item.name
+                                            <DHCPv6ScopePropertyExplanation Property="item.property" />
+                                        </td>
+                                        <td>
+                                            @if (item.value == true.ToString())
+                                            {
+                                                <span><i class="far fa-check-square"></i></span>
+                                            }
+                                            else if (item.value == false.ToString())
+                                            {
+                                                <span><i class="far fa-square"></i></span>
+                                            }
+                                            else
+                                            {
+                                                <span>@item.value</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (item.setByParent == true)
+                                            {
+                                                <span><i class="far fa-check-square"></i></span>
+                                            }
+                                            else
+                                            {
+                                                <span><i class="far fa-square"></i></span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <h4 class="mt-4">
+                            @L["OptionsCaptions"]
+                            <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.ScopeOptions" />
+                        </h4>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>@L["OptionsTableHeaderForProperty"]</th>
+                                    <th>@L["OptionsTableHeaderForValue"]</th>
+                                    <th>@L["OptionsTableHeaderForSetByParent"]</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in GetScopeProperties())
+                                {
+                                    <tr>
+                                        <td>@_codeToNameConverter.GetName(item.value.OptionCode)</td>
+                                        <td>
+                                            <DHCPv6ScopePropertyView Property="item.value" />
+                                        </td>
+                                        <td>
+                                            @if (item.setByParent == true)
+                                            {
+                                                <span><i class="far fa-check-square"></i></span>
+                                            }
+                                            else
+                                            {
+                                                <span><i class="far fa-square"></i></span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <h4 class="mt-4">
+                            @L["ResolverCaption"]
+                            <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.Resolver" />
+                        </h4>
+                        <dl class="row">
+                            <dt class="col-sm-2">
+                                @L["ResolverNameCaption"]
+                            </dt>
+                            <dd class="col-sm-10">
+                                <DHCPv6ScopeResolverExplanation ResolverPropertyName="@_scope.Resolver.Typename" ResolverTypeName="@_scope.Resolver.Typename" OnlyTitle="true" />
+                                <DHCPv6ScopeResolverExplanation ResolverPropertyName="@_scope.Resolver.Typename" ResolverTypeName="@_scope.Resolver.Typename" />
+                            </dd>
+                            @foreach (var item in _scope.Resolver.PropertiesAndValues)
+                            {
+                                var capitalizedKey = item.Key;
+                                if (Char.IsLower(capitalizedKey[0]) == true)
+                                {
+                                    capitalizedKey = Char.ToUpper(capitalizedKey[0]) + capitalizedKey.Substring(1);
+                                }
+
+                        <dt class="col-sm-2">
+                            <DHCPv6ScopeResolverExplanation ResolverPropertyName="@capitalizedKey" ResolverTypeName="@_scope.Resolver.Typename" OnlyTitle="true" />
+                            <DHCPv6ScopeResolverExplanation ResolverPropertyName="@capitalizedKey" ResolverTypeName="@_scope.Resolver.Typename" />
+                        </dt>
+                                <dd class="col-sm-10">
+                                    <span>@item.Value</span>
+                                </dd>
+                            }
+                        </dl>
+                    </div>
+                </div>
+            </LoadingWhileContentNull>
+        </div>
+    </div>
+
+    <!-- Default box -->
+
+</div>
+
+
+@code {
+
+    [Parameter]
+    public String Id { get; set; }
+
+    private DHCPv6ScopePropertiesResponse _scopeWithParentProperties;
+    private DHCPv6ScopePropertiesResponse _scope;
+    private DHCPv6ScopePropertiesResponse _parentScope;
+    private IList<DHCPv6PacketHandledEntryViewModel> _handledPackets;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        _layoutService.UpdatePageTitle(L["PageTitleWithLoadingObjects"]);
+        _layoutService.UpdateBreadcrumbs(new BreadcrumbViewModel[] {
+            new BreadcrumbViewModel { Caption = L["BreadcrumbHomeCaption"], Link = "dashboard" },
+            new BreadcrumbViewModel { Caption = L["BreadcrumbScopeCaption"], Link = "scopes/dhcpv6" }
+        });
+
+        _scopeWithParentProperties = null;
+        _scope = null;
+        _handledPackets = null;
+        _parentScope = null;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        _scopeWithParentProperties = await service.GetDHCPv6ScopeProperties(Id, true);
+        _scope = await service.GetDHCPv6ScopeProperties(Id, false);
+        _handledPackets = (await service.GetHandledDHCPv6PacketByScopeId<DHCPv6PacketHandledEntryViewModel>(Id)).ToList();
+
+        if (_scope.ParentId.HasValue == true)
+        {
+            _parentScope = await service.GetDHCPv6ScopeProperties(_scope.ParentId.Value, false);
+        }
+
+        _layoutService.UpdatePageTitle(String.Format(L["PageTitle"], _scopeWithParentProperties.Name));
+        _layoutService.UpdateBreadcrumbs(new BreadcrumbViewModel[] {
+            new BreadcrumbViewModel { Caption = L["BreadcrumbHomeCaption"], Link = "dashboard" },
+            new BreadcrumbViewModel { Caption = L["BreadcrumbScopeCaption"], Link = "scopes/dhcpv6" },
+            new BreadcrumbViewModel { Caption = _scopeWithParentProperties.Name, Link = $"scopes/dhcpv6/{Id}" } });
+    }
+
+    private TimeSpan Scale(TimeSpan input, Double factor) => input * factor;
+
+    private IEnumerable<(DHCPv6ScopePropertyExplanationValues property, String name, String value, Boolean setByParent)> GetAddressRelatedProperties() => new[]
+    {
+        (DHCPv6ScopePropertyExplanationValues.PreferredLifetime, L["PreferredLifetimePropertyCaption"].Value, _scopeWithParentProperties.AddressRelated.PreferedLifetime.Value.Humanize(),!_scope.AddressRelated.PreferedLifetime.HasValue),
+        (DHCPv6ScopePropertyExplanationValues.ValidLifetime,L["ValidLifetimePropertyCaption"].Value, _scopeWithParentProperties.AddressRelated.ValidLifetime.Value.Humanize(),!_scope.AddressRelated.ValidLifetime.HasValue),
+        (DHCPv6ScopePropertyExplanationValues.T1, L["T1PropertyCaption"].Value, Scale(_scopeWithParentProperties.AddressRelated.PreferedLifetime.Value,_scopeWithParentProperties.AddressRelated.T1.Value).Humanize(),!_scope.AddressRelated.T1.HasValue),
+        (DHCPv6ScopePropertyExplanationValues.T2, L["T2PropertyCaption"].Value, Scale(_scopeWithParentProperties.AddressRelated.PreferedLifetime.Value,_scopeWithParentProperties.AddressRelated.T2.Value).Humanize(),!_scope.AddressRelated.T2.HasValue),
+        (DHCPv6ScopePropertyExplanationValues.SupportDirectUnicast, L["SupportDirectUnicastPropertyCaption"].Value, _scopeWithParentProperties.AddressRelated.SupportDirectUnicast.Value.ToString(),!_scope.AddressRelated.SupportDirectUnicast.HasValue),
+        (DHCPv6ScopePropertyExplanationValues.AccpetDeclines, L["AcceptDeclinesPropertyCaption"].Value, _scopeWithParentProperties.AddressRelated.AcceptDecline.Value.ToString(),!_scope.AddressRelated.AcceptDecline.HasValue),
+        (DHCPv6ScopePropertyExplanationValues.AccpetInforms, L["AcceptInformsPropertyCaption"].Value, _scopeWithParentProperties.AddressRelated.InformsAreAllowd.Value.ToString(),!_scope.AddressRelated.InformsAreAllowd.HasValue),
+        (DHCPv6ScopePropertyExplanationValues.RapidCommit, L["RapitCommitEnabledPropertyCaption"].Value, _scopeWithParentProperties.AddressRelated.RapitCommitEnabled.Value.ToString(),!_scope.AddressRelated.RapitCommitEnabled.HasValue),
+        (DHCPv6ScopePropertyExplanationValues.ReuseAddress, L["ReuseAddressIfPossiblePropertyCaption"].Value, _scopeWithParentProperties.AddressRelated.ReuseAddressIfPossible.Value.ToString(),!_scope.AddressRelated.ReuseAddressIfPossible.HasValue),
+        (DHCPv6ScopePropertyExplanationValues.AddressAllocationStrategy,L["AddressAllocationStrategyPropertyCaption"].Value, _scopeWithParentProperties.AddressRelated.AddressAllocationStrategy.Value.ToString(),!_scope.AddressRelated.AddressAllocationStrategy.HasValue),
+    };
+
+    private IEnumerable<(DHCPv6ScopePropertyResponse value, Boolean setByParent)> GetScopeProperties() => _scopeWithParentProperties.Properties.Select(x =>
+        (x, _scope.Properties.Count(y => y.OptionCode == x.OptionCode) == 0));
+
+}

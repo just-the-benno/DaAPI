@@ -1,0 +1,13 @@
+﻿@inject IStringLocalizer<NotificationActorPropertyDisplay> L
+
+@if (String.IsNullOrEmpty(ActorName) == false && String.IsNullOrEmpty(PropertyName) == false)
+{
+    @L[$"{ActorName}_{PropertyName}"]
+}
+
+@code {
+
+    [Parameter] public String ActorName { get; set; }
+    [Parameter] public String PropertyName { get; set; }
+
+}

@@ -1,0 +1,3 @@
+﻿dotnet ef migrations remove -c StorageContext -p ..\DaAPI.Infrastructure\DaAPI.Infrastructure.csproj
+
+dotnet ef migrations add -o StorageEngine/Migrations -c StorageContext -p ..\DaAPI.Infrastructure\DaAPI.Infrastructure.csproj <NAME>

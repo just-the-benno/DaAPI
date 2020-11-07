@@ -1,0 +1,57 @@
+﻿<CascadingValue Value="this">
+    <div class="card">
+        <div class="card-header d-flex p-0">
+            <h3 class="card-title p-3">@Title</h3>
+            @if (AdditonalHeadline != null)
+            {
+                <div class="d-flex flex-fill">
+                </div>
+                @AdditonalHeadline
+            }
+            <ul class="nav nav-pills ml-auto p-2">
+                @foreach (var tabPage in _pages)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link @(tabPage == ActivePage ? "active" : String.Empty)" @onclick=@( () => ActivatePage(tabPage) )>@tabPage.Text</a>
+                    </li>
+                }
+            </ul>
+        </div><!-- /.card-header -->
+        <div class="card-body">
+            <div class="tab-content">
+                @ChildContent
+                <!-- /.tab-pane -->
+            </div>
+            <!-- /.tab-content -->
+        </div><!-- /.card-body -->
+    </div>
+</CascadingValue>
+
+@code {
+
+    private List<TabItem> _pages = new List<TabItem>();
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public RenderFragment AdditonalHeadline { get; set; }
+
+    [Parameter]
+    public String Title { get; set; }
+
+    public TabItem ActivePage { get; private set; }
+
+    internal void AddPage(TabItem tabPage)
+    {
+        _pages.Add(tabPage);
+        if (_pages.Count == 1)
+        {
+            ActivePage = tabPage;
+        }
+        StateHasChanged();
+    }
+
+    public void ActivatePage(TabItem page) => ActivePage = page;
+
+}

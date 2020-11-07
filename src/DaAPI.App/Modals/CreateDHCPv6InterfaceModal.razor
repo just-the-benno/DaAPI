@@ -1,0 +1,91 @@
+﻿@inherits AdvancedFormComponent<CreateDHCPv6ListenerViewModel>
+@inject DaAPIService _service
+@inject IStringLocalizer<CreateDHCPv6InterfaceModal> L
+ 
+<CascadingValue Name="DisableFormElements" Value="@_sendingRequestInProgress">
+    <EditForm EditContext="@EditContext" OnValidSubmit="SendCreateDHCPv6InterfaceRequest">
+        <DataAnnotationsValidator />
+        <div class="modal-body">
+            <div class="input-group mb-3">
+                <BootstrapInputText @bind-Value="Model.Name" type="text" class="form-control" placeholder="@L["InterfaceNamePlaceholder"]"  />
+                <div class="input-group-append">
+                    <div class="input-group-text">
+                        <span class="fas fa-ethernet"></span>
+                    </div>
+                </div>
+                <div class="invalid-feedback mb-3">
+                    <ValidationMessage For="@(() => Model.Name)" />
+                </div>
+            </div>
+
+            @if (_serviceErrorOccured)
+            {
+                <div class="alert alert-danger">
+                    @L["ErrorMessage"]
+                </div>
+            }
+
+        </div>
+        <div class="modal-footer">
+            <div class="flex-fill"></div>
+            <button type="button" @onclick="Cancel" class="btn btn-secondary">@L["CancelButtonCaption"]</button>
+            <SendingAwareSubmitFormButton Caption="@L["CreateButtonCaption"]" ExecutingCaption="@L["CreateButtonExecutingCaption"]" FormIsSending="_sendingRequestInProgress" FormIsValid="FormIsValid" />
+        </div>
+    </EditForm>
+</CascadingValue>
+@code {
+
+    #region Fields
+
+    private Boolean _sendingRequestInProgress = false;
+    private Boolean _serviceErrorOccured = false;
+
+    #endregion
+
+    #region Properties
+
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+    [Parameter] public DHCPv6InterfaceEntry Entry { get; set; }
+
+    #endregion
+
+    #region Methods
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        base.Model = new CreateDHCPv6ListenerViewModel
+        {
+            InterfaceId = Entry?.PhysicalInterfaceId,
+            IPv6Address = Entry?.IPv6Address,
+            Name = "",
+        };
+
+        ResetEditContext();
+    }
+
+    public void Cancel() => BlazoredModal.Cancel();
+
+    public async Task SendCreateDHCPv6InterfaceRequest()
+    {
+        _serviceErrorOccured = false;
+        _sendingRequestInProgress = true;
+
+        Boolean serviceResult = await _service.CreateDHCPv6Interface(new CreateDHCPv6Listener
+        {
+            InterfaceId = Model.InterfaceId,
+            IPv6Address = Model.IPv6Address,
+            Name = Model.Name,
+        });
+        _serviceErrorOccured = !serviceResult;
+        _sendingRequestInProgress = false;
+        if (serviceResult == true)
+        {
+           await BlazoredModal.Close(ModalResult.Ok<Boolean>(true));
+        }
+    }
+
+    #endregion
+
+}

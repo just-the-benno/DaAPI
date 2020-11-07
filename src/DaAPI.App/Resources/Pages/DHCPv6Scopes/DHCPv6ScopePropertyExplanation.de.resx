@@ -1,0 +1,248 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ScopePropertyAcceptDeclinesContent" xml:space="preserve">
+    <value>Wenn diese Option aktiviert wird, akzeptiert DaAPI DHCPv6 DECLINE Nachrichten. In der Folge wird die entsprechende Adresse gesperrt und kann nicht mehr an andere Clients zugewiesen werden. Diese Sperre hält eine begrenzte Zeit. DECLINE Nachrichten sollten von Clients verwendet werden, wenn beispielsweise die Adresse bereits verwendet wird. Es kann jedoch auch genutzt werden, um eine Entleerung des Adresspools zu erreichen.</value>
+  </data>
+  <data name="ScopePropertyAcceptDeclinesName" xml:space="preserve">
+    <value>Eigenschaft: DECLINE Nachrichte akzeptieren</value>
+  </data>
+  <data name="ScopePropertyAcceptInformsContent" xml:space="preserve">
+    <value>INFORM-REQUEST Nachrichten werden von Client geschickt, die nicht eine Adresse oder einen Präfix benötigen, sondern Bereichsoptionen wie etwa NTP oder DNS Server. Wenn diese Option aktviert ist, wird DaAPI mit INFORM-REPLY antworten. Wenn nicht, werden diese Pakete ignoriert.</value>
+  </data>
+  <data name="ScopePropertyAcceptInformsName" xml:space="preserve">
+    <value>Eigenschaft: INFORM-REQUEST Nachrichten akzeptieren</value>
+  </data>
+  <data name="ScopePropertyAddressAllocationStrategyContent" xml:space="preserve">
+    <value>Wenn ein Pool oder ein Präfix mehrer Adressen haben, die frei genutzt werden können, so gibt es zwei Möglichkeiten, wie diese ausgewählt werden können. Wenn ZUFÄLLIG ausgewäht wird, wird die nächste Adresse zufällig aus dem Pool von möglichen Adressen entnommen. Ist "NÄCHSTE VERFÜGBARE" ausgewählt, wird die nächste mögliche Adresse vergeben. "ZUFÄLLIG" ist die empfohlene Option.</value>
+  </data>
+  <data name="ScopePropertyAddressAllocationStrategyName" xml:space="preserve">
+    <value>Eigenschaft: Adress-Zuteilungsstrategie</value>
+  </data>
+  <data name="ScopePropertyAddressRelatedContent" xml:space="preserve">
+    <value>In diese Kategorie, sind alle Eigenschaften, die für das Verhalten eines Bereiches verantwortlich gruppiert.</value>
+  </data>
+  <data name="ScopePropertyAddressRelatedName" xml:space="preserve">
+    <value>Eigenschaft Kategorie: Adress bezogene Eigenschaften</value>
+  </data>
+  <data name="ScopePropertyAssignedPrefixLengthContent" xml:space="preserve">
+    <value>Setzt die Länge des zugewiesenen Subnet an die Clients. Die Differenz zwischen dem Wert der Eigenschaft "Präfix Länge" und diesem bestimmt die Anzahl der möglichen zugewiesenen Präfixe. Beiden Zahlen können identisch - jedoch nicht kleiner - sein. Wenn beide Werte gleich ist, bedeutet dies, dass nur ein Präfix verfügbar ist. So kann ein Client immer wieder den selben Präfix erhalten.</value>
+  </data>
+  <data name="ScopePropertyAssignedPrefixLengthName" xml:space="preserve">
+    <value>Eigenschaft:  Zugewiese Präfix Länge</value>
+  </data>
+  <data name="ScopePropertyEndContent" xml:space="preserve">
+    <value>Ende ist die letzte mögliche Adresse eines Bereiches, die noch zugewiesen werden kann. Wenn als Zuweisungstrategie "Nächste Adresse" gewählt wurde, ist dies die letzte Adresse die einem Client zu gewiesen wurde. Ist die Zuweisungstrategie "Zufällig" aktiv, so ist dies die obere Grenze (inklusiv) der möglichen Adressen. Ende kann den gleichen Wert, wie bei dem Elternbereich haben. Wenn Start und Ende den selben Wert haben, bedeutet dies, dass dieser Bereich nur eine Adresse umfasst. Dies ist die einzige Adresse, die einem Client zugewiesen werden kann.</value>
+  </data>
+  <data name="ScopePropertyEndName" xml:space="preserve">
+    <value>Eigenschaft: Ende</value>
+  </data>
+  <data name="ScopePropertyExcludedAddressesContent" xml:space="preserve">
+    <value>Jede ausgschlossene Adresse muss sich zwischen "Start" und "Ende" befinden und nicht mehrfach vorkommen. Ausgeschlossenen Adressen werden nicht an Clients zugewiesen. Diese Option kann genutzt werden, wenn es Geräte mit einer statischen Adresse, wie etwa Router gibt.</value>
+  </data>
+  <data name="ScopePropertyExcludedAddressesName" xml:space="preserve">
+    <value>Eigenschaft: Ausgeschlossene Adressen</value>
+  </data>
+  <data name="ScopePropertyOptionContent" xml:space="preserve">
+    <value>Werte werden in DHCP Antworten (REPLY, ADVERTISE) eingebettet um weitere Eigenschaften wie etwa DNS oder NTP Server mitzuteilen. Diese Option werden von dem Elternbereich geerbt, aber können entwerder gelöscht oder mit einem anderen Wert überschrieben werden.</value>
+  </data>
+  <data name="ScopePropertyOptionName" xml:space="preserve">
+    <value>Werte</value>
+  </data>
+  <data name="ScopePropertyParentContent" xml:space="preserve">
+    <value>DaAPI organsiert Bereich in einem Baum. Jeder Bereich kann mehrere Kinder haben. Ein Kind erbt alle Eigenschaften der Eltern, kann diese jedoch überschreiben. Die Adresse des Kindbereiches müssen in dem der Eltern liegen. Daher symbolisieren diese Bäume die hierarchisch Netzwerk und Subnettingstrukturen. For detailreiche Erklärung, wenden Sie sich an die DaAPI Dokumentation.</value>
+  </data>
+  <data name="ScopePropertyParentName" xml:space="preserve">
+    <value>Eigenschaft: Hat Elternbereich</value>
+  </data>
+  <data name="ScopePropertyPreferredLifetimeContent" xml:space="preserve">
+    <value>Solange diese Zeit noch nich abgelaufen ist, kann ein Client die zugewiese Adresse sicher für jeden Anwendungsfall benutzer. Wenn diese Zeit abgelaufen ist, muss der Client eine neue Adresse anfragen. Vgl mit Abschnitt 5.5.4 des RFC 4862.</value>
+  </data>
+  <data name="ScopePropertyPreferredLifetimeName" xml:space="preserve">
+    <value>Eigenschaft: Bevorzuge Lebenszeit</value>
+  </data>
+  <data name="ScopePropertyPrefixContent" xml:space="preserve">
+    <value>Setzt des Netzwerk, aus dem die zugewiesenen Netze entnommen werden. Die Eingabe muss ein gültiges IPv6 Netzwerk innerhalb der angegeben Netzwerkmaske sein</value>
+  </data>
+  <data name="ScopePropertyPrefixDelegationContent" xml:space="preserve">
+    <value>Wenn diese Option aktiv ist, wird dem Client nicht nur eine einzelne Adresse, sondern auch ein ganzes Netzwerk zugwiesen. Für eine detaillierte Erlärung schauen Sie in die DaAPI Dokumentation</value>
+  </data>
+  <data name="ScopePropertyPrefixDelegationName" xml:space="preserve">
+    <value>Eigenschaft: Aktive Präfix Delegation</value>
+  </data>
+  <data name="ScopePropertyPrefixLengthContent" xml:space="preserve">
+    <value>Setzt des Netzwerkmakse, aus dem die zugewiesenen Netze entnommen werden. Die Eingabe muss gültige Subnetzmakse (0 - 128) sein</value>
+  </data>
+  <data name="ScopePropertyPrefixLengthName" xml:space="preserve">
+    <value>Eigenschaft: Präfix Länge</value>
+  </data>
+  <data name="ScopePropertyPrefixName" xml:space="preserve">
+    <value>Property: Präfix</value>
+  </data>
+  <data name="ScopePropertyRapidCommitContent" xml:space="preserve">
+    <value>Rapid Commit ist eine DHCPv6 Option, die wenn aktiviert und vom Client ebenfalls mitgeschickt, dafür sorgt, dass der Server auf eine SOLICIT Nachricht nicht mit einem ADVERTISE, sondern einem REPLY antworten. Diese Option kann sicher genutzt werden, wenn sich nur ein DHCPv6 Server im Netz befindet.</value>
+  </data>
+  <data name="ScopePropertyRapidCommitName" xml:space="preserve">
+    <value>Eigenschaft: Rapid Commit erlauben</value>
+  </data>
+  <data name="ScopePropertyResolverContent" xml:space="preserve">
+    <value>ellen. Vereinfacht, prüft ein Zuordnern, ob ein Packet seine Bedingungen erfüllt. Die Quelladresse eines Relay Agent kann zum Beispiel ein solcher Zuordner sein.
+Da die Bereiche sich in Bäumen strukturieren lassen, wird jedes Packet, gegen jeden Zuordnern im Baum getestet. Dies mit einer Routing Tabelle vergleichbar, bei der Eintrag mit der längsten übereinstimmten Maske gewählt wird. Für eine detailreiche Erklärung, schauen Sie in der DaAPI documentation nach.</value>
+  </data>
+  <data name="ScopePropertyResolverName" xml:space="preserve">
+    <value>Zuordner</value>
+  </data>
+  <data name="ScopePropertyReuseAddressContent" xml:space="preserve">
+    <value>Diese Option beeinflusst das Verhalten eines Bereichens hinsichtlich der Verlängerung von Leases. Wenn diese Option aktiviert ist und der Client ein RENEW/REBIND Nachricht schickt, wird genau dieses Lease verlängert. Ist die Option nicht aktiv, wird ein neues Lease erstellt un dem Client zugeordnet.
+Desweiteren, wenn der Zuordner des Bereichs eine einzigartigen Wert hat, wie die "Interface Identifier" Option hat und diese Eigenschaft aktiviert ist und ein andere Client (unterschiedliche DUID) ein SOLCIT/RENEW/REBIND Nachricht schickt, wird ein neuen Lease mit der selben Adresse generiert. Für einen weiteren Kontext, diese Option schauen Sie in die DaAPI documentation</value>
+  </data>
+  <data name="ScopePropertyReuseAddressName" xml:space="preserve">
+    <value>Eigenschaft: Adresse wiederverwenden</value>
+  </data>
+  <data name="ScopePropertyStartContent" xml:space="preserve">
+    <value>"Start" ist die erste mögliche Adresse des Bereiches die zugeordnet werden kann. Wenn die Adresszuteilungstrategie "Nächste Adresse" ist, ist dies die erste Adresse, die einem Client zugewiesen wird. Wenn die Strategie "Zufällig" gewählt ist, ist dies die untere Grenze (inklusiv) für mögliche Adressen. Start kann dabei den selben Wert haben, wie den des Elternbereichs</value>
+  </data>
+  <data name="ScopePropertyStartName" xml:space="preserve">
+    <value>Eigenschaft: Start</value>
+  </data>
+  <data name="ScopePropertySupportDirectUnicastContent" xml:space="preserve">
+    <value>Wenn diese Option aktiv ist, wird die Unicast Option an die Antworten beigefügt. Die globale Unicast Adresse der empfangene Schnittstellen wird als Wert gewählt. Wenn ein Client diese Option unterstützt, werden Nachrichten nicht via Multicast, sondern via Unicast an den Server verschickt. Dieser Verhalten umgehet Relay Agents, daher, ist es wahrscheinlich, dass diese ihre Optionen nicht einfügen.</value>
+  </data>
+  <data name="ScopePropertySupportDirectUnicastName" xml:space="preserve">
+    <value>Eigenschaft: Unterstüzung von Unicast aktivieren</value>
+  </data>
+  <data name="ScopePropertyT1Content" xml:space="preserve">
+    <value>Nachdem der Timer T1 abgelaufen ist, begibt sich der Client in den RENEWING Status. In diesem Status, versucht der Client an Update seines Lease vom selben Server zu erhalten, indem eine RENEW Nahricht mit der bekannten Server DUID geschick wird. RFC 8415 empfiehlt den Wert auf 0.5 der bevorzugten Lebenszeit zu setzen. Anstelle diese Zeitspanne zu setzen, ermöglicht DaAPI es, den Anteil zu setzen, also etwa 0.5.</value>
+  </data>
+  <data name="ScopePropertyT1Name" xml:space="preserve">
+    <value>Eigenschaft: T1</value>
+  </data>
+  <data name="ScopePropertyT2Content" xml:space="preserve">
+    <value>Nachdem der Timer T2 abgelaufen ist, begibt sich der Client in den REBINDING Status. In diesem versucht der Client von irgendeinem DHCP Server eine Antwort zu erhalten. Er sendet dafür REBIND Nachrichten aus. RFC 8415 empfiehlt den Wert auf 0.8 der bevorzugten Lebenszeit zu setzen. Anstelle diese Zeitspanne zu setzen, ermöglicht DaAPI es, den Anteil zu setzen, also etwa 0.8.</value>
+  </data>
+  <data name="ScopePropertyT2Name" xml:space="preserve">
+    <value>Eigenschaft: T2</value>
+  </data>
+  <data name="ScopePropertyValidLifetimeContent" xml:space="preserve">
+    <value>Solange dieser Timer noch nicht abgelaufen ist, kann das Gerät die zugewiese Adresse nutzen. Sobald dieser Timer jedoch abge ist, darf das Gerät diese Adresse nicht mehr verwenden. Vgl Abschnitt 5.5.4 des RFC 4862 für mehr Details.</value>
+  </data>
+  <data name="ScopePropertyValidLifetimeName" xml:space="preserve">
+    <value>Eigenschaft: Gültige Lebenszeit</value>
+  </data>
+</root>

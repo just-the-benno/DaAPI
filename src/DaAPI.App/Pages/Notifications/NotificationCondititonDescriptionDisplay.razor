@@ -1,0 +1,13 @@
+﻿@inject IStringLocalizer<NotificationCondititonDescriptionDisplay> L
+
+@if (String.IsNullOrEmpty(ConditionName) == false && String.IsNullOrEmpty(PropertyName) == false)
+{
+    @L[$"{ConditionName}_{PropertyName}"]
+}
+
+@code {
+
+    [Parameter] public String ConditionName { get; set; }
+    [Parameter] public String PropertyName { get; set; }
+
+}

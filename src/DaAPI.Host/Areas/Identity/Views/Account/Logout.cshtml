@@ -1,0 +1,29 @@
+﻿@model LogoutViewModel
+
+
+<div class="login-page flex-fill heigth-auto">
+    <div class="d-flex flex-md-row flex-column justify-content-center">
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Logout</h2>
+            </div>
+            <div class="card-body login-card-body">
+                <p class="login-box-msg">Would you like to logout of IdentityServer?</p>
+
+                <form asp-action="Logout">
+                    <input type="hidden" name="logoutId" value="@Model.LogoutId" />
+
+                    <div class="d-flex flex-row">
+                        <div class="d-flex flex-fill"> </div>
+                        <!-- /.col -->
+                        <button type="submit" class="px-3 d-flex btn btn-primary">Yes</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+

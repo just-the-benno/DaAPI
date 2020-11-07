@@ -1,0 +1,28 @@
+﻿@inherits BootstrapInputBase<IEnumerable<String>>
+
+<select class="@CssClass" @attributes="AdditionalAttributes" @ref="_selection" multiple="multiple" @onchange=SelectionChanged value=@Value disabled="@DisableFormElements">
+    @ChildContent
+</select>
+
+@code {
+    private ElementReference _selection;
+
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    [Inject] public IJSRuntime JSRuntime { get; set; }
+
+    public async Task<IEnumerable<String>> GetAllSelections()
+    {
+        return (await JSRuntime.InvokeAsync<List<string>>("getSelectedValues", _selection)).ToList();
+    }
+
+    private async Task SelectionChanged(ChangeEventArgs args)
+    {
+        base.CurrentValue = await GetAllSelections();
+    }
+
+    protected override bool TryParseValueFromString(string value, out IEnumerable<string> result, out string validationErrorMessage)
+    {
+        throw new NotImplementedException();
+    }
+}

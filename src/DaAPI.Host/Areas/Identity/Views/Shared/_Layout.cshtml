@@ -1,0 +1,83 @@
+﻿@using IdentityServer4.Extensions
+@{ string name = null;
+                if (!true.Equals(ViewData["signed-out"]))
+                {
+                    name = Context.User?.GetDisplayName();
+                } }
+
+
+<!DOCTYPE html>
+<html class="full-heigth">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>DaAPI Identity</title>
+    <base href="/" />
+
+    <link href="css/plugins/fontawesome/css/all.min.css" rel="stylesheet">
+    <link href="css/plugins/icheck-bootstrap/icheck-bootstrap.min.css" rel="stylesheet" />
+    <link href="css/adminlte3/adminlte.min.css" rel="stylesheet" />
+    <link href="css/main.min.css" rel="stylesheet" />
+
+</head>
+<body class="hold-transition layout-top-nav">
+    <div class="wrapper d-flex flex-column">
+
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand-md navbar-light navbar-white">
+            <div class="container">
+                <a asp-action="Index" asp-controller="Identity" class="navbar-brand">
+                    <span class="brand-text font-weight-light">DaAPI Identity</span>
+                </a>
+
+                <button class="navbar-toggler order-1" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse order-3" id="navbarCollapse">
+                    <!-- Left navbar links -->
+                    @*<ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a href="index3.html" class="nav-link">Home</a>
+                        </li>
+                    </ul>*@
+                    <!-- SEARCH FORM -->
+
+                </div>
+
+                <!-- Right navbar links -->
+                <ul class="order-1 order-md-3 navbar-nav navbar-no-expand ml-auto">
+                </ul>
+            </div>
+        </nav>
+        <!-- /.navbar -->
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper d-flex flex-fill">
+            <!-- Main content -->
+            @RenderBody()
+            <!-- /.content -->
+        </div>
+        <!-- /.content-wrapper -->
+        <!-- Main Footer -->
+        <footer class="main-footer">
+            <!-- To the right -->
+            <div class="float-right d-none d-sm-inline">
+                Version 0.0.1
+            </div>
+            <!-- Default to the left -->
+            <strong><a href="https://github.com/just-the-benno/daapi">DaAPI</a>.</strong> DHCP and API.
+        </footer>
+    </div>
+    <!-- ./wrapper -->
+
+    <script src="js/plugins/jquery/jquery.min.js"></script>
+    <script src="js/plugins/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="js/adminlte3/adminlte.min.js"></script>
+    <script src="js/bootsrap-validation-helper.min.js"></script>
+
+
+    @RenderSection("scripts", required: false)
+
+</body>
+</html>

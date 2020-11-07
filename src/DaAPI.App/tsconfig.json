@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "outFile": "FrontendAssets/temp/ts/main.js",
+    "sourceMap": true,
+    "rootDir": "FrontendAssets/ts/",
+    "moduleResolution": "node",
+    "module": "AMD",
+    "incremental": false
+  },
+  "include": [
+    "FrontendAssets/ts/**/*"
+  ],
+  "exclude": []
+}

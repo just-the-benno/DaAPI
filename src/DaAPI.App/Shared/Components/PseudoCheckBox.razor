@@ -1,0 +1,15 @@
+﻿@if (Input.HasValue == true)
+{
+    if (Input.Value == true)
+    {
+        <i class="fas fa-check-square"></i>
+    }
+    else
+    {
+        <i class="far fa-square"></i>
+    }
+}
+
+@code {
+    [Parameter] public Boolean? Input { get; set; }
+}

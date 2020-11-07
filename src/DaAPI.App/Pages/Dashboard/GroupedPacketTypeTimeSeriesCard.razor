@@ -1,0 +1,161 @@
+﻿@using DaAPI.Core.Packets.DHCPv6
+@inject DHCPv6PacketResponseCodeHelper _responseCodeHelper
+@inject IStringLocalizer<GroupedPacketTypeTimeSeriesCard> L
+<div class="card">
+    <div class="card-header d-flex p-0">
+        <h3 class="card-title p-3">@Title</h3>
+
+        <div class="d-flex flex-fill">
+        </div>
+
+        <DateRangePicker class="form-control mt-2 max" placeholder="@L["SelectingDatesPlaceholder"]"
+                         @bind-StartDate="StartDate" @bind-EndDate="EndDate" MaxDate="DateTime.UtcNow" style="width:auto;" OnRangeSelect="@( async (x) => await LoadDataSets() )" />
+
+        <ul class="nav nav-pills ml-auto p-2">
+            @foreach (var item in _groupings)
+            {
+                <li class="nav-item">
+                    <a class="nav-link @(item.value == GroupedBy ? "active" : String.Empty)" @onclick=@(  async () => { GroupedBy = item.value; await LoadDataSets(); } )>@item.display</a>
+                </li>
+            }
+        </ul>
+    </div><!-- /.card-header -->
+    <div class="card-body">
+        <div class="tab-content">
+            <LoadingWhileContentNull Item="_loadingDummy" OnlyHide="true">
+                <Chart @ref="_doughnutChartJs"
+                       Config="@_config"
+                       TConfig="PieConfig"
+                       Width="600"
+                       Height="300" />
+            </LoadingWhileContentNull>
+            <!-- /.tab-pane -->
+        </div>
+        <!-- /.tab-content -->
+    </div><!-- /.card-body -->
+</div>
+
+
+@code {
+
+    private System.Threading.SemaphoreSlim semaphore = new System.Threading.SemaphoreSlim(1, 1);
+    private DateTime _lastLoad;
+
+    private List<(String display, DHCPv6PacketTypes value)> _groupings;
+
+    private Object _loadingDummy;
+
+    private Chart<PieConfig> _doughnutChartJs;
+    private PieConfig _config;
+
+    [Parameter]
+    public DHCPv6PacketTypes GroupedBy { get; set; } = DHCPv6PacketTypes.Solicit;
+
+    private DateTime? ConvertFromDataTimeOffset(DateTimeOffset? input) => input == null ? new DateTime?() : input.Value.UtcDateTime;
+
+    [Parameter]
+    public DateTimeOffset? StartDate { get; set; }
+
+    [Parameter]
+    public DateTimeOffset? EndDate { get; set; }
+
+    [Parameter]
+    public String Title { get; set; }
+
+    [Parameter]
+    public Func<DateTime?, DateTime?, DHCPv6PacketTypes, Task<IDictionary<Int32, Int32>>> GroupedDatasetLoad { get; set; }
+
+    [Parameter]
+    public DataSeriesDescription DataSeriesDescription { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        _groupings = new List<(String display, DHCPv6PacketTypes value)>
+{
+                    ("Solicit",DHCPv6PacketTypes.Solicit),
+                    ("Request",DHCPv6PacketTypes.REQUEST),
+                    ("Renew",DHCPv6PacketTypes.RENEW),
+                    ("Rebind",DHCPv6PacketTypes.REBIND),
+                    ("Decline",DHCPv6PacketTypes.DECLINE),
+                    ("Relase",DHCPv6PacketTypes.RELEASE),
+                    ("Confirm",DHCPv6PacketTypes.CONFIRM),
+            };
+
+        _config = new PieConfig
+        {
+            Options = new PieOptions(true)
+            {
+                Title = new OptionsTitle
+                {
+                    Display = false,
+                },
+                Responsive = true,
+                Animation = new ArcAnimation
+                {
+                    AnimateRotate = true,
+                    AnimateScale = true
+                }
+            }
+        };
+    }
+
+    private async Task LoadDataSets()
+    {
+        try
+        {
+            await semaphore.WaitAsync();
+
+            if ((DateTime.Now - _lastLoad).TotalSeconds < 1)
+            {
+                return;
+            }
+
+            if (_loadingDummy != null)
+            {
+                _config.Data.Datasets.Clear();
+                _config.Data.Labels.Clear();
+
+                await _doughnutChartJs.Update();
+
+                _loadingDummy = null;
+                StateHasChanged();
+            }
+
+            var dataSeries =
+                await GroupedDatasetLoad(ConvertFromDataTimeOffset(StartDate), ConvertFromDataTimeOffset(EndDate), GroupedBy);
+
+            _loadingDummy = new Object();
+            _lastLoad = DateTime.Now;
+
+            var errorDict = _responseCodeHelper.GetResponseCodesMapper();
+
+            var doughnutSet = new PieDataset
+            {
+                BackgroundColor = new IndexableOption<String>(dataSeries.Keys.Select(x => errorDict[GroupedBy].ContainsKey(x) == true ? errorDict[GroupedBy][x].Color : ColorUtil.RandomColorString()).ToArray()),
+                BorderWidth = 0,
+            };
+
+            _config.Data.Labels.AddRange(dataSeries.Keys.Select(x => errorDict[GroupedBy].ContainsKey(x) == true ? errorDict[GroupedBy][x].Name : "unknown"));
+
+            doughnutSet.AddRange(dataSeries.Values.OrderBy(x => x).Select(x => (Double) x));
+            _config.Data.Datasets.Add(doughnutSet);
+
+            await _doughnutChartJs.Update();
+
+            StateHasChanged();
+        }
+        finally
+        {
+            semaphore.Release();
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadDataSets();
+    }
+}

@@ -1,0 +1,38 @@
+@inject IStringLocalizer<App> L
+
+    <CascadingBlazoredModal>
+        <ServerInitilizedState>
+            <CascadingValue Name="Random" Value="@(new Random())">
+                <CascadingAuthenticationState>
+                    <Router AppAssembly="@typeof(Program).Assembly">
+                        <Found Context="routeData">
+                            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                                <NotAuthorized>
+                                    @if (!context.User.Identity.IsAuthenticated)
+                                    {
+                                        <RedirectToLogin />
+                                    }
+                                    else
+                                    {
+                                        <p>
+                                            @L["NotAuthorized"]
+                                        </p>
+                                    }
+                                </NotAuthorized>
+                                <Authorizing>
+                                    <LayoutView Layout="typeof(SinglePageLayout)">
+                                        <LoadingCentered Title="@L["LoadingTitle"]" Text="@L["LoadingText"]" />
+                                    </LayoutView>
+                                </Authorizing>
+                            </AuthorizeRouteView>
+                        </Found>
+                        <NotFound>
+                            <LayoutView Layout="@typeof(SinglePageLayout)">
+                                <ErrorCentered Text="@L["PageNotFoundErrorContent"]" />
+                            </LayoutView>
+                        </NotFound>
+                    </Router>
+                </CascadingAuthenticationState>
+            </CascadingValue>
+        </ServerInitilizedState>
+    </CascadingBlazoredModal>

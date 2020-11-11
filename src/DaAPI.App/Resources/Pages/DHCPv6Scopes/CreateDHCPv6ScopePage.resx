@@ -244,7 +244,7 @@
     <value>Enter a prefix here</value>
   </data>
   <data name="PropertiesCaption" xml:space="preserve">
-    <value>Properties</value>
+    <value>Options</value>
   </data>
   <data name="RemovePropertyButtonCaption" xml:space="preserve">
     <value>Remove Property</value>

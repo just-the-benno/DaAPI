@@ -301,12 +301,12 @@ namespace DaAPI.App.Pages.DHCPv6Scopes
                     Start = Start,
                     End = End,
                     ExcludedAddresses = ExcludedAddresses.Select(x => x.Value).ToList(),
-                    PrefixDelgationInfo = new DHCPv6PrefixDelgationInfoRequest
+                    PrefixDelgationInfo = HasPrefixInfo == true ? new DHCPv6PrefixDelgationInfoRequest
                     {
                         AssingedPrefixLength = PrefixDelgationInfo.AssingedPrefixLength,
                         Prefix = PrefixDelgationInfo.Prefix,
                         PrefixLength = PrefixDelgationInfo.PrefixLength,
-                    }
+                    } : null,
                 },
                 Resolver = new CreateScopeResolverRequest
                 {

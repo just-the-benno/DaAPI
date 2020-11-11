@@ -90,11 +90,11 @@ You can open a browser and access DaAPI via https://localhost:5001 (or any other
 
 After you create the user, the page refreshs, and you need to use the credentials to login into the system. After a successful login, you are redirected to an empty dashboard.  
 
-![DaAPI empty Dashboard after initilizing](https://raw.githubusercontent.com/just-the-benno/DaAPI/master/documentation/daapi-first-steps-initilize.png)
+![DaAPI empty Dashboard after initilizing](https://raw.githubusercontent.com/just-the-benno/DaAPI/master/documentation/daapi-first-steps-empty-dashboard.png)
 
 ### Assign interfaces to DaAPI
 
-![DaAPI Binding an interface](https://raw.githubusercontent.com/just-the-benno/DaAPI/master/documentation/daapi-first-steps-empty-dashboard.png)
+![DaAPI Binding an interface](https://raw.githubusercontent.com/just-the-benno/DaAPI/master/documentation/daapi-first-steps-bind-interface.png)
 
 By default, DaAPI is not listening to any interface, unless explicitly to said so.  You can choose the interface point in the menu and select the interfaces used by DaAPI. If you have multiple interfaces, a name can be an excellent hint to identify it. Besides, the name will be displayed in logs and analysis later. 
 

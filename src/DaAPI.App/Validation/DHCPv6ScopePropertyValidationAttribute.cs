@@ -15,9 +15,9 @@ namespace DaAPI.App.Validation
         {
             var objectInstance = (DHCPv6ScopePropertyViewModel)validationContext.ObjectInstance;
 
-            Boolean isValid = false;
+            Boolean isValid = true;
 
-            if (objectInstance.Type == DHCPv6ScopePropertyType.AddressList && value is IEnumerable<IPv6AddressString> addresses)
+            if (objectInstance.Type == DHCPv6ScopePropertyType.AddressList && value is IEnumerable<SimpleIPv6AddressString> addresses)
             {
                 foreach (var item in addresses)
                 {

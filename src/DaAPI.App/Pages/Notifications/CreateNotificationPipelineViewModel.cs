@@ -112,7 +112,7 @@ namespace DaAPI.App.Pages.Notifications
         private String _actorName;
 
         [Required(ErrorMessageResourceType = typeof(ValidationErrorMessages), ErrorMessageResourceName = nameof(ValidationErrorMessages.Required))]
-        [Display(Name = nameof(CreateNotificationPipelineViewModelDisplay.Condition), ResourceType = typeof(CreateNotificationPipelineViewModelDisplay))]
+        [Display(Name = nameof(CreateNotificationPipelineViewModelDisplay.Actor), ResourceType = typeof(CreateNotificationPipelineViewModelDisplay))]
         public String ActorName
         {
             get => _actorName;

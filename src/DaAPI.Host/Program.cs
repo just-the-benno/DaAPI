@@ -55,7 +55,12 @@ namespace DaAPI.Host
           Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>();
+                    //https://github.com/dotnet/aspnetcore/issues/19404
+                    if (args.Contains("--use-startup=false") == false)
+                    {
+                        webBuilder.UseStartup<Startup>();
+                    }
+
                     webBuilder.UseSerilog();
                 });
     }

@@ -25,11 +25,11 @@ using static DaAPI.Infrastructure.NotificationEngine.NotifciationsReadModels.V1;
 namespace DaAPI.IntegrationTests.Host.APIControllers
 {
     public class NotificationsControllerTester : ControllerTesterBase,
-          IClassFixture<WebApplicationFactory<Startup>>
+          IClassFixture<CustomWebApplicationFactory<Startup>>
     {
-        private readonly WebApplicationFactory<Startup> _factory;
+        private readonly CustomWebApplicationFactory<Startup> _factory;
 
-        public NotificationsControllerTester(WebApplicationFactory<Startup> factory)
+        public NotificationsControllerTester(CustomWebApplicationFactory<Startup> factory)
         {
             _factory = factory;
         }

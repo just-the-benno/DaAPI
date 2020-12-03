@@ -76,67 +76,67 @@ module.exports = function (grunt) {
         copy: {
             css: {
                 files: [
-                    { expand: true, flatten: true, src: ['FrontendAssets/temp/css/**'], dest: 'wwwroot/css/', filter: 'isFile' }
+                    { expand: true, flatten: true, src: ['FrontendAssets/temp/css/**'], dest: 'wwwroot/css-app/', filter: 'isFile' }
                 ]
             },
             assets: {
                 files: [
-                    { expand: true, flatten: true, src: ['FrontendAssets/images/**'], dest: 'wwwroot/img/' },
-                    { expand: true, flatten: true, src: ['FrontendAssets/icons/**'], dest: 'wwwroot/icons/', filter: 'isFile' },
-                    { expand: true, flatten: true, src: ['FrontendAssets/fonts/**'], dest: 'wwwroot/fonts/', filter: 'isFile' },
+                    { expand: true, flatten: true, src: ['FrontendAssets/images/**'], dest: 'wwwroot/img-app/' },
+                    { expand: true, flatten: true, src: ['FrontendAssets/icons/**'], dest: 'wwwroot/icons-app/', filter: 'isFile' },
+                    { expand: true, flatten: true, src: ['FrontendAssets/fonts/**'], dest: 'wwwroot/fonts-app/', filter: 'isFile' },
                 ]
             },
             js: {
                 files: [
-                    { expand: true, flatten: true, src: ['FrontendAssets/temp/js/**'], dest: 'wwwroot/js/', filter: 'isFile' }
+                    { expand: true, flatten: true, src: ['FrontendAssets/temp/js/**'], dest: 'wwwroot/js-app/', filter: 'isFile' }
                 ]
             },
             ts: {
                 files: [
-                    { expand: true, flatten: true, src: ['FrontendAssets/temp/ts/**'], dest: 'wwwroot/js/', filter: 'isFile' }
+                    { expand: true, flatten: true, src: ['FrontendAssets/temp/ts/**'], dest: 'wwwroot/js-app/', filter: 'isFile' }
                 ]
             },
             ts_debug: {
                 files: [
-                    { expand: true, flatten: true, src: ['FrontendAssets/ts/**'], dest: 'wwwroot/ts/', filter: 'isFile' }
+                    { expand: true, flatten: true, src: ['FrontendAssets/ts/**'], dest: 'wwwroot/ts-app/', filter: 'isFile' }
                 ]
             },
             admin_lte:
             {
                 files: [
-                    { expand: true, flatten: false, cwd: 'node_modules/admin-lte/dist/css', src: '**', dest: 'wwwroot/css/adminlte3/', filter: 'isFile' },
-                    { expand: true, flatten: false, cwd: 'node_modules/admin-lte/dist/js', src: '*.js*', dest: 'wwwroot/js/adminlte3/', filter: 'isFile' }
+                    { expand: true, flatten: false, cwd: 'node_modules/admin-lte/dist/css', src: '**', dest: 'wwwroot/css-app/adminlte3/', filter: 'isFile' },
+                    { expand: true, flatten: false, cwd: 'node_modules/admin-lte/dist/js', src: '*.js*', dest: 'wwwroot/js-app/adminlte3/', filter: 'isFile' }
                 ]
             },
             fontawesome:
             {
                 files: [
-                    { expand: true, flatten: false, cwd: 'node_modules/@fortawesome/fontawesome-free/css', src: '**', dest: 'wwwroot/css/plugins/fontawesome/css/', filter: 'isFile' },
-                    { expand: true, flatten: false, cwd: 'node_modules/@fortawesome/fontawesome-free/webfonts', src: '**', dest: 'wwwroot/css/plugins/fontawesome/webfonts/', filter: 'isFile' },
+                    { expand: true, flatten: false, cwd: 'node_modules/@fortawesome/fontawesome-free/css', src: '**', dest: 'wwwroot/css-app/plugins/fontawesome/css/', filter: 'isFile' },
+                    { expand: true, flatten: false, cwd: 'node_modules/@fortawesome/fontawesome-free/webfonts', src: '**', dest: 'wwwroot/css-app/plugins/fontawesome/webfonts/', filter: 'isFile' },
                 ]
             },
             icheck_bootstrap:
             {
                 files: [
-                    { expand: true, flatten: false, cwd: 'node_modules/icheck-bootstrap', src: '**', dest: 'wwwroot/css/plugins/icheck-bootstrap/', filter: 'isFile' }
+                    { expand: true, flatten: false, cwd: 'node_modules/icheck-bootstrap', src: '**', dest: 'wwwroot/css-app/plugins/icheck-bootstrap/', filter: 'isFile' }
                 ]
             },
             bootstrap:
             {
                 files: [
-                    { expand: true, flatten: false, cwd: 'node_modules/bootstrap/dist/js', src: '**', dest: 'wwwroot/js/plugins/bootstrap/', filter: 'isFile' },
+                    { expand: true, flatten: false, cwd: 'node_modules/bootstrap/dist/js', src: '**', dest: 'wwwroot/js-app/plugins/bootstrap/', filter: 'isFile' },
                 ]
             },
             popper:
             {
                 files: [
-                    { expand: true, flatten: false, cwd: 'FrontendAssets/custom-js-files/popper/', src: ['popper.min.js'], dest: 'wwwroot/js/plugins/popper/', filter: 'isFile' },
+                    { expand: true, flatten: false, cwd: 'FrontendAssets/custom-js-files/popper/', src: ['popper.min.js'], dest: 'wwwroot/js-app/plugins/popper/', filter: 'isFile' },
                 ]
             },
             jquery:
             {
                 files: [
-                    { expand: true, flatten: false, cwd: 'node_modules/jquery/dist', src: '**', dest: 'wwwroot/js/plugins/jquery/', filter: 'isFile' },
+                    { expand: true, flatten: false, cwd: 'node_modules/jquery/dist', src: '**', dest: 'wwwroot/js-app/plugins/jquery/', filter: 'isFile' },
                 ]
             }
         },

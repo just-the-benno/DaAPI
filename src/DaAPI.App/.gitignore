@@ -8,6 +8,13 @@ wwwroot/js
 wwwroot/ts
 wwwroot/icons
 wwwroot/fonts
+wwwroot/img-app
+wwwroot/css-app
+wwwroot/js-app
+wwwroot/ts-app
+wwwroot/icons
+wwwroot/fonts-app
+
 
 #tscache
 .tscache

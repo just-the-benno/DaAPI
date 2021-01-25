@@ -126,6 +126,9 @@
   <data name="GreaterThan" xml:space="preserve">
     <value>has to be greater than {1}</value>
   </data>
+  <data name="IPv4Address" xml:space="preserve">
+    <value>is not a valid ipv4 address</value>
+  </data>
   <data name="IPv6Address" xml:space="preserve">
     <value>is not a valid ipv6 address</value>
   </data>

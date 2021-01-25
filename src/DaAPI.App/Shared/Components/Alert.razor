@@ -1,0 +1,12 @@
+﻿<div class="alert alert-@AlertType">
+    @Content
+</div>
+@code {
+
+    [Parameter]
+    public String Content { get; set; }
+
+    [Parameter]
+    public String AlertType { get; set; } = "danger";
+
+}

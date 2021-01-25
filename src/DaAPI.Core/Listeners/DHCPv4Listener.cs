@@ -24,7 +24,7 @@ namespace DaAPI.Core.Listeners
         }
 
         public static DHCPv4Listener Create(
-            String physicalInterfaceId, DHCPListenerName name, IPv6Address ipv6Address)
+            String physicalInterfaceId, DHCPListenerName name, IPv4Address ipv6Address)
         {
             DHCPv4Listener listener = new DHCPv4Listener();
             listener.Apply(new DHCPv4ListenerCreatedEvent

@@ -108,5 +108,45 @@ namespace DaAPI.UnitTests.Core.Common.DHCPv4
             Assert.Equal(duid, secondIdentifier.DUID);
         }
 
+        [Fact]
+        public void AddHWAdress_HwAlreadySet()
+        {
+            UUIDDUID duid = new UUIDDUID(Guid.NewGuid());
+
+            Random random = new Random();
+            Byte[] hwAddress = random.NextBytes(12);
+            Byte[] packetHwAddress = random.NextBytes(12);
+
+            DHCPv4ClientIdentifier firstIdentifier = DHCPv4ClientIdentifier.FromDuid(duid, hwAddress);
+            DHCPv4ClientIdentifier secondIdentifier = firstIdentifier.AddHardwareAddress(packetHwAddress);
+
+            Assert.NotEqual(packetHwAddress, secondIdentifier.HwAddress);
+            Assert.Equal(hwAddress, secondIdentifier.HwAddress);
+            Assert.Equal(duid, secondIdentifier.DUID);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void HasHardwareAddress(Boolean isSet)
+        {
+            UUIDDUID duid = new UUIDDUID(Guid.NewGuid());
+
+            Random random = new Random();
+            Byte[] hwAddress = random.NextBytes(12);
+
+            DHCPv4ClientIdentifier identifier;
+            if(isSet == true)
+            {
+                identifier = DHCPv4ClientIdentifier.FromDuid(duid, hwAddress);
+            }
+            else
+            {
+                identifier = DHCPv4ClientIdentifier.FromDuid(duid);
+            }
+
+            Boolean actual = identifier.HasHardwareAddress();
+            Assert.Equal(isSet, actual);
+        }
     }
 }

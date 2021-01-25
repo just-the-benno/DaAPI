@@ -88,6 +88,15 @@ namespace DaAPI.App.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to is not a valid ipv4 address.
+        /// </summary>
+        public static string IPv4Address {
+            get {
+                return ResourceManager.GetString("IPv4Address", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to is not a valid ipv6 address.
         /// </summary>
         public static string IPv6Address {

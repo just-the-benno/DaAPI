@@ -14,11 +14,13 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
+using static DaAPI.Shared.Requests.DHCPv4InterfaceRequests.V1;
 using static DaAPI.Shared.Requests.DHCPv6InterfaceRequests.V1;
 using static DaAPI.Shared.Requests.DHCPv6ScopeRequests.V1;
 using static DaAPI.Shared.Requests.LocalUserRequests.V1;
 using static DaAPI.Shared.Requests.NotificationPipelineRequests.V1;
 using static DaAPI.Shared.Requests.StatisticsControllerRequests.V1;
+using static DaAPI.Shared.Responses.DHCPv4InterfaceResponses.V1;
 using static DaAPI.Shared.Responses.DHCPv6InterfaceResponses.V1;
 using static DaAPI.Shared.Responses.DHCPv6LeasesResponses.V1;
 using static DaAPI.Shared.Responses.DHCPv6ScopeResponses.V1;
@@ -63,59 +65,20 @@ namespace DaAPI.App.Services
             return settings;
         }
 
-        public async Task<ServerInitilizedResponse> ServerIsInitilized()
+        public async Task<ServerInitilizedResponse> ServerIsInitilized() => await GetResponse<ServerInitilizedResponse>("api/Server/IsInitialized");
+        public async Task<ServerInitilizedResponse> ServerIsInitilized2() => await GetResponse<ServerInitilizedResponse>("api/Server/IsInitialized2");
+
+        public async Task<Boolean> InitilizeServer(InitilizeServeRequest request) =>
+            await ExecuteCommand(() =>  _client.PostAsJsonAsync("api/Server/Initialize", request));
+
+        public async Task<IEnumerable<LocalUserOverview>> GetUsers() => await GetResponse<IEnumerable<LocalUserOverview>>("api/LocalUsers");
+
+        private async Task<Boolean> ExecuteCommand(Func<Task<HttpResponseMessage>> serviceCaller)
         {
             try
             {
-                var result = await _client.GetFromJsonAsync<ServerInitilizedResponse>("api/Server/IsInitialized");
-                return result;
-            }
-            catch (Exception)
-            {
-                return ServerInitilizedResponse.NotInitilized;
-            }
-        }
-
-        public async Task<ServerInitilizedResponse> ServerIsInitilized2()
-        {
-            try
-            {
-                var result = await _client.GetFromJsonAsync<ServerInitilizedResponse>("api/Server/IsInitialized2");
-                return result;
-            }
-            catch (Exception)
-            {
-                return ServerInitilizedResponse.NotInitilized;
-            }
-        }
-
-        public async Task<Boolean> InitilizeServer(InitilizeServeRequest request)
-        {
-            var response = await _client.PostAsJsonAsync("api/Server/Initialize", request);
-            return response.IsSuccessStatusCode;
-        }
-
-        public async Task<IEnumerable<LocalUserOverview>> GetUsers()
-        {
-            try
-            {
-                var result = await _client.GetFromJsonAsync<IEnumerable<LocalUserOverview>>("api/LocalUsers");
-                return result;
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
-        public async Task<Boolean> ResetLocalUserPassword(String localUserId, ResetPasswordRequest request)
-        {
-            try
-            {
-                var response = await _client.PutAsJsonAsync(
-                    $"api/LocalUsers/ChangePassword/{localUserId}", request);
-
-                return response.IsSuccessStatusCode;
+                var result = await serviceCaller();
+                return result.IsSuccessStatusCode;
             }
             catch (Exception)
             {
@@ -124,40 +87,42 @@ namespace DaAPI.App.Services
             }
         }
 
-        public async Task<Boolean> CreateLocalUser(CreateUserRequest request)
+        public async Task<Boolean> ResetLocalUserPassword(String localUserId, ResetPasswordRequest request) =>
+            await ExecuteCommand(() => _client.PutAsJsonAsync(
+                   $"api/LocalUsers/ChangePassword/{localUserId}", request));
+
+        public async Task<Boolean> CreateLocalUser(CreateUserRequest request) =>
+            await ExecuteCommand(() => _client.PostAsJsonAsync("api/LocalUsers/", request));
+
+        public async Task<Boolean> SendDeleteLocalUserRequest(String localUserId) =>
+            await ExecuteCommand(() => _client.DeleteAsync($"api/LocalUsers/{localUserId}"));
+
+        public async Task<Boolean> CreateDHCPv6Interface(CreateDHCPv6Listener request) =>
+            await ExecuteCommand(() => _client.PostAsJsonAsync("api/interfaces/dhcpv6/", request));
+
+        public async Task<Boolean> SendDeleteDHCPv6InterfaceRequest(Guid interfaceId) =>
+            await ExecuteCommand(() => _client.DeleteAsync($"api/interfaces/dhcpv6/{interfaceId}"));
+
+        public async Task<Boolean> CreateDHCPv6Scope(CreateOrUpdateDHCPv6ScopeRequest request) =>
+            await ExecuteCommand(() => _client.PostAsync("api/scopes/dhcpv6/", GetStringContentAsJson(request)));
+
+        public async Task<Boolean> SendDeleteNotificationPipelineRequest(Guid pipelineId) =>
+            await ExecuteCommand(() => _client.DeleteAsync($"/api/notifications/pipelines/{pipelineId}"));
+
+        public async Task<Boolean> CreateNotificationPipeline(CreateNotifcationPipelineRequest request) =>
+            await ExecuteCommand(() => _client.PostAsJsonAsync("/api/notifications/pipelines/", request));
+
+        public async Task<Boolean> SendDeleteDHCPv6ScopeRequest(DHCPv6ScopeDeleteRequest request) =>
+            await ExecuteCommand(() => _client.DeleteAsync($"/api/scopes/dhcpv6/{request.Id}/?includeChildren={request.IncludeChildren}"));
+
+        public async Task<Boolean> UpdateDHCPv6Scope(CreateOrUpdateDHCPv6ScopeRequest request, String scopeId) =>
+            await ExecuteCommand(() => _client.PutAsync($"api/scopes/dhcpv6/{scopeId}", GetStringContentAsJson(request)));
+
+        private async Task<TResult> GetResponse<TResult>(String url) where TResult : class
         {
             try
             {
-                var response = await _client.PostAsJsonAsync("api/LocalUsers/", request);
-                return response.IsSuccessStatusCode;
-            }
-            catch (Exception)
-            {
-                _logger.LogError("unable to send service request");
-                return false;
-            }
-        }
-
-        public async Task<Boolean> SendDeleteLocalUserRequest(String localUserId)
-        {
-            try
-            {
-                var response = await _client.DeleteAsync($"api/LocalUsers/{localUserId}");
-
-                return response.IsSuccessStatusCode;
-            }
-            catch (Exception)
-            {
-                _logger.LogError("unable to send service request");
-                return false;
-            }
-        }
-
-        public async Task<DHCPv6InterfaceOverview> GetDHCPv6Interfaces()
-        {
-            try
-            {
-                var response = await _client.GetFromJsonAsync<DHCPv6InterfaceOverview>("api/interfaces/dhcpv6");
+                var response = await _client.GetFromJsonAsync<TResult>(url);
                 return response;
             }
             catch (Exception)
@@ -167,85 +132,10 @@ namespace DaAPI.App.Services
             }
         }
 
-        public async Task<Boolean> CreateDHCPv6Interface(CreateDHCPv6Listener request)
-        {
-            try
-            {
-                var response = await _client.PostAsJsonAsync("api/interfaces/dhcpv6/", request);
-                return response.IsSuccessStatusCode;
-            }
-            catch (Exception)
-            {
-                _logger.LogError("unable to send service request");
-                return false;
-            }
-        }
-
-        public async Task<Boolean> SendDeleteDHCPv6InterfaceRequest(Guid interfaceId)
-        {
-            try
-            {
-                var response = await _client.DeleteAsync($"api/interfaces/dhcpv6/{interfaceId}");
-                return response.IsSuccessStatusCode;
-            }
-            catch (Exception)
-            {
-                _logger.LogError("unable to send service request");
-                return false;
-            }
-        }
-
-        public async Task<IEnumerable<ScopeItem>> GetScopesAsList()
-        {
-            try
-            {
-                var response = await _client.GetFromJsonAsync<IEnumerable<ScopeItem>>("api/scopes/dhcpv6/list");
-                return response;
-            }
-            catch (Exception)
-            {
-                _logger.LogError("unable to send service request");
-                return null;
-            }
-        }
-
-        public async Task<IEnumerable<ScopeTreeViewItem>> GetScopesAsTree()
-        {
-            try
-            {
-                var response = await _client.GetFromJsonAsync<IEnumerable<ScopeTreeViewItem>>("api/scopes/dhcpv6/tree");
-                return response;
-            }
-            catch (Exception)
-            {
-                _logger.LogError("unable to send service request");
-                return null;
-            }
-        }
-
-
-        public async Task<Boolean> CreateDHCPv6Scope(CreateOrUpdateDHCPv6ScopeRequest request)
-        {
-            try
-            {
-                var response = await _client.PostAsync("api/scopes/dhcpv6/", GetStringContentAsJson(request));
-                return response.IsSuccessStatusCode;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "unable to send service request");
-                return false;
-            }
-        }
-
-        public async Task<IEnumerable<ScopeResolverDescription>> GetDHCPv6ScopeResolverDescription()
-        {
-            var response = await _client.GetFromJsonAsync<IEnumerable<ScopeResolverDescription>>(
-                "api/scopes/dhcpv6/resolvers/description");
-
-            return response;
-        }
-
+        public async Task<DHCPv6InterfaceOverview> GetDHCPv6Interfaces() => await GetResponse<DHCPv6InterfaceOverview>("api/interfaces/dhcpv6");
+        public async Task<IEnumerable<ScopeItem>> GetScopesAsList() => await GetResponse<IEnumerable<ScopeItem>>("api/scopes/dhcpv6/list");
+        public async Task<IEnumerable<ScopeTreeViewItem>> GetScopesAsTree() => await GetResponse<IEnumerable<ScopeTreeViewItem>>("api/scopes/dhcpv6/tree");
+        public async Task<IEnumerable<ScopeResolverDescription>> GetDHCPv6ScopeResolverDescription() => await GetResponse<IEnumerable<ScopeResolverDescription>>("api/scopes/dhcpv6/resolvers/description");
         public async Task<DHCPv6ScopePropertiesResponse> GetDHCPv6ScopeProperties(Guid scopeId, Boolean includeParents = true) => await GetDHCPv6ScopeProperties(scopeId.ToString(), includeParents);
 
         public async Task<DHCPv6ScopePropertiesResponse> GetDHCPv6ScopeProperties(String scopeId, Boolean includeParents = true)
@@ -269,78 +159,11 @@ namespace DaAPI.App.Services
         }
 
 
-        public async Task<IEnumerable<NotificationPipelineReadModel>> GetNotifactionPipelines()
-        {
-            var response = await _client.GetFromJsonAsync<IEnumerable<NotificationPipelineReadModel>>(
-                "/api/notifications/pipelines/");
+        public async Task<IEnumerable<NotificationPipelineReadModel>> GetNotifactionPipelines() => await GetResponse<IEnumerable<NotificationPipelineReadModel>>("/api/notifications/pipelines/");
 
-            return response;
-        }
+        public async Task<NotificationPipelineDescriptions> GetpipelineDescriptions() => await GetResponse<NotificationPipelineDescriptions>("/api/notifications/pipelines/descriptions");
 
-        public async Task<NotificationPipelineDescriptions> GetpipelineDescriptions()
-        {
-            var response = await _client.GetFromJsonAsync<NotificationPipelineDescriptions>(
-                "/api/notifications/pipelines/descriptions");
 
-            return response;
-        }
-
-        public async Task<Boolean> SendDeleteNotificationPipelineRequest(Guid pipelineId)
-        {
-            try
-            {
-                var response = await _client.DeleteAsync($"/api/notifications/pipelines/{pipelineId}");
-                return response.IsSuccessStatusCode;
-            }
-            catch (Exception)
-            {
-                _logger.LogError("unable to send service request");
-                return false;
-            }
-        }
-
-        public async Task<Boolean> CreateNotificationPipeline(CreateNotifcationPipelineRequest request)
-        {
-            try
-            {
-                var response = await _client.PostAsJsonAsync("/api/notifications/pipelines/", request);
-                return response.IsSuccessStatusCode;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "unable to send service request");
-                return false;
-            }
-        }
-
-        public async Task<Boolean> SendDeleteDHCPv6ScopeRequest(DHCPv6ScopeDeleteRequest request)
-        {
-            try
-            {
-                var response = await _client.DeleteAsync(
-                    $"/api/scopes/dhcpv6/{request.Id}/?includeChildren={request.IncludeChildren}");
-                return response.IsSuccessStatusCode;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "unable to send service request");
-                return false;
-            }
-        }
-
-        public async Task<Boolean> UpdateDHCPv6Scope(CreateOrUpdateDHCPv6ScopeRequest request, String scopeId)
-        {
-            try
-            {
-                var response = await _client.PutAsync($"api/scopes/dhcpv6/{scopeId}", GetStringContentAsJson(request));
-                return response.IsSuccessStatusCode;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "unable to send service request");
-                return false;
-            }
-        }
 
         private async Task<T> GetResult<T>(String url, T fallback)
         {
@@ -458,6 +281,18 @@ namespace DaAPI.App.Services
             var result = await GetResult<IEnumerable<THandeled>>($"/api/Statistics/HandledDHCPv6Packet/{scopeId}?amount={amount}", Array.Empty<THandeled>());
             return result;
         }
+
+        #region DHCPv4
+
+        public async Task<DHCPv4InterfaceOverview> GetDHCPv4Interfaces() => await GetResponse<DHCPv4InterfaceOverview>("api/interfaces/dhcpv4");
+
+        public async Task<Boolean> CreateDHCPv4Interface(CreateDHCPv4Listener request) =>
+                    await ExecuteCommand(() => _client.PostAsJsonAsync("api/interfaces/dhcpv4/", request));
+
+        public async Task<Boolean> SendDeleteDHCPv4InterfaceRequest(Guid interfaceId) =>
+            await ExecuteCommand(() => _client.DeleteAsync($"api/interfaces/dhcpv4/{interfaceId}"));
+
+        #endregion
 
     }
 }

@@ -17,5 +17,10 @@ namespace DaAPI.Infrastructure.StorageEngine.DHCPv4
         Task<Boolean> LogInvalidDHCPv4Packet(DHCPv4Packet packet);
         Task<Boolean> LogFilteredDHCPv4Packet(DHCPv4Packet packet, string filterName);
         Task<DHCPv4RootScope> GetRootScope(IScopeResolverManager<DHCPv4Packet, IPv4Address> scopeResolverManager);
+
+        Task<T> GetAggregateRoot<T>(Guid id) where T : AggregateRootWithEvents, new();
+        Task<Boolean> DeleteAggregateRoot<T>(Guid id) where T : AggregateRootWithEvents;
+        Task<Boolean> Save(AggregateRootWithEvents root);
+        Task<Boolean> CheckIfAggrerootExists<T>(Guid id) where T : AggregateRootWithEvents, new();
     }
 }

@@ -1,0 +1,11 @@
+﻿@using System.Linq.Expressions;
+@typeparam TValue
+
+<div class="invalid-feedback mb-3">
+    <ValidationMessage For="For" />
+</div>
+
+@code {
+
+    [Parameter] public Expression<Func<TValue>> For { get; set; }
+}

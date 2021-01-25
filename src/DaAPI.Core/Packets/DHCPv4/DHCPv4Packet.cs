@@ -560,7 +560,10 @@ namespace DaAPI.Core.Packets.DHCPv4
             DHCPv4PacketClientIdentifierOption clientIdentifierOption = _options.OfType<DHCPv4PacketClientIdentifierOption>().FirstOrDefault();
             if (clientIdentifierOption != null)
             {
-                _clientIdenfier = clientIdentifierOption.Identifier.AddHardwareAddress(ClientHardwareAddress);
+                if(clientIdentifierOption.Identifier.HasHardwareAddress() == false)
+                {
+                    _clientIdenfier = clientIdentifierOption.Identifier.AddHardwareAddress(ClientHardwareAddress);
+                }
             }
             else
             {

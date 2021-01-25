@@ -112,6 +112,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Resources\Pages\DHCPv4Interfaces\CreateDHCPv4ListenerDisplay.Designer.cs">
+      <DependentUpon>CreateDHCPv4ListenerDisplay.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
     <Compile Update="Resources\Pages\DHCPv6Interfaces\CreateDHCPv6ListenerDisplay.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -150,6 +155,11 @@
   </ItemGroup>
 
   <ItemGroup>
+
+    <EmbeddedResource Update="Resources\Pages\DHCPv4Interfaces\CreateDHCPv4ListenerDisplay.resx">
+      <LastGenOutput>CreateDHCPv4ListenerDisplay.Designer.cs</LastGenOutput>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
 
     <EmbeddedResource Update="Resources\Pages\DHCPv6Interfaces\CreateDHCPv6ListenerDisplay.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>

@@ -11,8 +11,8 @@ namespace DaAPI.Core.Common
     {
         #region Properties
 
-        public Byte[] HwAddress { get; set; }
-        public DUID DUID { get; set; }
+        public Byte[] HwAddress { get; init; } = Array.Empty<Byte>();
+        public DUID DUID { get; init; }
 
         #endregion
 
@@ -58,10 +58,10 @@ namespace DaAPI.Core.Common
 
         public static DHCPv4ClientIdentifier FromOptionData(byte[] identifierRawVaue)
         {
-            if (identifierRawVaue.Length == 7 && 
+            if (identifierRawVaue.Length == 7 &&
                 identifierRawVaue[0] == (Byte)DHCPv4Packet.DHCPv4PacketHardwareAddressTypes.Ethernet)
             {
-                return DHCPv4ClientIdentifier.FromHwAddress(ByteHelper.CopyData(identifierRawVaue,1));
+                return DHCPv4ClientIdentifier.FromHwAddress(ByteHelper.CopyData(identifierRawVaue, 1));
             }
             else
             {
@@ -89,7 +89,7 @@ namespace DaAPI.Core.Common
             return new DHCPv4ClientIdentifier
             {
                 DUID = this.DUID,
-                HwAddress = ByteHelper.CopyData(clientHardwareAddress),
+                HwAddress = this.HwAddress.Length > 0 ? ByteHelper.CopyData(this.HwAddress) : ByteHelper.CopyData(clientHardwareAddress),
             };
         }
 
@@ -100,7 +100,7 @@ namespace DaAPI.Core.Common
             if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
 
-            if(other is DHCPv4ClientIdentifier  == true)
+            if (other is DHCPv4ClientIdentifier == true)
             {
                 return Equals((DHCPv4ClientIdentifier)other);
             }
@@ -112,7 +112,7 @@ namespace DaAPI.Core.Common
 
         public bool Equals(DHCPv4ClientIdentifier other)
         {
-            if(this.DUID != DUID.Empty)
+            if (this.DUID != DUID.Empty)
             {
                 return this.DUID.Equals(other.DUID);
             }
@@ -144,5 +144,7 @@ namespace DaAPI.Core.Common
             String result = $"DHCPv4Client-{SimpleByteToStringConverter.Convert(appendix)}";
             return result;
         }
+
+        public Boolean HasHardwareAddress() => HwAddress.Length > 0;
     }
 }

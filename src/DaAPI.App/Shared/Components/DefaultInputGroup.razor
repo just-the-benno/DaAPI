@@ -1,0 +1,20 @@
+﻿@using System.Linq.Expressions;
+@typeparam TValue
+
+<InputGroup>
+    @ChildContent
+    <InputGroupAppend Symbol="Symbol" />
+    <ValidationMessageContainer For="For" />
+</InputGroup>
+@code {
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public String Symbol { get; set; }
+
+    [Parameter] public Expression<Func<TValue>> For { get; set; }
+
+
+}

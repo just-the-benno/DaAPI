@@ -40,7 +40,7 @@ namespace DaAPI.UnitTests.Infrastructure.ServiceBus.MessageHandler
                 storageEngineMock.Object,
                 Mock.Of<ILogger<DHCPv6PacketFileteredMessageHandler>>());
 
-            await handler.Handle(new DHCPv6PacketFileteredMessage(packet, filtername), CancellationToken.None);
+            await handler.Handle(new DHCPv6PacketFilteredMessage(packet, filtername), CancellationToken.None);
 
             storageEngineMock.Verify();
         }

@@ -8,16 +8,20 @@ using DaAPI.Core.FilterEngines.DHCPv6;
 using DaAPI.Core.Notifications;
 using DaAPI.Core.Notifications.Actors;
 using DaAPI.Core.Notifications.Conditions;
+using DaAPI.Core.Packets.DHCPv4;
 using DaAPI.Core.Packets.DHCPv6;
 using DaAPI.Core.Scopes;
+using DaAPI.Core.Scopes.DHCPv4;
 using DaAPI.Core.Scopes.DHCPv6;
 using DaAPI.Core.Services;
 using DaAPI.Host.Identity;
 using DaAPI.Host.Identity.Data;
 using DaAPI.Host.Identity.Models;
 using DaAPI.Host.Infrastrucutre;
+using DaAPI.Infrastructure.FilterEngines.DHCPv4;
 using DaAPI.Infrastructure.FilterEngines.DHCPv6;
 using DaAPI.Infrastructure.InterfaceEngines;
+using DaAPI.Infrastructure.LeaseEngines.DHCPv4;
 using DaAPI.Infrastructure.LeaseEngines.DHCPv6;
 using DaAPI.Infrastructure.NotificationEngine;
 using DaAPI.Infrastructure.ServiceBus;
@@ -25,6 +29,7 @@ using DaAPI.Infrastructure.ServiceBus.MessageHandler;
 using DaAPI.Infrastructure.ServiceBus.Messages;
 using DaAPI.Infrastructure.Services;
 using DaAPI.Infrastructure.StorageEngine;
+using DaAPI.Infrastructure.StorageEngine.DHCPv4;
 using DaAPI.Infrastructure.StorageEngine.DHCPv6;
 using DaAPI.Shared.JsonConverters;
 using IdentityServer4.Configuration;
@@ -152,20 +157,22 @@ namespace DaAPI.Host
             services.AddDbContext<StorageContext>((x) => x.UseSqlite(Configuration.GetConnectionString("DaAPIDb"), option =>
     option.MigrationsAssembly(typeof(StorageContext).Assembly.FullName)), ServiceLifetime.Singleton, ServiceLifetime.Singleton);
 
-            services.AddSingleton<DHCPv6RootScope>(sp =>
+            services.AddSingleton<IServiceBus, MediaRBasedServiceBus>();
+            services.AddTransient<ISerializer, JSONBasedSerializer>();
+
+            services.AddSingleton(sp =>
             {
                 var storageEngine = sp.GetRequiredService<IDHCPv6StorageEngine>();
-                var scope = storageEngine.GetRootScope(sp.GetRequiredService<IScopeResolverManager<DHCPv6Packet, IPv6Address>>()).GetAwaiter().GetResult();
+                DHCPv6RootScope scope = storageEngine.GetRootScope(sp.GetRequiredService<IScopeResolverManager<DHCPv6Packet, IPv6Address>>()).GetAwaiter().GetResult();
                 return scope;
             });
 
             services.AddTransient<IDHCPv6ServerPropertiesResolver, DatabaseDHCPv6ServerPropertiesResolver>();
-            services.AddTransient<ISerializer, JSONBasedSerializer>();
             services.AddSingleton<IScopeResolverManager<DHCPv6Packet, IPv6Address>, DHCPv6ScopeResolverManager>();
-            services.AddSingleton<IServiceBus, MediaRBasedServiceBus>();
             services.AddSingleton<IDHCPv6PacketFilterEngine, SimpleDHCPv6PacketFilterEngine>();
-            services.AddSingleton<IDHCPv6InterfaceEngine, DHCPv6InterfaceEngine>();
             services.AddTransient<IDHCPv6LeaseEngine, DHCPv6LeaseEngine>();
+
+            services.AddSingleton<IDHCPv6InterfaceEngine, DHCPv6InterfaceEngine>();
             services.AddSingleton<IDHCPv6StorageEngine, DHCPv6StorageEngine>();
             services.AddSingleton<IDHCPv6ReadStore, StorageContext>();
             services.AddSingleton<IDHCPv6EventStore, StorageContext>();
@@ -179,7 +186,7 @@ namespace DaAPI.Host
             services.AddTransient<INotificationHandler<InvalidDHCPv6PacketArrivedMessage>>(sp => new InvalidDHCPv6PacketArrivedMessageHandler(
            sp.GetRequiredService<IDHCPv6StorageEngine>(), sp.GetService<ILogger<InvalidDHCPv6PacketArrivedMessageHandler>>()));
 
-            services.AddTransient<INotificationHandler<DHCPv6PacketFileteredMessage>>(sp => new DHCPv6PacketFileteredMessageHandler(
+            services.AddTransient<INotificationHandler<DHCPv6PacketFilteredMessage>>(sp => new DHCPv6PacketFileteredMessageHandler(
               sp.GetRequiredService<IDHCPv6StorageEngine>(), sp.GetService<ILogger<DHCPv6PacketFileteredMessageHandler>>()));
 
             services.AddTransient<INotificationHandler<DHCPv6PacketReadyToSendMessage>>(sp => new DHCPv6PacketReadyToSendMessageHandler(
@@ -199,21 +206,52 @@ namespace DaAPI.Host
             services.AddTransient<NxOsStaticRouteUpdaterNotificationActor>();
             services.AddTransient<DHCPv6ScopeIdNotificationCondition>();
 
+
+            services.AddSingleton(sp =>
+            {
+                var storageEngine = sp.GetRequiredService<IDHCPv4StorageEngine>();
+                DHCPv4RootScope scope = storageEngine.GetRootScope(sp.GetRequiredService<IScopeResolverManager<DHCPv4Packet, IPv4Address>>()).GetAwaiter().GetResult();
+                return scope;
+            });
+
+            //services.AddTransient<IDHCPv4ServerPropertiesResolver, DatabaseDHCPv4ServerPropertiesResolver>();
+            services.AddSingleton<IScopeResolverManager<DHCPv4Packet, IPv4Address>, DHCPv4ScopeResolverManager>();
+            services.AddSingleton<IDHCPv4PacketFilterEngine, SimpleDHCPv4PacketFilterEngine>();
+            services.AddTransient<IDHCPv4LeaseEngine, DHCPv4LeaseEngine>();
+
+            services.AddSingleton<IDHCPv4InterfaceEngine, DHCPv4InterfaceEngine>();
+            services.AddSingleton<IDHCPv4StorageEngine, DHCPv4StorageEngine>();
+            services.AddSingleton<IDHCPv4ReadStore, StorageContext>();
+            services.AddSingleton<IDHCPv4EventStore, StorageContext>();
+
+            services.AddTransient<INotificationHandler<DHCPv4PacketArrivedMessage>>(sp => new DHCPv4PacketArrivedMessageHandler(
+                sp.GetRequiredService<IServiceBus>(), sp.GetRequiredService<IDHCPv4PacketFilterEngine>(), sp.GetService<ILogger<DHCPv4PacketArrivedMessageHandler>>()));
+
+            services.AddTransient<INotificationHandler<InvalidDHCPv4PacketArrivedMessage>>(sp => new InvalidDHCPv4PacketArrivedMessageHandler(
+                sp.GetRequiredService<IDHCPv4StorageEngine>(), sp.GetService<ILogger<InvalidDHCPv4PacketArrivedMessageHandler>>()));
+
+            services.AddTransient<INotificationHandler<ValidDHCPv4PacketArrivedMessage>>(sp => new ValidDHCPv4PacketArrivedMessageHandler(
+           sp.GetRequiredService<IServiceBus>(), sp.GetRequiredService<IDHCPv4LeaseEngine>(), sp.GetService<ILogger<ValidDHCPv4PacketArrivedMessageHandler>>()));
+
+            services.AddTransient<INotificationHandler<DHCPv4PacketFilteredMessage>>(sp => new DHCPv4PacketFileteredMessageHandler(
+              sp.GetRequiredService<IDHCPv4StorageEngine>(), sp.GetService<ILogger<DHCPv4PacketFileteredMessageHandler>>()));
+
+            services.AddTransient<INotificationHandler<DHCPv4PacketReadyToSendMessage>>(sp => new DHCPv4PacketReadyToSendMessageHandler(
+              sp.GetRequiredService<IDHCPv4InterfaceEngine>(), sp.GetService<ILogger<DHCPv4PacketReadyToSendMessageHandler>>()));
+
             services.AddSingleton(sp =>
             {
                 var storageEngine = sp.GetRequiredService<IDHCPv6StorageEngine>();
                 var scope = storageEngine.GetRootScope(sp.GetRequiredService<IScopeResolverManager<DHCPv6Packet, IPv6Address>>()).GetAwaiter().GetResult();
                 return scope;
             });
-
+            
             services.AddSingleton<ServiceFactory>(p => p.GetService);
             services.AddLogging();
 
             services.AddHttpContextAccessor();
             services.AddScoped<IUserIdTokenExtractor, HttpContextBasedUserIdTokenExtractor>();
-
             services.AddMediatR(typeof(Startup).Assembly);
-
             services.AddHostedService<HostedService.LeaseTimerHostedService>();
             services.AddHostedService<HostedService.CleanupDatabaseTimerHostedService>();
         }

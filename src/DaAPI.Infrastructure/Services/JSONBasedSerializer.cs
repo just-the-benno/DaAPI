@@ -1,5 +1,4 @@
 ﻿using DaAPI.Core.Services;
-using DaAPI.Infrastructure.Services.Helper;
 using DaAPI.Infrastructure.Services.JsonConverters;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -24,15 +23,13 @@ namespace DaAPI.Infrastructure.Services
             _settings = new JsonSerializerSettings
             {
                 Converters = new List<JsonConverter> {
-                                new IPv4AddressJSONConverter(),
-                                new IPv4SubnetJSONConverter(),
-                                new DHCPv4ScopePropertyJSONConverter(),
                                 new IPv6AddressAsStringJsonConverter(),
                                 new IPv6SubnetMaskAsStringJsonConverter(),
-
+                                new IPv4AddressAsStringJsonConverter(),
+                                new IPv4SubnetMaskAsStringJsonConverter(),
                                },
+
                 ObjectCreationHandling = ObjectCreationHandling.Replace,
-                ContractResolver = new BaseSpecifiedConcreteClassConverter()
             };
         }
 

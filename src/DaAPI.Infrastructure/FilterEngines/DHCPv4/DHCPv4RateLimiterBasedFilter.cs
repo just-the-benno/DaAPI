@@ -8,10 +8,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace DaAPI.Infrastructure.FilterEngines.DHCPv4
 {
-    public class DHCPv4RateLimiterBasedFilter : RateLimitBasedFilter<IPv4Address>, IDHCPv4RateLimitBasedFilter
+    public class DHCPv4RateLimiterBasedFilter : RateLimitBasedFilter<IPv4Address>, IDHCPv4PacketFilter
     {
         #region Fields
 
@@ -25,9 +26,7 @@ namespace DaAPI.Infrastructure.FilterEngines.DHCPv4
 
         #region Constructor
 
-        public DHCPv4RateLimiterBasedFilter(
-            
-            )
+        public DHCPv4RateLimiterBasedFilter()
         {
         }
 
@@ -35,9 +34,10 @@ namespace DaAPI.Infrastructure.FilterEngines.DHCPv4
 
         #region Methods
 
-        public bool FilterByRateLimit(DHCPv4Packet packet)
+        public Task<Boolean> ShouldPacketBeFiltered(DHCPv4Packet packet)
         {
-            return base.FilterByRateLimit(packet.IPHeader.Source, PacketsPerSecons);
+            Boolean result = base.FilterByRateLimit(packet.Header.Source, PacketsPerSecons);
+            return Task.FromResult(result);
         }
 
         #endregion

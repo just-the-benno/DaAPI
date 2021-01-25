@@ -1,6 +1,8 @@
 ﻿using DaAPI.Core.Common;
+using DaAPI.Core.Notifications;
 using DaAPI.Core.Packets.DHCPv4;
 using DaAPI.Core.Services;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,39 +14,24 @@ using static DaAPI.Core.Scopes.DHCPv4.DHCPv4ScopeEvents;
 
 namespace DaAPI.Core.Scopes.DHCPv4
 {
-    public class DHCPv4Scope : AggregateRoot
+    public class DHCPv4Scope : Scope<DHCPv4Scope, DHCPv4Packet, IPv4Address, DHCPv4Leases, DHCPv4Lease, DHCPv4ScopeAddressProperties, DHCPv4ScopeProperties, DHCPv4ScopeProperty, Byte, DHCPv4ScopePropertyType>
     {
         #region Fields
 
-        private readonly List<DHCPv4Scope> _subscopes;
-        private readonly IReadOnlyList<DHCPv4Scope> _returnScopes;
-
-        #endregion
-
-        #region Properties
-
-        public ScopeName Name { get; private set; }
-        public ScopeDescription Description { get; private set; }
-        public Boolean IsSuspendend { get; private set; }
-
-        public IDHCPv4ScopeResolver Resolver { get; private set; }
-        public DHCPv4Scope ParentScope { get; private set; }
-        public IReadOnlyList<DHCPv4Scope> Subscopes => _returnScopes;
-
-        public DHCPv4ScopeProperties Properties { get; private set; }
-        public DHCPv4ScopeAddressProperties AddressRelatedProperties { get; private set; }
-
-        public DHCPv4Leases Leases { get; private set; }
+        private static readonly TimeSpan _leaseReboundTime = TimeSpan.FromSeconds(60);
+        private ILogger<DHCPv4Scope> _logger;
 
         #endregion
 
         #region constructor and factories
 
-        private DHCPv4Scope(Guid id, Action<DomainEvent> addtionalApplier) : base(id, addtionalApplier)
+        private DHCPv4Scope(Guid id, Action<DomainEvent> addtionalApplier, Action<NotifcationTrigger> addtionalNotifier) : base(
+            id,
+            DHCPv4ScopeAddressProperties.Empty,
+            DHCPv4ScopeProperties.Empty,
+            addtionalApplier,
+            addtionalNotifier)
         {
-            Properties = new DHCPv4ScopeProperties();
-            _subscopes = new List<DHCPv4Scope>();
-            _returnScopes = _subscopes.AsReadOnly();
             Leases = new DHCPv4Leases(Guid.NewGuid(), (e) =>
             {
                 switch (e)
@@ -60,103 +47,27 @@ namespace DaAPI.Core.Scopes.DHCPv4
                 }
                 addtionalApplier(e);
             });
-
-            base.EventHandlingStrategy = EventHandlingStratgies.Multiple;
         }
 
         internal static DHCPv4Scope FromInstructions(
             DHCPv4ScopeCreateInstruction instructions,
-            IDHCPv4ScopeResolverManager resolverManager,
-            Action<DomainEvent> rootApplier
+            Action<DomainEvent> rootApplier,
+            Action<NotifcationTrigger> rootNotifier,
+            ILogger<DHCPv4Scope> logger
             )
         {
-            DHCPv4Scope scope = new DHCPv4Scope(instructions.Id, rootApplier)
+            DHCPv4Scope scope = new DHCPv4Scope(instructions.Id, rootApplier, rootNotifier)
             {
                 Name = new ScopeName(instructions.Name),
                 Description = new ScopeDescription(instructions.Description),
-                Properties = instructions.Properties,
+                Properties = instructions.ScopeProperties,
                 AddressRelatedProperties = instructions.AddressProperties,
             };
 
-            IDHCPv4ScopeResolver resolver = resolverManager.InitializeResolver(instructions.ResolverInformations);
-            scope.Resolver = resolver;
+            scope._logger = logger;
 
             return scope;
         }
-
-        public static DHCPv4Scope NotFound => null;
-
-
-        #endregion
-
-        #region queries
-
-        private void GetProperties(DHCPv4ScopeProperties result)
-        {
-            if (ParentScope != null)
-            {
-                ParentScope.GetProperties(result);
-            }
-
-            result.OverrideProperties(Properties);
-        }
-
-        public DHCPv4ScopeProperties GetScopeProperties()
-        {
-            DHCPv4ScopeProperties result = DHCPv4ScopeProperties.Empty;
-            GetProperties(result);
-
-            return result;
-        }
-
-        private void GetAddressProperties(DHCPv4ScopeAddressProperties result)
-        {
-            if (ParentScope != null)
-            {
-                ParentScope.GetAddressProperties(result);
-            }
-
-            result.OverrideProperties(AddressRelatedProperties);
-        }
-
-        public DHCPv4ScopeAddressProperties GetAddressProperties()
-        {
-            DHCPv4ScopeAddressProperties result = DHCPv4ScopeAddressProperties.Empty;
-            GetAddressProperties(result);
-
-            return result;
-        }
-
-        public IEnumerable<Guid> GetChildIds(Boolean onlyDirectChildren)
-        {
-            if (onlyDirectChildren == true)
-            {
-                return new List<Guid>(_subscopes.Select(x => x.Id));
-            }
-
-            List<Guid> result = new List<Guid>();
-
-            foreach (DHCPv4Scope item in _subscopes)
-            {
-                item.GetChildIds(result, true);
-            }
-
-            return result;
-        }
-
-        private void GetChildIds(ICollection<Guid> ids, Boolean includeChildren)
-        {
-            ids.Add(this.Id);
-            if (includeChildren == true)
-            {
-                foreach (DHCPv4Scope child in _subscopes)
-                {
-                    child.GetChildIds(ids, true);
-                }
-            }
-        }
-
-        public IEnumerable<DHCPv4Scope> GetChildScopes() => _subscopes.AsEnumerable();
 
         #endregion
 
@@ -178,7 +89,7 @@ namespace DaAPI.Core.Scopes.DHCPv4
             {
                 if (addressProperties.ReuseAddressIfPossible == true)
                 {
-                    currentLease.Renew(addressProperties.ValidLifetime.Value, true);
+                    currentLease.Renew(addressProperties.LeaseTime.Value, true);
                     leaseAddress = IPv4Address.FromAddress(currentLease.Address);
                     newLeaseNeeded = false;
                 }
@@ -223,9 +134,10 @@ namespace DaAPI.Core.Scopes.DHCPv4
                 Leases.AddLease(
                     Guid.NewGuid(),
                     leaseAddress,
-                    addressProperties.ValidLifetime.Value,
+                    addressProperties.LeaseTime.Value,
                     clientIdentifier,
-                    Resolver.HasUniqueIdentifier == true ? Resolver.GetUniqueIdentifier(packet) : null
+                    Resolver.HasUniqueIdentifier == true ? Resolver.GetUniqueIdentifier(packet) : null,
+                    null
                     );
             }
 
@@ -307,7 +219,7 @@ namespace DaAPI.Core.Scopes.DHCPv4
                         {
                             if (addressProperties.ReuseAddressIfPossible == true)
                             {
-                                lease.Renew(addressProperties.ValidLifetime.Value, false);
+                                lease.Renew(addressProperties.LeaseTime.Value, false);
                                 leaseAddress = lease.Address;
                             }
                             else
@@ -338,7 +250,7 @@ namespace DaAPI.Core.Scopes.DHCPv4
                     {
                         if (addressProperties.ReuseAddressIfPossible == true)
                         {
-                            lease.Renew(addressProperties.ValidLifetime.Value, false);
+                            lease.Renew(addressProperties.LeaseTime.Value, false);
                             leaseAddress = lease.Address;
                         }
                         else
@@ -358,7 +270,7 @@ namespace DaAPI.Core.Scopes.DHCPv4
                             }
                             else
                             {
-                                lease.Reactived(addressProperties.ValidLifetime.Value);
+                                lease.Reactived(addressProperties.LeaseTime.Value);
                                 leaseAddress = lease.Address;
                             }
                         }
@@ -390,9 +302,10 @@ namespace DaAPI.Core.Scopes.DHCPv4
                         Leases.AddLease(
                             Guid.NewGuid(),
                             leaseAddress,
-                            addressProperties.ValidLifetime.Value,
+                            addressProperties.LeaseTime.Value,
                             identifier,
-                            Resolver.HasUniqueIdentifier == true ? Resolver.GetUniqueIdentifier(packet) : null
+                            Resolver.HasUniqueIdentifier == true ? Resolver.GetUniqueIdentifier(packet) : null,
+                            null
                             );
                     }
 
@@ -425,10 +338,16 @@ namespace DaAPI.Core.Scopes.DHCPv4
                 base.Apply(new DHCPv4DeclineHandledEvent(this.Id, packet, DHCPv4DeclineHandledEvent.DeclineErros.IPAddressNotFound));
                 return DHCPv4Packet.Empty;
             }
-            DHCPv4Lease lease = Leases.GetLeaseByIPAddress(address);
+            DHCPv4Lease lease = Leases.GetLeaseByAddress(address);
             if (lease == DHCPv4Lease.Empty)
             {
                 base.Apply(new DHCPv4DeclineHandledEvent(this.Id, packet, DHCPv4DeclineHandledEvent.DeclineErros.LeaseNotFound));
+                return DHCPv4Packet.Empty;
+            }
+
+            if(lease.State == LeaseStates.Suspended)
+            {
+                base.Apply(new DHCPv4DeclineHandledEvent(this.Id, packet, DHCPv4DeclineHandledEvent.DeclineErros.AddressAlreadySuspended));
                 return DHCPv4Packet.Empty;
             }
 
@@ -438,27 +357,16 @@ namespace DaAPI.Core.Scopes.DHCPv4
                 return DHCPv4Packet.Empty;
             }
 
-            if (Leases.IsAddressSuspended(lease.Address) == true)
-            {
-                base.Apply(new DHCPv4DeclineHandledEvent(this.Id, packet, DHCPv4DeclineHandledEvent.DeclineErros.AddressAlreadySuspended));
-                return DHCPv4Packet.Empty;
-            }
-
             lease.Suspend(null);
             base.Apply(new DHCPv4DeclineHandledEvent(this.Id, packet));
             return DHCPv4Packet.Empty;
         }
 
-        public Boolean HasParentScope()
-        {
-            return ParentScope != DHCPv4Scope.NotFound;
-        }
-
         internal DHCPv4Packet HandleRelease(DHCPv4Packet packet)
         {
-            IPv4Address address = packet.IPHeader.Source;
+            IPv4Address address = packet.Header.Source;
 
-            DHCPv4Lease lease = Leases.GetLeaseByIPAddress(address);
+            DHCPv4Lease lease = Leases.GetLeaseByAddress(address);
             if (lease == DHCPv4Lease.Empty)
             {
                 base.Apply(new DHCPv4ReleaseHandledEvent(this.Id, packet, DHCPv4ReleaseHandledEvent.ReleaseError.NoLeaseFound));
@@ -502,69 +410,16 @@ namespace DaAPI.Core.Scopes.DHCPv4
 
         #region applies and when
 
-        internal void SetResolver(IDHCPv4ScopeResolver resolver)
+        protected override DHCPv4ScopeAddressProperties GetEmptytProperties() => DHCPv4ScopeAddressProperties.Empty;
+
+        protected override void Reactived()
         {
-            Resolver = resolver;
+            base.Apply(new DHCPv4ScopeReactivedEvent(this.Id));
         }
 
-        internal void DetachFromParent(Boolean includedChildren)
+        protected override void Suspend()
         {
-            ParentScope._subscopes.Remove(this);
-            this.ParentScope = DHCPv4Scope.NotFound;
-
-            if (includedChildren == true)
-            {
-                foreach (DHCPv4Scope item in _subscopes)
-                {
-                    item.DetachFromParent(true);
-                }
-            }
-        }
-
-        internal void SetParent(DHCPv4Scope parent)
-        {
-            parent.AddSubscope(this);
-            this.ParentScope = parent;
-        }
-
-        internal void SetSuspendedState(Boolean includeChildren)
-        {
-            DHCPv4ScopeAddressProperties properties = GetAddressProperties();
-
-            Boolean addressPropertiesAreInValid;
-            if (HasParentScope() == false)
-            {
-                addressPropertiesAreInValid = properties.ValueAreValidForRoot() == false;
-            }
-            else
-            {
-                addressPropertiesAreInValid =
-                properties.AreTimeValueValid() == false ||
-                ParentScope.AddressRelatedProperties.IsAddressRangeBetween(this.AddressRelatedProperties) == false;
-            }
-
-            if (addressPropertiesAreInValid == true && IsSuspendend == false)
-            {
-                base.Apply(new DHCPv4ScopeSuspendedEvent(this.Id));
-            }
-            else if (addressPropertiesAreInValid == false && IsSuspendend == true)
-            {
-                base.Apply(new DHCPv4ScopeReactivedEvent(this.Id));
-            }
-
-            if (includeChildren == true)
-            {
-                foreach (var child in _subscopes)
-                {
-                    child.SetSuspendedState(true);
-                }
-            }
-        }
-
-        private void AddSubscope(DHCPv4Scope child)
-        {
-            this._subscopes.Add(child);
-            //this._returnScopes = this._subscopes.AsReadOnly();
+            base.Apply(new DHCPv4ScopeSuspendedEvent(this.Id));
         }
 
         protected override void When(DomainEvent domainEvent)
@@ -574,13 +429,12 @@ namespace DaAPI.Core.Scopes.DHCPv4
 
             switch (domainEvent)
             {
-
                 case DHCPv4ScopePropertiesUpdatedEvent e:
                     Properties = e.Properties;
                     break;
                 case DHCPv4ScopeAddressPropertiesUpdatedEvent e:
                     AddressRelatedProperties = e.AddressProperties;
-                    SetSuspendedState(true);
+                    SetSuspendedState(true, false);
                     break;
                 case DHCPv4ScopeDescriptionUpdatedEvent e:
                     Description = new ScopeDescription(e.Description);

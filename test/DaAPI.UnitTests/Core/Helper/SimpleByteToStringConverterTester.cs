@@ -13,8 +13,7 @@ namespace DaAPI.UnitTests.Core.Helper
         [InlineData(new Byte[] { 16,255, 150 }, "10FF96")]
         public void Convert(Byte[] input, String expected)
         {
-            SimpleByteToStringConverter converter = new SimpleByteToStringConverter();
-            String output = converter.Convert(input);
+            String output = SimpleByteToStringConverter.Convert(input);
             Assert.Equal(expected, output);
         }
 

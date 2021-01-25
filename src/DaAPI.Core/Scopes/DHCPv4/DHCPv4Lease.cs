@@ -7,35 +7,12 @@ using static DaAPI.Core.Scopes.DHCPv4.DHCPv4LeaseEvents;
 
 namespace DaAPI.Core.Scopes.DHCPv4
 {
-    public class DHCPv4Lease : Entity
+    public class DHCPv4Lease : Lease<DHCPv4Lease, IPv4Address>
     {
-        public enum DHCPv4LeaseCancelReasons
-        {
-            NotSpecified = 0,
-            ResolverChanged = 1,
-        }
-
-        public enum DHCPv4LeaseStates
-        {
-            Pending = 1,
-            Active = 2,
-            Revoked = 3,
-            Released = 4,
-            Inactive = 5,
-            Suspended = 6,
-            Canceled = 7,
-        }
-
-        private static readonly TimeSpan _defaultSuspendTime = TimeSpan.FromMinutes(5);
-
         #region Properties
 
-        public DHCPv4LeaseStates State { get; private set; }
-        public IPv4Address Address { get; private set; }
-        public Byte[] UniqueIdentifier { get; private set; }
-        public DHCPv4ClientIdentifier ClientIdentifier { get; set; }
-        public DateTime Start { get; private set; }
-        public DateTime End { get; private set; }
+        public DHCPv4ClientIdentifier Identifier { get; private set; }
+        public override Byte[] ClientUniqueIdentifier => Identifier.DUID != null ? Identifier.DUID.GetAsByteStream() : Identifier.HwAddress;
 
         #endregion
 
@@ -46,139 +23,88 @@ namespace DaAPI.Core.Scopes.DHCPv4
             IPv4Address address,
             DateTime start,
             DateTime end,
-            DHCPv4ClientIdentifier clientIdentifier,
+            DHCPv4ClientIdentifier identifier,
             Byte[] uniqueIdentifier,
+            Guid? ancestorId,
             Action<DomainEvent> addtionalApplier
-             ) : base(id, addtionalApplier)
+             ) : base(id, address, start, end, uniqueIdentifier, ancestorId, addtionalApplier)
         {
-            State = DHCPv4LeaseStates.Pending;
-            Address = IPv4Address.FromAddress(address);
-            Start = start;
-            End = end;
-
-            UniqueIdentifier = uniqueIdentifier == null ? Array.Empty<Byte>() : ByteHelper.CopyData(uniqueIdentifier);
-            ClientIdentifier = clientIdentifier;
+            Identifier = identifier;
         }
-
-        public static DHCPv4Lease Empty => null;
 
         #endregion
 
-        #region applies and when
+        #region Methods
 
-        internal void Renew(TimeSpan value, Boolean reset)
+        internal override void Renew(TimeSpan value, Boolean reset)
         {
-            if (value.TotalMinutes < 0)
-            {
-                throw new ArgumentException("the renew time should be positive", nameof(value));
-            }
-
-            if (State != DHCPv4LeaseStates.Active && State != DHCPv4LeaseStates.Pending)
-            {
-                throw new InvalidOperationException("only an lease within state 'active' or 'pending' could be renewd");
-            }
-
+            CanRenew(value);
             base.Apply(new DHCPv4LeaseRenewedEvent(this.Id, DateTime.UtcNow + value, reset));
         }
 
-        internal void Reactived(TimeSpan value)
+        internal override void Reactived(TimeSpan value)
         {
-            if (value.TotalMinutes < 0)
-            {
-                throw new ArgumentException("the renew time should be positive", nameof(value));
-            }
-
-            List<DHCPv4LeaseStates> expectedStates = new List<DHCPv4LeaseStates>
-            {
-            DHCPv4LeaseStates.Canceled, 
-                DHCPv4LeaseStates.Released, 
-                DHCPv4LeaseStates.Revoked, 
-                DHCPv4LeaseStates.Suspended,
-                DHCPv4LeaseStates.Inactive,
-
-            };
-
-            if (expectedStates.Contains(State) == false)
-            {
-                throw new InvalidOperationException("unable to reactive the leases based on its current state");
-            }
+            CanReactived(value);
 
             base.Apply(new DHCPv4LeaseRenewedEvent(this.Id, DateTime.UtcNow + value, false));
         }
 
-        internal void Revoke()
-        {
-            base.Apply(new DHCPv4LeaseRevokedEvent(this.Id));
-        }
+        internal override void Revoke() => base.Apply(new DHCPv4LeaseRevokedEvent(this.Id));
+        internal override void Release() => base.Apply(new DHCPv4LeaseReleasedEvent(this.Id));
 
-        internal void Release()
+        internal override void Suspend(TimeSpan? suspentionTime)
         {
-            base.Apply(new DHCPv4LeaseReleasedEvent(this.Id));
-        }
-
-        internal void Suspend(TimeSpan? suspentionTime)
-        {
-            TimeSpan timeToAdd = _defaultSuspendTime;
-            if (suspentionTime.HasValue == true)
-            {
-                timeToAdd = suspentionTime.Value;
-            }
+            TimeSpan timeToAdd = GetSuspensionTime(suspentionTime);
 
             base.Apply(new DHCPv4AddressSuspendedEvent(this.Id, this.Address, DateTime.UtcNow + timeToAdd));
         }
 
-        internal void RemovePendingState()
+        internal override void Cancel(LeaseCancelReasons reason)
         {
-            if (IsPending() == false)
-            {
-                throw new InvalidOperationException("the pending state can not remove if the lease is not pending andymore");
-            }
+            CanCancel();
+            base.Apply(new DHCPv4LeaseCanceledEvent(Id, reason));
+        }
 
+        internal override void RemovePendingState()
+        {
+            CanRemovePendingState();
             base.Apply(new DHCPv4LeaseActivatedEvent(this.Id));
         }
 
-        internal void Cancel(DHCPv4LeaseCancelReasons reason)
+        internal override void Expired()
         {
-            if (IsCancelable() == false)
-            {
-                throw new InvalidOperationException();
-            }
-
-            base.Apply(new DHCPv4LeaseCanceledEvent(Id, reason));
+            CanExpire();
+            base.Apply(new DHCPv4LeaseExpiredEvent(this.Id));
         }
+
+        #endregion
+
+        #region When
 
         protected override void When(DomainEvent domainEvent)
         {
             switch (domainEvent)
             {
                 case DHCPv4LeaseRenewedEvent e:
-                    End = e.End;
-                    if (e.Reset == true)
-                    {
-                        State = DHCPv4LeaseStates.Pending;
-                    }
-                    else
-                    {
-                        State = DHCPv4LeaseStates.Active;
-                    }
+                    HandleRenew(e.End, e.Reset);
                     break;
                 case DHCPv4LeaseRevokedEvent _:
-                    State = DHCPv4LeaseStates.Revoked;
+                    HandleRevoked();
                     break;
                 case DHCPv4LeaseReleasedEvent _:
-                    State = DHCPv4LeaseStates.Released;
+                    HandleReleased();
                     break;
                 case DHCPv4AddressSuspendedEvent _:
-                    State = DHCPv4LeaseStates.Suspended;
+                    HandleSuspended();
                     break;
                 case DHCPv4LeaseActivatedEvent _:
-                    State = DHCPv4LeaseStates.Active;
+                    HandleActivated();
                     break;
                 case DHCPv4LeaseCanceledEvent _:
-                    State = DHCPv4LeaseStates.Canceled;
+                    HandleCanceled();
                     break;
                 case DHCPv4LeaseExpiredEvent _:
-                    State = DHCPv4LeaseStates.Inactive;
+                    HandleExpire();
                     break;
                 default:
                     break;
@@ -187,42 +113,5 @@ namespace DaAPI.Core.Scopes.DHCPv4
 
         #endregion
 
-        #region queries
-
-        public Boolean MatchesUniqueIdentiifer(byte[] value)
-        {
-            if (UniqueIdentifier == null || UniqueIdentifier.Length == 0)
-            {
-                return false;
-            }
-
-            return ByteHelper.AreEqual(value, UniqueIdentifier);
-        }
-
-        public Boolean AddressIsInUse()
-        {
-            return
-                State != DHCPv4LeaseStates.Revoked &&
-                State != DHCPv4LeaseStates.Released &&
-                State != DHCPv4LeaseStates.Inactive &&
-                State != DHCPv4LeaseStates.Suspended;
-        }
-
-        public Boolean IsPending()
-        {
-            return State == DHCPv4LeaseStates.Pending;
-        }
-
-        public Boolean IsActive()
-        {
-            return State == DHCPv4LeaseStates.Active;
-        }
-
-        public Boolean IsCancelable()
-        {
-            return State == DHCPv4LeaseStates.Pending || State == DHCPv4LeaseStates.Active;
-        }
-
-        #endregion
     }
 }

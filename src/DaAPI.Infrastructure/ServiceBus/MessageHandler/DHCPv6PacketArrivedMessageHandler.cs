@@ -39,7 +39,7 @@ namespace DaAPI.Infrastructure.ServiceBus.MessageHandler
                 _logger.LogDebug("STEP RESULT: Packet is invalid");
                 _logger.LogDebug("NEXT STEP: drop the packet");
 
-                await _serviceBus.Publish(new DHCPv6PacketFileteredMessage(notification.Packet, filterResult.Item2));
+                await _serviceBus.Publish(new DHCPv6PacketFilteredMessage(notification.Packet, filterResult.Item2));
             }
             else
             {

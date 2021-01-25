@@ -105,7 +105,7 @@ namespace DaAPI.UnitTests.Infrastructure.LeaseEngine.DHCPv6
 
             DHCPv6RootScope rootScope = GetRootScope(random, out DHCPv6Packet request);
 
-            Mock<IDHCPv6StorageEngine> storageMock = new Mock<IDHCPv6StorageEngine>(MockBehavior.Strict);
+            Mock<IDHCPv6EventStore> storageMock = new Mock<IDHCPv6EventStore>(MockBehavior.Strict);
             storageMock.Setup(x => x.Save(rootScope)).ReturnsAsync(true).Verifiable();
 
             Mock<IDHCPv6ServerPropertiesResolver> propertyResolver = new Mock<IDHCPv6ServerPropertiesResolver>(MockBehavior.Strict);

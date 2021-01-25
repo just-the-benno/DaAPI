@@ -15,7 +15,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4.Resolvers
 {
     public abstract class DHCPv4ScopeResolverWithLogicalOperationTesterBase
     {
-        protected void TestDescription(IDHCPv4ScopeResolver resolver, String expectedName)
+        protected void TestDescription(IScopeResolver<DHCPv4Packet, IPv4Address> resolver, String expectedName)
         {
             ScopeResolverDescription description = resolver.GetDescription();
             Assert.NotNull(description);
@@ -31,35 +31,31 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4.Resolvers
         }
 
         protected void CheckMeetsConditions(
-            Func<IDHCPv4ScopeResolverContainingOtherResolvers> resolverCreater,
-            IEnumerable<Tuple<Boolean,Boolean,Boolean>> inputs, Random random)
+            Func<DHCPv4ScopeResolverContainingOtherResolvers> resolverCreater,
+            (Boolean, Boolean, Boolean) input, Random random)
         {
-            foreach (var item in inputs)
-            {
-                IDHCPv4ScopeResolverContainingOtherResolvers resolver = resolverCreater();
+            DHCPv4ScopeResolverContainingOtherResolvers resolver = resolverCreater();
 
-                DHCPv4Packet packet = new DHCPv4Packet(
-                    new IPv4HeaderInformation(random.GetIPv4Address(), random.GetIPv4Address()),
-                    random.NextBytes(6),
-                    (UInt32)random.Next(),
-                    IPv4Address.Empty,
-                    IPv4Address.Empty,
-                    IPv4Address.Empty
-                    );
+            DHCPv4Packet packet = new DHCPv4Packet(
+                new IPv4HeaderInformation(random.GetIPv4Address(), random.GetIPv4Address()),
+                random.NextBytes(6),
+                (UInt32)random.Next(),
+                IPv4Address.Empty,
+                IPv4Address.Empty,
+                IPv4Address.Empty
+                );
 
-                Mock<IDHCPv4ScopeResolver> firstInnerMock = new Mock<IDHCPv4ScopeResolver>(MockBehavior.Strict);
-                firstInnerMock.Setup(x => x.PacketMeetsCondition(packet)).Returns(item.Item1);
+            var firstInnerMock = new Mock<IScopeResolver<DHCPv4Packet, IPv4Address>>(MockBehavior.Strict);
+            firstInnerMock.Setup(x => x.PacketMeetsCondition(packet)).Returns(input.Item1);
 
-                Mock<IDHCPv4ScopeResolver> secondInnerMock = new Mock<IDHCPv4ScopeResolver>(MockBehavior.Strict);
-                secondInnerMock.Setup(x => x.PacketMeetsCondition(packet)).Returns(item.Item2);
+            var secondInnerMock = new Mock<IScopeResolver<DHCPv4Packet, IPv4Address>>(MockBehavior.Strict);
+            secondInnerMock.Setup(x => x.PacketMeetsCondition(packet)).Returns(input.Item2);
 
-                resolver.AddResolver(firstInnerMock.Object);
-                resolver.AddResolver(secondInnerMock.Object);
+            resolver.AddResolver(firstInnerMock.Object);
+            resolver.AddResolver(secondInnerMock.Object);
 
-                Boolean result = resolver.PacketMeetsCondition(packet);
-                Assert.Equal(item.Item3, result);
-            }
-
+            Boolean result = resolver.PacketMeetsCondition(packet);
+            Assert.Equal(input.Item3, result);
         }
     }
 }

@@ -16,6 +16,12 @@ namespace DaAPI.Core.Scopes
             Next = 2,
         }
 
+        #region const
+
+        private const int _maxTriesForRandom = 5000;
+
+        #endregion
+
         #region Fields
 
         private HashSet<TAddress> _excludedAddresses = new HashSet<TAddress>();
@@ -114,6 +120,10 @@ namespace DaAPI.Core.Scopes
                 throw new ArgumentException("all possible addresses are excluded");
             }
 
+            if(start.IsGreaterThan(end) == true)
+            {
+                throw new ArgumentException($"start {start} has to be smaller than end {end}");
+            }
 
             Start = start;
             End = end;
@@ -187,6 +197,73 @@ namespace DaAPI.Core.Scopes
 
         public abstract Boolean IsAddressRangeBetween(TAddressProperties child);
 
+        protected virtual TAddress GetNextRandomAddressInternal(IEnumerable<TAddress> used, Func<Byte[], TAddress> byteFactory, Func<TAddress> emptyFactory)
+        {
+            HashSet<TAddress> notuseableAddresses = new HashSet<TAddress>(used.Union(ExcludedAddresses));
+
+            Random random = new Random();
+
+            Byte[] startAddressBytes = Start.GetBytes();
+            Byte[] endAddressBytes = End.GetBytes();
+
+            Byte[] addressBytes = new byte[startAddressBytes.Length];
+
+            Int32 randomizationIndex = -1;
+
+            for (int i = 0; i < startAddressBytes.Length; i++)
+            {
+                if (startAddressBytes[i] != endAddressBytes[i])
+                {
+                    randomizationIndex = i;
+                    break;
+                }
+                else
+                {
+                    addressBytes[i] = startAddressBytes[i];
+                }
+            }
+
+            TAddress nextAddress;
+            Int32 trysLeft = _maxTriesForRandom;
+            do
+            {
+                if (randomizationIndex >= 0)
+                {
+                    Byte between = (Byte)random.Next(startAddressBytes[randomizationIndex], endAddressBytes[randomizationIndex] + 1);
+                    addressBytes[randomizationIndex] = between;
+
+                    Boolean isLowerBoundary = between == startAddressBytes[randomizationIndex];
+                    Boolean isUpperBoundary = between == endAddressBytes[randomizationIndex];
+
+                    for (int i = randomizationIndex + 1; i < startAddressBytes.Length; i++)
+                    {
+                        Int32 lowerBound = 0;
+                        Int32 upperBound = 256;
+                        if (isLowerBoundary == true)
+                        {
+                            lowerBound = startAddressBytes[i];
+                        }
+
+                        if (isUpperBoundary == true)
+                        {
+                            upperBound = endAddressBytes[i] + 1;
+                        }
+
+                        addressBytes[i] = (Byte)random.Next(lowerBound, upperBound);
+                    }
+                }
+
+                nextAddress = byteFactory(addressBytes);
+            } while (trysLeft-- > 0 && notuseableAddresses.Contains(nextAddress) == true);
+
+            if (trysLeft < 0)
+            {
+                return emptyFactory();
+            }
+
+            return nextAddress;
+        }
+
         protected abstract TAddress GetNextRandomAddress(HashSet<TAddress> used);
 
         protected abstract TAddress GetNextAddress(IEnumerable<TAddress> used);
@@ -214,8 +291,6 @@ namespace DaAPI.Core.Scopes
                 InformsAreAllowd.HasValue;
 
         public abstract bool IsValid();
-
-
 
         #endregion
     }

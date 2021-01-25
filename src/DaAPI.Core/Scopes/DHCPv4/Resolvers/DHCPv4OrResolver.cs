@@ -7,31 +7,11 @@ using System.Text;
 
 namespace DaAPI.Core.Scopes.DHCPv4
 {
-    public class DHCPv4OrResolver : DHCPv4ResolverWithInnerResolverBase
+    public class DHCPv4OrResolver : DHCPv4ScopeResolverContainingOtherResolvers
     {
-        #region Fields
-
-        #endregion
-
-        #region Properties
-
-        #endregion
-
-        #region Constructor
-
-        public DHCPv4OrResolver(
-            ISerializer serializer
-            ) : base(serializer)
-        {
-        }
-
-        #endregion
-
-        #region Methods
-
         public override Boolean PacketMeetsCondition(DHCPv4Packet packet)
         {
-            foreach (IDHCPv4ScopeResolver resolver in InnerResolvers)
+            foreach (var resolver in InnerResolvers)
             {
                 Boolean resolverResult = resolver.PacketMeetsCondition(packet);
                 if (resolverResult == true)
@@ -42,7 +22,5 @@ namespace DaAPI.Core.Scopes.DHCPv4
 
             return false;
         }
-
-        #endregion
     }
 }

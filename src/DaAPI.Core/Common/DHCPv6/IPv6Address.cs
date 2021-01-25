@@ -38,7 +38,7 @@ namespace DaAPI.Core.Common.DHCPv6
         public static IPv6Address Loopback => new IPv6Address(new Byte[16] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 }, false);
 
 
-        public Byte[] GetBytes() => ByteHelper.CopyData(_addressBytes);
+        public override Byte[] GetBytes() => ByteHelper.CopyData(_addressBytes);
 
         private IPv6Address(Byte[] address, Boolean copy)
         {
@@ -173,6 +173,8 @@ namespace DaAPI.Core.Common.DHCPv6
         }
 
         public override Boolean IsBetween(IPv6Address start, IPv6Address end) => this >= start && this <= end;
+
+        public override Boolean IsGreaterThan(IPv6Address other) => this > other;
 
 
         #region Operators

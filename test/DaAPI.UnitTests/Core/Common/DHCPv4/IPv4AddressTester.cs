@@ -159,7 +159,7 @@ namespace DaAPI.UnitTests.Core.Common.DHCPv4
             IPv4Address currentAddress = IPv4Address.FromString(current);
             IPv4Address endAddress = IPv4Address.FromString(end);
 
-            Boolean actual = currentAddress.IsInBetween(startAddress, endAddress);
+            Boolean actual = currentAddress.IsBetween(startAddress, endAddress);
 
             Assert.Equal(expectedResult, actual);
         }

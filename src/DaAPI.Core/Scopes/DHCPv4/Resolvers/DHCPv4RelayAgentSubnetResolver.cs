@@ -8,42 +8,19 @@ using static DaAPI.Core.Scopes.ScopeResolverPropertyDescription;
 
 namespace DaAPI.Core.Scopes.DHCPv4
 {
-    public class DHCPv4RelayAgentSubnetResolver : IDHCPv4ScopeResolver
+    public class DHCPv4RelayAgentSubnetResolver : IScopeResolver<DHCPv4Packet, IPv4Address>
     {
-        #region Fields
-
-        private readonly ILogger<DHCPv4RelayAgentSubnetResolver> _logger;
-        private readonly ISerializer _serializer;
-
-        #endregion
-
         #region Properties
 
-        public IPv4Address NetworkAddress { get; private set; }
-        public IPv4SubnetMask Mask { get; private set; }
-
-        public Boolean ForceReuseOfAddress => false;
-        public Boolean HasUniqueIdentifier => false;
-
-        #endregion
-
-        #region Constructor
-
-        public DHCPv4RelayAgentSubnetResolver(
-            ILogger<DHCPv4RelayAgentSubnetResolver> logger,
-             ISerializer serializer
-            )
-        {
-            this._serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
-            NetworkAddress = IPv4Address.Empty;
-            Mask =  IPv4SubnetMask.AllZero;
-        }
+        public IPv4Address NetworkAddress { get; private set; } = IPv4Address.Empty;
+        public IPv4SubnetMask Mask { get; private set; } = IPv4SubnetMask.AllZero;
 
         #endregion
 
         #region Methods
+
+        public Boolean HasUniqueIdentifier => false;
+        public byte[] GetUniqueIdentifier(DHCPv4Packet packet) => throw new NotImplementedException();
 
         public Boolean PacketMeetsCondition(DHCPv4Packet packet)
         {
@@ -55,50 +32,30 @@ namespace DaAPI.Core.Scopes.DHCPv4
             return result;
         }
 
-        public byte[] GetUniqueIdentifier(DHCPv4Packet packet)
+        public Boolean ArePropertiesAndValuesValid(IDictionary<String, String> valueMapper, ISerializer serializer)
         {
-            throw new NotImplementedException();
-        }
-
-        public void ApplyValues(IDictionary<String, String> valueMapper)
-        {
-            IPv4Address network = _serializer.Deserialze<IPv4Address>(valueMapper[nameof(NetworkAddress)]);
-            IPv4SubnetMask mask = _serializer.Deserialze<IPv4SubnetMask>(valueMapper[nameof(Mask)]);
-
-            this.NetworkAddress = network;
-            this.Mask = mask;
-        }
-
-        public Boolean ArePropertiesAndValuesValid(IDictionary<String, String> valueMapper)
-        {
-            if(valueMapper == null)
-            {
-                return false;
-            }
-
-            List<String> neededProperties = new List<string> { nameof(Mask), nameof(NetworkAddress) };
-            if(valueMapper.ContainsKeys(neededProperties) == false) { return false; }
-
             try
             {
-                IPv4Address address = _serializer.Deserialze<IPv4Address>(valueMapper[nameof(NetworkAddress)]);
-                IPv4SubnetMask mask = _serializer.Deserialze<IPv4SubnetMask>(valueMapper[nameof(Mask)]);
-
-                Boolean addressIsNetwork = mask.IsIPAdressANetworkAddress(address);
-                
-                if (addressIsNetwork == false)
+                if (valueMapper.ContainsKeys(new[] { nameof(NetworkAddress), nameof(Mask) }) == false)
                 {
                     return false;
                 }
-                else
-                {
-                    return true;
-                }
+
+                var address = IPv4Address.FromString(serializer.Deserialze<String>(valueMapper[nameof(NetworkAddress)]));
+                var mask = new IPv4SubnetMask(new IPv4SubnetMaskIdentifier(Convert.ToInt32(serializer.Deserialze<String>(valueMapper[nameof(Mask)]))));
+
+                return mask.IsIPAdressANetworkAddress(address);
             }
             catch (Exception)
             {
                 return false;
             }
+        }
+
+        public void ApplyValues(IDictionary<String, String> valueMapper, ISerializer serializer)
+        {
+            this.NetworkAddress = IPv4Address.FromString(serializer.Deserialze<String>(valueMapper[nameof(NetworkAddress)]));
+            this.Mask = new IPv4SubnetMask(new IPv4SubnetMaskIdentifier(Convert.ToInt32(serializer.Deserialze<String>(valueMapper[nameof(Mask)]))));
         }
 
         public ScopeResolverDescription GetDescription()
@@ -112,6 +69,12 @@ namespace DaAPI.Core.Scopes.DHCPv4
                 }
                 );
         }
+
+        public IDictionary<String, String> GetValues() => new Dictionary<String, String>
+        {
+            { nameof(NetworkAddress), NetworkAddress.ToString() },
+            { nameof(Mask), Mask.ToString() },
+        };
 
         #endregion
     }

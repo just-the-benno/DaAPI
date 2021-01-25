@@ -19,9 +19,9 @@
 //    public class DHCPv4RootScopeTester
 //    {
 //        public DHCPv4RootScope GetRootScope() =>
-//                new DHCPv4RootScope(Guid.NewGuid(), Mock.Of<IDHCPv4ScopeResolverManager>());
+//                new DHCPv4RootScope(Guid.NewGuid(), Mock.Of<IScopeResolver<DHCPv4Packet, IPv4Address>Manager>());
 
-//        public DHCPv4RootScope GetRootScope(Mock<IDHCPv4ScopeResolverManager> mock) =>
+//        public DHCPv4RootScope GetRootScope(Mock<IScopeResolver<DHCPv4Packet, IPv4Address>Manager> mock) =>
 //                new DHCPv4RootScope(Guid.NewGuid(), mock.Object);
 
 
@@ -232,23 +232,23 @@
 //            String initialDescription = random.GetAlphanumericString(30);
 //            Guid scopeId = Guid.NewGuid();
 
-//            DHCPv4CreateScopeResolverInformation initalInformation = new DHCPv4CreateScopeResolverInformation
+//            IScopeResolverManager<DHCPv4Packet, IPv4Address> initalInformation = new IScopeResolverManager<DHCPv4Packet, IPv4Address>
 //            {
 //                Typename = "my initial resolver",
 //            };
 
 
-//            DHCPv4CreateScopeResolverInformation information = new DHCPv4CreateScopeResolverInformation
+//            IScopeResolverManager<DHCPv4Packet, IPv4Address> information = new IScopeResolverManager<DHCPv4Packet, IPv4Address>
 //            {
 //                Typename = "my mocked resolver",
 //            };
 
-//            Mock<IDHCPv4ScopeResolver> resolverMock = new Mock<IDHCPv4ScopeResolver>(MockBehavior.Strict);
+//            Mock<IScopeResolver<DHCPv4Packet, IPv4Address>> resolverMock = new Mock<IScopeResolver<DHCPv4Packet, IPv4Address>>(MockBehavior.Strict);
 
-//            Mock<IDHCPv4ScopeResolverManager> managerMock = new Mock<IDHCPv4ScopeResolverManager>(MockBehavior.Strict);
+//            Mock<IScopeResolver<DHCPv4Packet, IPv4Address>Manager> managerMock = new Mock<IScopeResolver<DHCPv4Packet, IPv4Address>Manager>(MockBehavior.Strict);
 //            managerMock.Setup(x => x.ValidateDHCPv4Resolver(information)).Returns(true);
 //            managerMock.Setup(x => x.InitializeResolver(information)).Returns(resolverMock.Object);
-//            managerMock.Setup(x => x.InitializeResolver(initalInformation)).Returns<IDHCPv4ScopeResolver>(null);
+//            managerMock.Setup(x => x.InitializeResolver(initalInformation)).Returns<IScopeResolver<DHCPv4Packet, IPv4Address>>(null);
 
 //            DHCPv4RootScope rootScope = GetRootScope(managerMock);
 //            rootScope.Load(new List<DomainEvent> {
@@ -281,22 +281,22 @@
 //            String initialDescription = random.GetAlphanumericString(30);
 //            Guid scopeId = Guid.NewGuid();
 
-//            DHCPv4CreateScopeResolverInformation initalInformation = new DHCPv4CreateScopeResolverInformation
+//            IScopeResolverManager<DHCPv4Packet, IPv4Address> initalInformation = new IScopeResolverManager<DHCPv4Packet, IPv4Address>
 //            {
 //                Typename = "my initial resolver",
 //            };
 
-//            DHCPv4CreateScopeResolverInformation information = new DHCPv4CreateScopeResolverInformation
+//            IScopeResolverManager<DHCPv4Packet, IPv4Address> information = new IScopeResolverManager<DHCPv4Packet, IPv4Address>
 //            {
 //                Typename = "my mocked resolver",
 //            };
 
-//            Mock<IDHCPv4ScopeResolver> resolverMock = new Mock<IDHCPv4ScopeResolver>(MockBehavior.Strict);
+//            Mock<IScopeResolver<DHCPv4Packet, IPv4Address>> resolverMock = new Mock<IScopeResolver<DHCPv4Packet, IPv4Address>>(MockBehavior.Strict);
 
-//            Mock<IDHCPv4ScopeResolverManager> managerMock = new Mock<IDHCPv4ScopeResolverManager>(MockBehavior.Strict);
+//            Mock<IScopeResolver<DHCPv4Packet, IPv4Address>Manager> managerMock = new Mock<IScopeResolver<DHCPv4Packet, IPv4Address>Manager>(MockBehavior.Strict);
 //            managerMock.Setup(x => x.ValidateDHCPv4Resolver(information)).Returns(true);
 //            managerMock.Setup(x => x.InitializeResolver(information)).Returns(resolverMock.Object);
-//            managerMock.Setup(x => x.InitializeResolver(initalInformation)).Returns<IDHCPv4ScopeResolver>(null);
+//            managerMock.Setup(x => x.InitializeResolver(initalInformation)).Returns<IScopeResolver<DHCPv4Packet, IPv4Address>>(null);
 
 //            DHCPv4RootScope rootScope = GetRootScope(managerMock);
 
@@ -346,11 +346,11 @@
 //                DHCPv4Lease lease = scope.Leases.GetLeaseById(item.Key);
 //                if (item.Value == true)
 //                {
-//                    Assert.Equal(DHCPv4LeaseStates.Canceled, lease.State);
+//                    Assert.Equal(LeaseStates.Canceled, lease.State);
 //                }
 //                else
 //                {
-//                    Assert.NotEqual(DHCPv4LeaseStates.Canceled, lease.State);
+//                    Assert.NotEqual(LeaseStates.Canceled, lease.State);
 //                }
 //            }
 //        }
@@ -363,19 +363,19 @@
 //            DHCPv4RootScope rootScope = GetRootScope();
 //            Guid scopeId = Guid.NewGuid();
 
-//            DHCPv4CreateScopeResolverInformation initalInformation = new DHCPv4CreateScopeResolverInformation
+//            IScopeResolverManager<DHCPv4Packet, IPv4Address> initalInformation = new IScopeResolverManager<DHCPv4Packet, IPv4Address>
 //            {
 //                Typename = "my initial resolver",
 //            };
 
-//            DHCPv4CreateScopeResolverInformation information = new DHCPv4CreateScopeResolverInformation
+//            IScopeResolverManager<DHCPv4Packet, IPv4Address> information = new IScopeResolverManager<DHCPv4Packet, IPv4Address>
 //            {
 //                Typename = "my mocked resolver",
 //            };
 
-//            Mock<IDHCPv4ScopeResolverManager> managerMock = new Mock<IDHCPv4ScopeResolverManager>(MockBehavior.Strict);
+//            Mock<IScopeResolver<DHCPv4Packet, IPv4Address>Manager> managerMock = new Mock<IScopeResolver<DHCPv4Packet, IPv4Address>Manager>(MockBehavior.Strict);
 //            managerMock.Setup(x => x.ValidateDHCPv4Resolver(information)).Returns(false);
-//            managerMock.Setup(x => x.InitializeResolver(initalInformation)).Returns<IDHCPv4ScopeResolver>(null);
+//            managerMock.Setup(x => x.InitializeResolver(initalInformation)).Returns<IScopeResolver<DHCPv4Packet, IPv4Address>>(null);
 
 //            rootScope.Load(new List<DomainEvent>
 //            {
@@ -424,18 +424,18 @@
 //            DHCPv4RootScope rootScope = GetRootScope();
 //            Guid scopeId = Guid.NewGuid();
 
-//            DHCPv4CreateScopeResolverInformation initalInformation = new DHCPv4CreateScopeResolverInformation
+//            IScopeResolverManager<DHCPv4Packet, IPv4Address> initalInformation = new IScopeResolverManager<DHCPv4Packet, IPv4Address>
 //            {
 //                Typename = "my initial resolver",
 //            };
 
-//            DHCPv4CreateScopeResolverInformation information = new DHCPv4CreateScopeResolverInformation
+//            IScopeResolverManager<DHCPv4Packet, IPv4Address> information = new IScopeResolverManager<DHCPv4Packet, IPv4Address>
 //            {
 //                Typename = "my mocked resolver",
 //            };
 
-//            Mock<IDHCPv4ScopeResolverManager> managerMock = new Mock<IDHCPv4ScopeResolverManager>(MockBehavior.Strict);
-//            managerMock.Setup(x => x.InitializeResolver(initalInformation)).Returns<IDHCPv4ScopeResolver>(null);
+//            Mock<IScopeResolver<DHCPv4Packet, IPv4Address>Manager> managerMock = new Mock<IScopeResolver<DHCPv4Packet, IPv4Address>Manager>(MockBehavior.Strict);
+//            managerMock.Setup(x => x.InitializeResolver(initalInformation)).Returns<IScopeResolver<DHCPv4Packet, IPv4Address>>(null);
 
 //            rootScope.Load(new List<DomainEvent>
 //            {
@@ -1388,15 +1388,15 @@
 //            String description = random.GetAlphanumericString(30);
 //            String name = random.GetAlphanumericString(20);
 
-//            DHCPv4CreateScopeResolverInformation information = new DHCPv4CreateScopeResolverInformation
+//            IScopeResolverManager<DHCPv4Packet, IPv4Address> information = new IScopeResolverManager<DHCPv4Packet, IPv4Address>
 //            {
 //                Typename = "my mocked resolver",
 //            };
 
-//            Mock<IDHCPv4ScopeResolver> resolverMock = new Mock<IDHCPv4ScopeResolver>(MockBehavior.Strict);
-//            IDHCPv4ScopeResolver mockedResolver = resolverMock.Object;
+//            Mock<IScopeResolver<DHCPv4Packet, IPv4Address>> resolverMock = new Mock<IScopeResolver<DHCPv4Packet, IPv4Address>>(MockBehavior.Strict);
+//            IScopeResolver<DHCPv4Packet, IPv4Address> mockedResolver = resolverMock.Object;
 
-//            Mock<IDHCPv4ScopeResolverManager> managerMock = new Mock<IDHCPv4ScopeResolverManager>(MockBehavior.Strict);
+//            Mock<IScopeResolver<DHCPv4Packet, IPv4Address>Manager> managerMock = new Mock<IScopeResolver<DHCPv4Packet, IPv4Address>Manager>(MockBehavior.Strict);
 //            managerMock.Setup(x => x.ValidateDHCPv4Resolver(information)).Returns(true);
 //            managerMock.Setup(x => x.InitializeResolver(information)).Returns(mockedResolver);
 

@@ -215,10 +215,10 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                 informsAreAllowd: true,
                 renewalTime: TimeSpan.FromMinutes(random.Next(3,10)),
                 preferredLifetime: TimeSpan.FromMinutes(random.Next(20,30)),
-                validLifetime: TimeSpan.FromMinutes(random.Next(40,60))
+                leaseTime: TimeSpan.FromMinutes(random.Next(40,60))
                 ),
                 Id = scopeId,
-                Properties = new DHCPv4ScopeProperties(scopeProperties)
+                ScopeProperties = new DHCPv4ScopeProperties(scopeProperties)
             })
             });
 
@@ -226,8 +226,8 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 
             Assert.NotEqual(DHCPv4Packet.Empty, result);
 
-            Assert.Equal(sourceAddress, result.IPHeader.Destionation);
-            Assert.Equal(destinationAddress, result.IPHeader.Source);
+            Assert.Equal(sourceAddress, result.Header.Destionation);
+            Assert.Equal(destinationAddress, result.Header.Source);
 
             Assert.Equal(DHCPv4MessagesTypes.Acknowledge, result.MessageType);
             Assert.Equal(input.ClientHardwareAddress, result.ClientHardwareAddress);
@@ -249,7 +249,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
             Assert.Equal(IPv4Address.Empty, result.ServerIPAdress);
             Assert.Equal(input.ClientIPAdress, result.ClientIPAdress);
 
-            Assert.Equal(input.ClientIPAdress, result.IPHeader.Destionation);
+            Assert.Equal(input.ClientIPAdress, result.Header.Destionation);
 
             // no time values
             Assert.False(IsOptionPresentend(result, DHCPv4OptionTypes.RebindingTimeValue));

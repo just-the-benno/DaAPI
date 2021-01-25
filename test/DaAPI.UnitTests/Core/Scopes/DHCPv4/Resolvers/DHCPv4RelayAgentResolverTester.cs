@@ -19,7 +19,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4.Resolvers
         [Fact]
         public void DHCPv4RelayAgentResolver_GetDescription()
         {
-            DHCPv4RelayAgentResolver resolver = new DHCPv4RelayAgentResolver(Mock.Of<ILogger<DHCPv4RelayAgentResolver>>(), Mock.Of<ISerializer>());
+            DHCPv4RelayAgentResolver resolver = new DHCPv4RelayAgentResolver();
 
             ScopeResolverDescription description = resolver.GetDescription();
             Assert.NotNull(description);
@@ -43,7 +43,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4.Resolvers
             var mock = new Mock<ISerializer>(MockBehavior.Strict);
             mock.Setup(x => x.Deserialze<IEnumerable<IPv4Address>>(emptyListValue)).Returns(new List<IPv4Address>());
 
-            DHCPv4RelayAgentResolver resolver = new DHCPv4RelayAgentResolver(Mock.Of<ILogger<DHCPv4RelayAgentResolver>>(), mock.Object);
+            DHCPv4RelayAgentResolver resolver = new DHCPv4RelayAgentResolver();
 
             List<Dictionary<String, String>> invalidInputs = new List<Dictionary<string, string>>
             {
@@ -65,7 +65,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4.Resolvers
 
             foreach (var item in invalidInputs)
             {
-                Boolean result = resolver.ArePropertiesAndValuesValid(item);
+                Boolean result = resolver.ArePropertiesAndValuesValid(item, mock.Object);
                 Assert.False(result);
             }
         }
@@ -74,19 +74,21 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4.Resolvers
         public void DHCPv4RelayAgentResolver_AreValuesValid_Valid()
         {
             Random random = new Random();
-            String value = random.GetAlphanumericString(30);
+
+            List<IPv4Address> agentAddresses = random.GetIPv4Addresses();
+            String serializedValues = System.Text.Json.JsonSerializer.Serialize(agentAddresses.Select(x => x.ToString()));
 
             var mock = new Mock<ISerializer>(MockBehavior.Strict);
-            mock.Setup(x => x.Deserialze<IEnumerable<IPv4Address>>(value)).Returns(random.GetIPv4Addresses());
+            mock.Setup(x => x.Deserialze<IEnumerable<String>>(serializedValues)).Returns(agentAddresses.Select(x => x.ToString()));
 
-            DHCPv4RelayAgentResolver resolver = new DHCPv4RelayAgentResolver(Mock.Of<ILogger<DHCPv4RelayAgentResolver>>(), mock.Object);
+            DHCPv4RelayAgentResolver resolver = new DHCPv4RelayAgentResolver();
 
             var input = new Dictionary<string, string>()
                 {
-                    { nameof(DHCPv4RelayAgentResolver.AgentAddresses), value },
+                    { nameof(DHCPv4RelayAgentResolver.AgentAddresses), serializedValues },
                 };
 
-            Boolean result = resolver.ArePropertiesAndValuesValid(input);
+            Boolean result = resolver.ArePropertiesAndValuesValid(input, mock.Object);
             Assert.True(result);
         }
 
@@ -94,20 +96,20 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4.Resolvers
         public void DHCPv4RelayAgentResolver_ApplyValues()
         {
             Random random = new Random();
-            String value = random.GetAlphanumericString(30);
             List<IPv4Address> agentAddresses = random.GetIPv4Addresses();
+            String serializedValues = System.Text.Json.JsonSerializer.Serialize(agentAddresses.Select(x => x.ToString()));
 
             var mock = new Mock<ISerializer>(MockBehavior.Strict);
-            mock.Setup(x => x.Deserialze<IEnumerable<IPv4Address>>(value)).Returns(agentAddresses);
+            mock.Setup(x => x.Deserialze<IEnumerable<String>>(serializedValues)).Returns(agentAddresses.Select(x => x.ToString()));
 
-            DHCPv4RelayAgentResolver resolver = new DHCPv4RelayAgentResolver(Mock.Of<ILogger<DHCPv4RelayAgentResolver>>(), mock.Object);
+            DHCPv4RelayAgentResolver resolver = new DHCPv4RelayAgentResolver();
 
             var input = new Dictionary<string, string>()
                 {
-                    { nameof(DHCPv4RelayAgentResolver.AgentAddresses), value },
+                    { nameof(DHCPv4RelayAgentResolver.AgentAddresses),serializedValues  },
                 };
 
-            resolver.ApplyValues(input);
+            resolver.ApplyValues(input, mock.Object);
             Assert.Equal(agentAddresses, resolver.AgentAddresses);
         }
 
@@ -117,14 +119,14 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4.Resolvers
             Random random = new Random();
             List<IPv4Address> addresses = random.GetIPv4Addresses();
 
-            String inputValue = random.GetAlphanumericString(20);
+            String serializedValues = System.Text.Json.JsonSerializer.Serialize(addresses.Select(x => x.ToString()));
 
             Mock<ISerializer> serializer = new Mock<ISerializer>(MockBehavior.Strict);
-            serializer.Setup(x => x.Deserialze<IEnumerable<IPv4Address>>(inputValue)).Returns(addresses);
+            serializer.Setup(x => x.Deserialze<IEnumerable<String>>(serializedValues)).Returns(addresses.Select(x => x.ToString()));
 
-            DHCPv4RelayAgentResolver resolver = new DHCPv4RelayAgentResolver(Mock.Of<ILogger<DHCPv4RelayAgentResolver>>(), serializer.Object);
-            Dictionary<String, String> values = new Dictionary<String, String>() { { nameof(DHCPv4RelayAgentResolver.AgentAddresses), inputValue } };
-            resolver.ApplyValues(values);
+            DHCPv4RelayAgentResolver resolver = new DHCPv4RelayAgentResolver();
+            Dictionary<String, String> values = new Dictionary<String, String>() { { nameof(DHCPv4RelayAgentResolver.AgentAddresses), serializedValues } };
+            resolver.ApplyValues(values, serializer.Object);
 
             foreach (IPv4Address item in addresses)
             {

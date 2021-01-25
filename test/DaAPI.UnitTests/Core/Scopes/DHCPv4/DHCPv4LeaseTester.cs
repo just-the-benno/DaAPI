@@ -11,13 +11,16 @@ using static DaAPI.Core.Scopes.DHCPv4.DHCPv4LeaseEvents;
 using DaAPI.TestHelper;
 using System.Linq;
 using static DaAPI.Core.Scopes.DHCPv4.DHCPv4Lease;
+using DaAPI.Core.Scopes;
+using DaAPI.Core.Packets.DHCPv4;
+using Microsoft.Extensions.Logging;
 
 namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 {
     public class DHCPv4LeaseTester
     {
         public DHCPv4RootScope GetRootScope() =>
-            new DHCPv4RootScope(Guid.NewGuid(), Mock.Of<IDHCPv4ScopeResolverManager>());
+                   new DHCPv4RootScope(Guid.NewGuid(), Mock.Of<IScopeResolverManager<DHCPv4Packet, IPv4Address>>(), Mock.Of<ILoggerFactory>());
 
         [Fact]
         public void DHCPv4Lease_MatchesUniqueIdentiifer()
@@ -63,8 +66,9 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                 {
                     ScopeId = scopeId,
                     EntityId = leaseId,
-                    UniqueIdentiifer = identifier,
+                    UniqueIdentifier = identifier,
                     Address = random.GetIPv4Address(),
+                    HardwareAddress = random.NextBytes(6),
                 });
 
                 expectedResults.Add(leaseId, matches);
@@ -108,6 +112,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                     ScopeId = scopeId,
                     EntityId = leaseId,
                     Address = random.GetIPv4Address(),
+                    HardwareAddress = random.NextBytes(6),
                 });
 
                 DomainEvent eventToAdd = null;
@@ -177,6 +182,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                     ScopeId = scopeId,
                     EntityId = leaseId,
                     Address = random.GetIPv4Address(),
+                    HardwareAddress = random.NextBytes(6),
                 });
 
                 Boolean addressIsInPending = random.NextDouble() > 0.5;
@@ -226,7 +232,8 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                     ScopeId = scopeId,
                     EntityId = leaseId,
                     Address = random.GetIPv4Address(),
-                });
+                    HardwareAddress = random.NextBytes(6),
+                }) ;
 
                 Boolean addressIsActive = random.NextDouble() > 0.5;
                 if (addressIsActive == true)
@@ -253,18 +260,18 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
             Guid scopeId,
             ICollection<DomainEvent> events)
         {
-            Dictionary<DHCPv4LeaseStates, Func<Guid, DHCPv4ScopeRelatedEvent>> cancalableStateBuilder = new Dictionary<DHCPv4LeaseStates, Func<Guid, DHCPv4ScopeRelatedEvent>>
+            Dictionary<LeaseStates, Func<Guid, DHCPv4ScopeRelatedEvent>> cancalableStateBuilder = new Dictionary<LeaseStates, Func<Guid, DHCPv4ScopeRelatedEvent>>
             {
-                { DHCPv4LeaseStates.Pending, (id) => null  },
-                { DHCPv4LeaseStates.Active, (id) => new DHCPv4LeaseActivatedEvent(id)  },
+                { LeaseStates.Pending, (id) => null  },
+                { LeaseStates.Active, (id) => new DHCPv4LeaseActivatedEvent(id)  },
             };
 
-            Dictionary<DHCPv4LeaseStates, Func<Guid, DHCPv4ScopeRelatedEvent>> nonCancalableStateBuilder = new Dictionary<DHCPv4LeaseStates, Func<Guid, DHCPv4ScopeRelatedEvent>>
+            Dictionary<LeaseStates, Func<Guid, DHCPv4ScopeRelatedEvent>> nonCancalableStateBuilder = new Dictionary<LeaseStates, Func<Guid, DHCPv4ScopeRelatedEvent>>
             {
-                { DHCPv4LeaseStates.Inactive, (id) => new DHCPv4LeaseExpiredEvent(id)  },
-                { DHCPv4LeaseStates.Canceled, (id) => new DHCPv4LeaseCanceledEvent(id)  },
-                { DHCPv4LeaseStates.Released, (id) => new DHCPv4LeaseReleasedEvent(id)  },
-                { DHCPv4LeaseStates.Revoked, (id) => new DHCPv4LeaseRevokedEvent(id)  },
+                { LeaseStates.Inactive, (id) => new DHCPv4LeaseExpiredEvent(id)  },
+                { LeaseStates.Canceled, (id) => new DHCPv4LeaseCanceledEvent(id)  },
+                { LeaseStates.Released, (id) => new DHCPv4LeaseReleasedEvent(id)  },
+                { LeaseStates.Revoked, (id) => new DHCPv4LeaseRevokedEvent(id)  },
             };
 
             Int32 leaseAmount = random.Next(20, 40);
@@ -277,11 +284,12 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                 {
                     ScopeId = scopeId,
                     EntityId = leaseId,
+                    HardwareAddress = random.NextBytes(6),
                     Address = random.GetIPv4Address(),
                 });
 
                 Boolean shouldBeCancelable = random.NextDouble() > 0.5;
-                Dictionary<DHCPv4LeaseStates, Func<Guid, DHCPv4ScopeRelatedEvent>> eventCreatorDict = null;
+                Dictionary<LeaseStates, Func<Guid, DHCPv4ScopeRelatedEvent>> eventCreatorDict = null;
                 if (shouldBeCancelable == true)
                 {
                     eventCreatorDict = cancalableStateBuilder;

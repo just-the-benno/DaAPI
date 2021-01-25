@@ -20,27 +20,23 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4.Resolvers
         [Fact]
         public void DHCPv4OrResolver_GetDescription()
         {
-            DHCPv4OrResolver resolver = new DHCPv4OrResolver(Mock.Of<ISerializer>());
+            DHCPv4OrResolver resolver = new DHCPv4OrResolver();
 
             TestDescription(resolver, "DHCPv4OrResolver");
         }
 
-        [Fact]
-        public void DHCPv4OrResolver_PacketMeetsCondition()
+        [Theory]
+        [InlineData(false, false, false)]
+        [InlineData(false, true, true)]
+        [InlineData(true, false, true)]
+        [InlineData(true, true, true)]
+        public void DHCPv4OrResolver_PacketMeetsCondition(Boolean a, Boolean b, Boolean expectedResult)
         {
             Random random = new Random();
 
-            List<Tuple<Boolean, Boolean, Boolean>> inputs = new List<Tuple<bool, bool, bool>>
-            {
-                new Tuple<bool, bool, bool>(false,false,false),
-                new Tuple<bool, bool, bool>(false,true,true),
-                new Tuple<bool, bool, bool>(true,false,true),
-                new Tuple<bool, bool, bool>(true,true,true),
-            };
-
             CheckMeetsConditions(
-                () => new DHCPv4OrResolver(Mock.Of<ISerializer>()),
-                inputs,
+                () => new DHCPv4OrResolver(),
+                (a,b,expectedResult),
                 random
                 );
         }

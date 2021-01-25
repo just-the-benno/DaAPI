@@ -9,39 +9,18 @@ using Microsoft.Extensions.Logging;
 
 namespace DaAPI.Core.Scopes.DHCPv4
 {
-    public class DHCPv4RelayAgentResolver : IDHCPv4ScopeResolver
+    public class DHCPv4RelayAgentResolver : IScopeResolver<DHCPv4Packet, IPv4Address>
     {
-        #region Fields
-
-        private readonly ILogger<DHCPv4RelayAgentResolver> _logger;
-        private readonly ISerializer _serializer;
-
-        #endregion
-
         #region Properties
 
-        public IEnumerable<IPv4Address> AgentAddresses { get; private set; }
-
-        public Boolean ForceReuseOfAddress => false;
-        public Boolean HasUniqueIdentifier => false;
-
-        #endregion
-
-        #region Constructor
-
-        public DHCPv4RelayAgentResolver(
-            ILogger<DHCPv4RelayAgentResolver> logger,
-            ISerializer serializer
-            )
-        {
-            AgentAddresses = new List<IPv4Address>();
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            this._serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
-        }
+        public IEnumerable<IPv4Address> AgentAddresses { get; private set; } = new List<IPv4Address>();
 
         #endregion
 
         #region Methods
+
+        public Boolean HasUniqueIdentifier => false;
+        public byte[] GetUniqueIdentifier(DHCPv4Packet packet) => throw new NotImplementedException();
 
         public Boolean PacketMeetsCondition(DHCPv4Packet packet)
         {
@@ -56,49 +35,38 @@ namespace DaAPI.Core.Scopes.DHCPv4
             return false;
         }
 
-        public byte[] GetUniqueIdentifier(DHCPv4Packet packet)
+        public Boolean ArePropertiesAndValuesValid(IDictionary<String, String> valueMapper, ISerializer serializer)
         {
-            throw new NotImplementedException();
-        }
-
-        private IEnumerable<IPv4Address> GetAddresses(IDictionary<string, string> propertiesAndValues)
-        {
-            String rawAddress = propertiesAndValues[nameof(AgentAddresses)];
-            IEnumerable<IPv4Address> addresses = _serializer.Deserialze<IEnumerable<IPv4Address>>(rawAddress);
-            return addresses;
-        }
-
-        public bool ArePropertiesAndValuesValid(IDictionary<string, string> propertiesAndValues)
-        {
-            if(propertiesAndValues == null)
-            {
-                return false;
-            }
-
-            IEnumerable<String> keys = new List<String> { nameof(AgentAddresses) };
-
-            Boolean keyresult = propertiesAndValues.ContainsKeys(keys);
-            if (keyresult == false) { return false; }
-
             try
             {
-                var addresses = GetAddresses(propertiesAndValues);
-                if(addresses.Any() == false)
+                if (valueMapper.ContainsKey(nameof(AgentAddresses)) == false)
                 {
                     return false;
                 }
+
+                var addresses = serializer.Deserialze<IEnumerable<String>>(valueMapper[nameof(AgentAddresses)]);
+                foreach (var item in addresses)
+                {
+                    var address = IPv4Address.FromString(item);
+                    if (address == IPv4Address.Empty || address == IPv4Address.Broadcast)
+                    {
+                        return false;
+                    }
+                }
+
                 return true;
             }
             catch (Exception)
             {
+
                 return false;
             }
         }
 
-        public void ApplyValues(IDictionary<String, String> propertiesAndValues)
+        public void ApplyValues(IDictionary<String, String> valueMapper, ISerializer serializer)
         {
-            IEnumerable<IPv4Address> addresses = GetAddresses(propertiesAndValues);
-            this.AgentAddresses = new List<IPv4Address>(addresses);
+            AgentAddresses = serializer.Deserialze<IEnumerable<String>>(valueMapper[nameof(AgentAddresses)])
+                .Select(x => IPv4Address.FromString(x)).ToArray();
         }
 
         public ScopeResolverDescription GetDescription()
@@ -111,6 +79,11 @@ namespace DaAPI.Core.Scopes.DHCPv4
                 }
                 );
         }
+
+        public IDictionary<String, String> GetValues() => new Dictionary<String, String>
+        {
+            { nameof(AgentAddresses), System.Text.Json.JsonSerializer.Serialize(AgentAddresses.Select(x => x.ToString())) },
+        };
 
         #endregion
 

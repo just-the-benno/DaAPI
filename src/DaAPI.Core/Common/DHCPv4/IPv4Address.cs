@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DaAPI.Core.Common
 {
-    public class IPv4Address : Value<IPv4Address>, IComparable<IPv4Address>, IEquatable<IPv4Address>
+    public class IPv4Address : IPAddress<IPv4Address>, IComparable<IPv4Address>, IEquatable<IPv4Address>
     {
         #region Fields
 
@@ -24,7 +24,7 @@ namespace DaAPI.Core.Common
 
         public static IPv4Address Empty => new IPv4Address(new Byte[] { 0, 0, 0, 0 });
 
-        public Byte[] GetBytes()
+        public override Byte[] GetBytes()
         {
             return new byte[]
             {
@@ -214,7 +214,7 @@ namespace DaAPI.Core.Common
                 address._addressBytes[3]});
         }
 
-        public Boolean IsInBetween(IPv4Address start, IPv4Address end)
+        public override Boolean IsBetween(IPv4Address start, IPv4Address end)
         {
             UInt32 ownValue = GetNumericValue();
             UInt32 startValue = start.GetNumericValue();
@@ -222,6 +222,8 @@ namespace DaAPI.Core.Common
 
             return ownValue >= startValue && ownValue <= endValue;
         }
+
+        public override Boolean IsGreaterThan(IPv4Address other) => this > other;
 
         #region Operators
 

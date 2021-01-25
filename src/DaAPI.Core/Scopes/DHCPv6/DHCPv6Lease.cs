@@ -62,15 +62,8 @@ namespace DaAPI.Core.Scopes.DHCPv6
             base.Apply(new DHCPv6LeaseRenewedEvent(this.Id, DateTime.UtcNow + value, false, true));
         }
 
-        internal override void Revoke()
-        {
-            base.Apply(new DHCPv6LeaseRevokedEvent(this.Id));
-        }
-
-        internal void Release(Boolean onlyPrefix)
-        {
-            base.Apply(new DHCPv6LeaseReleasedEvent(this.Id, onlyPrefix));
-        }
+        internal override void Revoke() => base.Apply(new DHCPv6LeaseRevokedEvent(this.Id));
+        internal void Release(Boolean onlyPrefix) => base.Apply(new DHCPv6LeaseReleasedEvent(this.Id, onlyPrefix));
 
         internal override void Release() => Release(false);
 

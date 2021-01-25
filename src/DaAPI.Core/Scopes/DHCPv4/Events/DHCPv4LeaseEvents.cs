@@ -56,21 +56,26 @@ namespace DaAPI.Core.Scopes.DHCPv4
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1034:Nested types should not be visible", Justification = "<Pending>")]
         public class DHCPv4LeaseCanceledEvent : DHCPv4ScopeRelatedEvent
         {
-            public DHCPv4LeaseCancelReasons Reason { get; set; }
+            public LeaseCancelReasons Reason { get; set; }
 
             public DHCPv4LeaseCanceledEvent()
             {
 
             }
 
-            public DHCPv4LeaseCanceledEvent(Guid leaseId) : this(leaseId, DHCPv4LeaseCancelReasons.NotSpecified)
+            public DHCPv4LeaseCanceledEvent(Guid leaseId) : this(leaseId, LeaseCancelReasons.NotSpecified)
             {
-                
+
             }
 
-            public DHCPv4LeaseCanceledEvent(Guid leaseId, DHCPv4LeaseCancelReasons reason) : base(leaseId)
+            public DHCPv4LeaseCanceledEvent(Guid leaseId, LeaseCancelReasons reason) : base(leaseId)
             {
                 Reason = reason;
+            }
+
+            public DHCPv4LeaseCanceledEvent(Guid leaseId, Guid scopeId, LeaseCancelReasons reason) : this(leaseId, reason)
+            {
+                ScopeId = scopeId;
             }
         }
 
@@ -94,10 +99,12 @@ namespace DaAPI.Core.Scopes.DHCPv4
             #region Properties
 
             public IPv4Address Address { get; set; }
-            public DHCPv4ClientIdentifier ClientIdentifier { get; set; }
+            public Byte[] HardwareAddress  { get; set; }
+            public DUID ClientDUID { get; set; }
             public DateTime StartedAt { get; set; }
             public DateTime ValidUntil { get; set; }
-            public Byte[] UniqueIdentiifer { get; set; }
+            public Byte[] UniqueIdentifier { get; set; }
+            public Guid? AncestorId { get; set; }
 
             #endregion
 

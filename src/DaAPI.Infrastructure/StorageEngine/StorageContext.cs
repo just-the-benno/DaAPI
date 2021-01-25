@@ -1,10 +1,12 @@
 ﻿using DaAPI.Core.Common;
 using DaAPI.Core.Common.DHCPv6;
 using DaAPI.Core.Listeners;
+using DaAPI.Core.Packets.DHCPv4;
 using DaAPI.Core.Packets.DHCPv6;
 using DaAPI.Core.Scopes.DHCPv6;
 using DaAPI.Infrastructure.Helper;
 using DaAPI.Infrastructure.StorageEngine.Converters;
+using DaAPI.Infrastructure.StorageEngine.DHCPv4;
 using DaAPI.Infrastructure.StorageEngine.DHCPv6;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -16,7 +18,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static DaAPI.Core.Listeners.DHCPv6ListenerEvents;
+using static DaAPI.Core.Listeners.DHCPListenerEvents;
 using static DaAPI.Core.Scopes.DHCPv6.DHCPv6LeaseEvents;
 using static DaAPI.Core.Scopes.DHCPv6.DHCPv6PacketHandledEvents;
 using static DaAPI.Shared.Requests.StatisticsControllerRequests.V1;
@@ -24,7 +26,7 @@ using static DaAPI.Shared.Responses.StatisticsControllerResponses.V1;
 
 namespace DaAPI.Infrastructure.StorageEngine
 {
-    public class StorageContext : DbContext, IDHCPv6EventStore, IDHCPv6ReadStore
+    public class StorageContext : DbContext, IDHCPv6EventStore, IDHCPv6ReadStore, IDHCPv4ReadStore, IDHCPv4EventStore 
     {
         #region Fields
 
@@ -39,6 +41,9 @@ namespace DaAPI.Infrastructure.StorageEngine
         public DbSet<DHCPv6InterfaceDataModel> DHCPv6Interfaces { get; set; }
         public DbSet<DHCPv6PacketHandledEntryDataModel> DHCPv6PacketEntries { get; set; }
         public DbSet<DHCPv6LeaseEntryDataModel> DHCPv6LeaseEntries { get; set; }
+
+        public DbSet<DHCPv4InterfaceDataModel> DHCPv4Interfaces { get; set; }
+        public DbSet<DHCPv4PacketHandledEntryDataModel> DHCPv4PacketEntries { get; set; }
 
         #endregion
 
@@ -88,6 +93,7 @@ namespace DaAPI.Infrastructure.StorageEngine
         {
             _jsonSerializerSettings = new JsonSerializerSettings();
             _jsonSerializerSettings.Converters.Add(new DUIDJsonConverter());
+
             _jsonSerializerSettings.Converters.Add(new IPv6AddressJsonConverter());
             _jsonSerializerSettings.Converters.Add(new DHCPv6PacketJsonConverter());
             _jsonSerializerSettings.Converters.Add(new DHCPv6ScopeAddressPropertiesConverter());
@@ -95,6 +101,13 @@ namespace DaAPI.Infrastructure.StorageEngine
             _jsonSerializerSettings.Converters.Add(new DHCPv6ScopePropertyJsonConverter());
             _jsonSerializerSettings.Converters.Add(new DHCPv6ScopePropertiesJsonConverter());
             _jsonSerializerSettings.Converters.Add(new IPv6HeaderInformationJsonConverter());
+
+            _jsonSerializerSettings.Converters.Add(new IPv4AddressJsonConverter());
+            _jsonSerializerSettings.Converters.Add(new DHCPv4PacketJsonConverter());
+            _jsonSerializerSettings.Converters.Add(new DHCPv4ScopeAddressPropertiesConverter());
+            _jsonSerializerSettings.Converters.Add(new DHCPv4ScopePropertyJsonConverter());
+            _jsonSerializerSettings.Converters.Add(new DHCPv4ScopePropertiesJsonConverter());
+            _jsonSerializerSettings.Converters.Add(new IPv4HeaderInformationJsonConverter());
         }
 
         public StorageContext(DbContextOptions<StorageContext> options, JsonSerializerSettings jsonSerializerSettings) : base(options)
@@ -194,7 +207,7 @@ namespace DaAPI.Infrastructure.StorageEngine
                      Id = item.Id,
                      Name = item.Name,
                      InterfaceId = item.InterfaceId,
-                     IPv6Address = item.IPv6Address,
+                     Address = item.IPv6Address,
                     }
                     });
 
@@ -205,6 +218,34 @@ namespace DaAPI.Infrastructure.StorageEngine
             });
         }
 
+        public async Task<IEnumerable<DHCPv4Listener>> GetDHCPv4Listener()
+        {
+            return await RunOperation(async () =>
+            {
+                var result = await DHCPv6Interfaces
+                .OrderBy(x => x.Name).ToListAsync();
+
+                List<DHCPv4Listener> listeners = new List<DHCPv4Listener>(result.Count);
+                foreach (var item in result)
+                {
+                    var listener = new DHCPv4Listener();
+                    listener.Load(new DomainEvent[]
+                    {
+                        new DHCPv4ListenerCreatedEvent {
+                         Id = item.Id,
+                         Name = item.Name,
+                         InterfaceId = item.InterfaceId,
+                         Address = item.IPv6Address,
+                        }
+                    });
+
+                    listeners.Add(listener);
+                }
+
+                return listeners;
+            });
+        }
+       
         public async Task<Boolean> Project(IEnumerable<DomainEvent> events)
         {
             return await RunOperation(async () =>
@@ -219,14 +260,30 @@ namespace DaAPI.Infrastructure.StorageEngine
                             {
                                 Id = e.Id,
                                 InterfaceId = e.InterfaceId,
-                                IPv6Address = e.IPv6Address,
+                                IPv6Address = e.Address,
                                 Name = e.Name,
                             });
                             break;
 
                         case DHCPv6ListenerDeletedEvent e:
-                            var existingInterface = await DHCPv6Interfaces.FirstAsync(x => x.Id == e.Id);
-                            DHCPv6Interfaces.Remove(existingInterface);
+                            var existingv6Interface = await DHCPv6Interfaces.FirstAsync(x => x.Id == e.Id);
+                            DHCPv6Interfaces.Remove(existingv6Interface);
+                            hasChanges = true;
+                            break;
+
+                        case DHCPv4ListenerCreatedEvent e:
+                            DHCPv4Interfaces.Add(new DHCPv4InterfaceDataModel
+                            {
+                                Id = e.Id,
+                                InterfaceId = e.InterfaceId,
+                                IPv6Address = e.Address,
+                                Name = e.Name,
+                            });
+                            break;
+
+                        case DHCPv4ListenerDeletedEvent e:
+                            var existingv4Interface = await DHCPv4Interfaces.FirstAsync(x => x.Id == e.Id);
+                            DHCPv4Interfaces.Remove(existingv4Interface);
                             hasChanges = true;
                             break;
 
@@ -799,10 +856,33 @@ namespace DaAPI.Infrastructure.StorageEngine
             });
         }
 
-        public async Task<Boolean> LogInvaliidDHCPv6Packet(DHCPv6Packet packet) => await AddDHCPv6PacketHandledEntryDataModel(packet, (x) => x.InvalidRequest = true);
-
+        public async Task<Boolean> LogInvalidDHCPv6Packet(DHCPv6Packet packet) => await AddDHCPv6PacketHandledEntryDataModel(packet, (x) => x.InvalidRequest = true);
         public async Task<Boolean> LogFilteredDHCPv6Packet(DHCPv6Packet packet, String filterName) => await AddDHCPv6PacketHandledEntryDataModel(packet, (x) => x.FilteredBy = filterName);
 
         public async Task<IEnumerable<DHCPv6PacketHandledEntry>> GetHandledDHCPv6PacketByScopeId(Guid scopeId, Int32 amount) => await GetPacketsFromHandledEvents(amount, scopeId);
+
+        private async Task<Boolean> AddDHCPv4PacketHandledEntryDataModel(DHCPv4Packet packet, Action<DHCPv4PacketHandledEntryDataModel> modifier)
+        {
+            return await RunOperation(async () =>
+            {
+                var entry = new DHCPv4PacketHandledEntryDataModel
+                {
+                    RequestSize = packet.GetSize(),
+                    RequestType = packet.MessageType,
+                    Timestamp = DateTime.UtcNow,
+                    Id = Guid.NewGuid(),
+                };
+                modifier?.Invoke(entry);
+
+                entry.SetTimestampDates();
+
+                DHCPv4PacketEntries.Add(entry);
+                return await SaveChangesAsyncInternal();
+            });
+        }
+
+        public async Task<Boolean> LogInvalidDHCPv4Packet(DHCPv4Packet packet) => await AddDHCPv4PacketHandledEntryDataModel(packet, (x) => x.InvalidRequest = true);
+        public async Task<Boolean> LogFilteredDHCPv4Packet(DHCPv4Packet packet, String filterName) => await AddDHCPv4PacketHandledEntryDataModel(packet, (x) => x.FilteredBy = filterName);
+
     }
 }

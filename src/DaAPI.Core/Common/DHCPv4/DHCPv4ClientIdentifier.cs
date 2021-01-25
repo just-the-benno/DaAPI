@@ -120,6 +120,9 @@ namespace DaAPI.Core.Common
             return ByteHelper.AreEqual(this.HwAddress, other.HwAddress);
         }
 
+        public static bool operator ==(DHCPv4ClientIdentifier left, DHCPv4ClientIdentifier right) => Equals(left, right);
+        public static bool operator !=(DHCPv4ClientIdentifier left, DHCPv4ClientIdentifier right) => !Equals(left, right);
+
         public override int GetHashCode()
         {
             if (DUID != DUID.Empty)
@@ -132,15 +135,13 @@ namespace DaAPI.Core.Common
 
         public string AsUniqueString()
         {
-            var byteConverter = new SimpleByteToStringConverter();
-
             Byte[] appendix = HwAddress;
             if (DUID != DUID.Empty)
             {
                 appendix = DUID.GetAsByteStream();
             }
 
-            String result = $"DHCPv4Client-{byteConverter.Convert(appendix)}";
+            String result = $"DHCPv4Client-{SimpleByteToStringConverter.Convert(appendix)}";
             return result;
         }
     }

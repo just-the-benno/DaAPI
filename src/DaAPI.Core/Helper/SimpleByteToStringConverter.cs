@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DaAPI.Core.Helper
 {
-    public class SimpleByteToStringConverter
+    public static class SimpleByteToStringConverter
     {
         private static readonly Dictionary<Int32, Char> _hexMapper = new Dictionary<int, char>
         {
@@ -26,12 +26,7 @@ namespace DaAPI.Core.Helper
             { 15, 'F' },
         };
 
-
-        public SimpleByteToStringConverter()
-        {
-
-        }
-        public string Convert(byte[] input)
+        public static string Convert(byte[] input)
         {
             Char[] result = new char[input.Length * 2];
             Int32 index = 0;

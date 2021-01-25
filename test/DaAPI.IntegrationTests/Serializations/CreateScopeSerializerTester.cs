@@ -38,13 +38,14 @@ namespace DaAPI.IntegrationTests.Serializations
                     TimeSpan.FromMinutes(30),
                     TimeSpan.FromMinutes(45),
                     TimeSpan.FromMinutes(60),
+                    24,
                     false,
-                    DHCPv4ScopeAddressProperties.DHCPv4AddressAllocationStrategies.Next,
+                    DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next,
                     true,
                     false,
                     true
                 ),
-                Properties = new DHCPv4ScopeProperties
+                ScopeProperties = new DHCPv4ScopeProperties
                 (
                     new DHCPv4TextScopeProperty(78, "something not important"),
                     DHCPv4NumericValueScopeProperty.FromRawValue(17, "1457", DHCPv4NumericValueTypes.UInt16),
@@ -64,13 +65,9 @@ namespace DaAPI.IntegrationTests.Serializations
             Assert.Equal(instruction.Id, deseriaizedInstruction.Id);
             Assert.Equal(instruction.Name, deseriaizedInstruction.Name);
             Assert.Equal(instruction.ParentId, deseriaizedInstruction.ParentId);
-            Assert.Equal(instruction.Properties, deseriaizedInstruction.Properties);
+            Assert.Equal(instruction.ScopeProperties, deseriaizedInstruction.ScopeProperties);
 
             //Assert.Equal(instruction.ResolverInformations, deseriaizedInstruction.ResolverInformations);
-
-
-
-
         }
 
     }

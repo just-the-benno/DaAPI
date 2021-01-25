@@ -72,14 +72,14 @@ namespace DaAPI.Core.Scopes.DHCPv4
 
         public class DHCPv4ScopeResolverUpdatedEvent : EntityBasedDomainEvent
         {
-            public DHCPv4CreateScopeResolverInformation ResolverInformationen { get; set; }
+            public CreateScopeResolverInformation ResolverInformationen { get; set; }
 
             public DHCPv4ScopeResolverUpdatedEvent()
             {
 
             }
 
-            public DHCPv4ScopeResolverUpdatedEvent(Guid scopeId, DHCPv4CreateScopeResolverInformation information) : base(scopeId)
+            public DHCPv4ScopeResolverUpdatedEvent(Guid scopeId, CreateScopeResolverInformation information) : base(scopeId)
             {
                 ResolverInformationen = information;
             }

@@ -10,10 +10,9 @@ using static DaAPI.Shared.Requests.StatisticsControllerRequests.V1;
 
 namespace DaAPI.Infrastructure.StorageEngine.DHCPv6
 {
-    public interface IDHCPv6ReadStore
+    public interface IDHCPv6ReadStore : IReadStore
     {
         Task<IEnumerable<DHCPv6Listener>> GetDHCPv6Listener();
-        Task<Boolean> Project(IEnumerable<DomainEvent> events);
         Task<DHCPv6ServerProperties> GetServerProperties();
 
         Task<StatisticsControllerResponses.V1.DashboardResponse> GetDashboardOverview();

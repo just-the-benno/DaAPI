@@ -1,5 +1,6 @@
 ﻿using DaAPI.Core.Common;
 using DaAPI.Core.Packets.DHCPv4;
+using DaAPI.Core.Scopes;
 using DaAPI.Core.Scopes.DHCPv4;
 using DaAPI.Core.Services;
 using DaAPI.TestHelper;
@@ -16,7 +17,7 @@ using static DaAPI.Core.Scopes.DHCPv4.DHCPv4PacketHandledEvents.DHCPv4InformHand
 
 namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 {
-    public class DHCPv4RootScopeTesterHandleInformTester : DHCPv4RootSCopeTesterBase
+    public class DHCPv4RootScopeTesterHandleInformTester : DHCPv4RootScopeTesterBase
     {
         private void CheckHandeledEvent(
           Int32 index, InformErros error,
@@ -50,7 +51,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 
             Assert.Equal(IPv4Address.Empty, result.YourIPAdress);
 
-            Assert.Equal(clientAddress, result.IPHeader.Destionation);
+            Assert.Equal(clientAddress, result.Header.Destionation);
             Assert.Equal(clientAddress, result.ClientIPAdress);
 
             Assert.Equal(DHCPv4MessagesTypes.Acknowledge, result.MessageType);
@@ -70,18 +71,18 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
             DHCPv4Packet requestPacket = new DHCPv4Packet(
                 headerInformation, clientMacAdress, (UInt32)random.Next(),
                 IPv4Address.Empty, IPv4Address.Empty, clientAddress,
-                new DHCPv4PacketMessageTypeOption(DHCPv4Packet.DHCPv4MessagesTypes.DHCPINFORM)
+                new DHCPv4PacketMessageTypeOption(DHCPv4MessagesTypes.Inform)
             );
 
-            Mock<IDHCPv4ScopeResolverManager> scopeResolverMock =
-               new Mock<IDHCPv4ScopeResolverManager>(MockBehavior.Strict);
+            Mock<IScopeResolverManager<DHCPv4Packet, IPv4Address>> scopeResolverMock =
+               new Mock<IScopeResolverManager<DHCPv4Packet, IPv4Address>>(MockBehavior.Strict);
 
-            var resolverInformations = new DHCPv4CreateScopeResolverInformation
+            var resolverInformations = new CreateScopeResolverInformation
             {
                 Typename = nameof(DHCPv4RelayAgentSubnetResolver),
             };
 
-            Mock<IDHCPv4ScopeResolver> resolverMock = new Mock<IDHCPv4ScopeResolver>(MockBehavior.Strict);
+            Mock<IScopeResolver<DHCPv4Packet, IPv4Address>> resolverMock = new Mock<IScopeResolver<DHCPv4Packet, IPv4Address>>(MockBehavior.Strict);
 
             scopeResolverMock.Setup(x => x.InitializeResolver(resolverInformations)).Returns(resolverMock.Object);
 
@@ -97,7 +98,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         new List<IPv4Address>{IPv4Address.FromString("192.168.178.1") },
                         informsAreAllowd: true
                         ),
-                    ResolverInformations = resolverInformations,
+                    ResolverInformation = resolverInformations,
                     Name = "Testscope",
                     Id = scopeId,
                 })
@@ -125,18 +126,18 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
             DHCPv4Packet requestPacket = new DHCPv4Packet(
                 headerInformation, clientMacAdress, (UInt32)random.Next(),
                 IPv4Address.Empty, IPv4Address.Empty, clientAddress,
-                new DHCPv4PacketMessageTypeOption(DHCPv4Packet.DHCPv4MessagesTypes.DHCPINFORM)
+                new DHCPv4PacketMessageTypeOption(DHCPv4MessagesTypes.Inform)
             );
 
-            Mock<IDHCPv4ScopeResolverManager> scopeResolverMock =
-               new Mock<IDHCPv4ScopeResolverManager>(MockBehavior.Strict);
+            Mock<IScopeResolverManager<DHCPv4Packet, IPv4Address>> scopeResolverMock =
+               new Mock<IScopeResolverManager<DHCPv4Packet, IPv4Address>>(MockBehavior.Strict);
 
-            var resolverInformations = new DHCPv4CreateScopeResolverInformation
+            var resolverInformations = new CreateScopeResolverInformation
             {
                 Typename = nameof(DHCPv4RelayAgentSubnetResolver),
             };
 
-            Mock<IDHCPv4ScopeResolver> resolverMock = new Mock<IDHCPv4ScopeResolver>(MockBehavior.Strict);
+            Mock<IScopeResolver<DHCPv4Packet, IPv4Address>> resolverMock = new Mock<IScopeResolver<DHCPv4Packet, IPv4Address>>(MockBehavior.Strict);
 
             scopeResolverMock.Setup(x => x.InitializeResolver(resolverInformations)).Returns(resolverMock.Object);
 
@@ -152,7 +153,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         new List<IPv4Address>{IPv4Address.FromString("192.168.178.1") },
                         informsAreAllowd: false
                         ),
-                    ResolverInformations = resolverInformations,
+                    ResolverInformation = resolverInformations,
                     Name = "Testscope",
                     Id = scopeId,
                 })

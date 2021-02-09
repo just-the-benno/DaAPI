@@ -7,9 +7,8 @@ using System.Text;
 
 namespace DaAPI.Shared.Validation
 {
-
-    public class IPv6AddressListAttribute : IPAddressListAttribute
+    public class IPv4AddressListAttribute : IPAddressListAttribute
     {
-        public override AddressFamily ValidAddressFamily => AddressFamily.InterNetworkV6;
+        public override AddressFamily ValidAddressFamily => AddressFamily.InterNetwork;
     }
 }

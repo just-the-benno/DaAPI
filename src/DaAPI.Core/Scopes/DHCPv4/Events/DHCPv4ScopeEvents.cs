@@ -11,11 +11,16 @@ namespace DaAPI.Core.Scopes.DHCPv4
         {
             #region Properties
 
-            public DHCPv4ScopeCreateInstruction Instructions { get; private set; }
+            public DHCPv4ScopeCreateInstruction Instructions { get;  set; }
 
             #endregion
 
             #region Constructor
+
+            public DHCPv4ScopeAddedEvent()
+            {
+
+            }
 
             public DHCPv4ScopeAddedEvent(DHCPv4ScopeCreateInstruction instructions)
             {

@@ -74,7 +74,7 @@ namespace DaAPI.UnitTests.Infrastructure.FilterEngines.DHCPv6
               });
 
             Boolean result = await filter.ShouldPacketBeFiltered(packet);
-            Assert.False(result);
+            Assert.True(result);
         }
 
         [Fact]

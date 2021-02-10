@@ -76,22 +76,22 @@ namespace DaAPI.Shared.Responses
                 public TimeSpan? RenewalTime { get;  set; }
                 public TimeSpan? PreferredLifetime { get;  set; }
 
-                public Byte Mask { get;  set; }
+                public Byte? Mask { get;  set; }
             }
 
-            public class ScopeResolverDescription
+            public class DHCPv4ScopeResolverDescription
             {
                 public String TypeName { get; set; }
-                public IEnumerable<ScopeResolverPropertyDescription> Properties { get; set; }
+                public IEnumerable<DHCPv4ScopeResolverPropertyDescription> Properties { get; set; }
             }
 
-            public class ScopeResolverPropertyDescription
+            public class DHCPv4ScopeResolverPropertyDescription
             {
                 public String PropertyName { get; set; }
                 public ScopeResolverPropertyValueTypes PropertyValueType { get; set; }
             }
 
-            public class ScopeItem
+            public class DHCPv4ScopeItem
             {
                 public String Name { get; set; }
                 public Guid Id { get; set; }
@@ -99,9 +99,9 @@ namespace DaAPI.Shared.Responses
                 public String EndAddress { get; set; }
             }
 
-            public class ScopeTreeViewItem : ScopeItem
+            public class DHCPv4ScopeTreeViewItem : DHCPv4ScopeItem
             {
-                public IEnumerable<ScopeTreeViewItem> ChildScopes { get; set; }
+                public IEnumerable<DHCPv4ScopeTreeViewItem> ChildScopes { get; set; }
             }
 
             public class ScopeResolverResponse

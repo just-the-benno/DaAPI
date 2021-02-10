@@ -1,0 +1,37 @@
+﻿@using System.Linq.Expressions;
+@typeparam TValue
+
+<div class="form-group row">
+    <div class="@LabelClass">
+        <CustomLabel For="For" class="col-form-label" />
+        <DHCPv6ScopePropertyExplanation Property="Property" />
+    </div>
+    <div class="@InputClass">
+        @ChildContent
+
+        <ValidationMessageContainer For="For" ShowValidation="ShowValidation" />
+
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public Boolean ShowValidation { get; set; } = true;
+
+    [Parameter]
+    public DHCPv6ScopePropertyExplanationValues Property { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+
+    [Parameter] public Expression<Func<TValue>> For { get; set; }
+
+    [Parameter]
+    public String LabelClass { get; set; } = "col-sm-2";
+
+    [Parameter]
+    public String InputClass { get; set; } = "col-sm-10";
+
+}

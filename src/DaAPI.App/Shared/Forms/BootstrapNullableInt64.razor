@@ -1,27 +1,50 @@
 ﻿@inherits BootstrapInputBase<Nullable<Int64>>
 
+@if (TableMode == true)
+{
+    <td>
+        <div class="icheck-primary">
+            <BootstrapInputCheckbox @bind-Value="HasValue" id="@_nullableCheckBoxId" />
+            <label for="@_nullableCheckBoxId">@EnabledCaption</label>
+        </div>
+    </td>
+    <td>
+        @if (HasValue == true)
+        {
+            <BootstrapInputNumber @bind-Value="NonNullableValue" class="ml-3 form-control" minimum="0" placeholder="Enter a positive number here" />
+        }
+    </td>
+}
+else
+{
 <div class="d-flex flex-row">
     <div class="icheck-primary">
         <BootstrapInputCheckbox @bind-Value="HasValue" id="@_nullableCheckBoxId" />
         <label for="@_nullableCheckBoxId">@EnabledCaption</label>
     </div>
 
-    <div class="flex-fill"></div>
-    @if (_hasValue == true)
+    @if (FillSpace == true)
+    {
+        <div class="flex-fill"></div>
+    }
+
+    @if (HasValue == true)
     {
         <BootstrapInputNumber @bind-Value="NonNullableValue" class="ml-3 form-control" minimum="0" placeholder="Enter a positive number here" />
     }
 </div>
+}
 
 @code {
+
+    [Parameter] public Boolean FillSpace { get; set; } = false;
+    [Parameter] public Boolean TableMode { get; set; } = true;
 
     [Parameter] public String EnabledCaption { get; set; } = "Enabled";
 
     //[Parameter] public Boolean? IsValid { get; set; } = null;
 
-
     private Boolean _hasValue;
-
 
     [Parameter]
     public Boolean HasValue

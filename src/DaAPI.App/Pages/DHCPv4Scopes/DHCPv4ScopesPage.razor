@@ -1,0 +1,74 @@
+﻿
+@page "/scopes/dhcpv4"
+@layout AdminLayout
+@attribute [Authorize]
+@inject DaAPIService service
+@inject LayoutService _layoutService
+@inject IModalService _modalService
+@inject IToastService _toastService
+@inject IStringLocalizer<DHCPv4ScopesPage> L
+
+<FullWidthLayout>
+    <FullColumn>
+
+        <Card Title="@L["Headline"]">
+            <AddtionalHeaderContent>
+                <a href="scopes/dhcpv4/create" class="btn btn-primary">
+                    <i class="fas fa-plus mr-2"></i>
+                    @L["NewScopeButtonCaption"]
+                </a>
+            </AddtionalHeaderContent>
+            <Body>
+                <LoadingWhileContentNull Item="_scopes">
+                    <ul class="nav nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" data-accordion="false">
+                        @foreach (var item in _scopes)
+                        {
+                            <DHCPv4ScopeTreeItem Item="item" DeleteExecutor="ShowDeleteModal" />
+                        }
+                    </ul>
+                </LoadingWhileContentNull>
+            </Body>
+        </Card>
+    </FullColumn>
+</FullWidthLayout>
+
+
+
+@code {
+
+    private IEnumerable<DHCPv4ScopeTreeViewItem> _scopes;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        _layoutService.UpdatePageTitle(L["PageTitle"]);
+        _layoutService.UpdateBreadcrumbs(new BreadcrumbViewModel[] {
+            new BreadcrumbViewModel { Caption = L["BreadcrumbHomeCaption"], Link = "dashboard" },
+            new BreadcrumbViewModel { Caption = L["BreadcrumbSelfCaption"], Link = "scopes/dhcpv6" } });
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _scopes = await service.GetDHCPv4ScopesAsTree();
+
+        await base.OnInitializedAsync();
+    }
+
+    public async Task ShowDeleteModal(DHCPv4ScopeTreeViewItem item)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(DeleteDHCPv6ScopeModal.Entry), item);
+
+        var messageForm = _modalService.Show<DeleteDHCPv6ScopeModal>(String.Format(L["DeleteScopeModalHeader"], item.Name), parameters);
+        var result = await messageForm.Result;
+
+        if (result.Cancelled == false && result.Data is Boolean && (Boolean)result.Data == true)
+        {
+            _toastService.ShowSuccess(String.Format(L["DeleteScopeSuccessText"], item.Name), L["DeleteScopeSuccessCaption"]);
+            _scopes = null;
+            StateHasChanged();
+            _scopes = await service.GetDHCPv4ScopesAsTree();
+            StateHasChanged();
+        }
+    }
+}

@@ -1,10 +1,6 @@
 ﻿@inherits AdvancedFormComponent<CreateDHCPv4ListenerViewModel>
 @inject DaAPIService _service
 @inject IStringLocalizer<CreateDHCPv4InterfaceModal> L
-@* for .NET 5 only on @page directive is needed
-    @page "/Claimaction/{ClaimsId:int?}"
-*@
-
 
 <CascadingValue Name="DisableFormElements" Value="@_sendingRequestInProgress">
     <EditForm EditContext="@EditContext" OnValidSubmit="SendCreateDHCPv4InterfaceRequest">

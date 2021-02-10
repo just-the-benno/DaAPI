@@ -1,4 +1,4 @@
-﻿@inject IStringLocalizer<ScopeTreeItem> L
+﻿@inject IStringLocalizer<DHCPv6ScopeTreeItem> L
 
 
 <li class="nav-item @(Item.ChildScopes.Any() == true ? " has-treeview" : String.Empty) menu-open">
@@ -17,7 +17,7 @@
         <ul class="nav nav-treeview" style="display:block">
             @foreach (var child in Item.ChildScopes)
             {
-                <ScopeTreeItem Item="child" DeleteExecutor="DeleteExecutor" />
+                <DHCPv6ScopeTreeItem Item="child" DeleteExecutor="DeleteExecutor" />
             }
         </ul>
     }
@@ -26,10 +26,10 @@
 @code {
 
     [Parameter]
-    public ScopeTreeViewItem Item { get; set; }
+    public DHCPv6ScopeTreeViewItem Item { get; set; }
 
     [Parameter]
-    public Func<ScopeTreeViewItem, Task> DeleteExecutor { get; set; }
+    public Func<DHCPv6ScopeTreeViewItem, Task> DeleteExecutor { get; set; }
 
     [Inject]
     public NavigationManager NavigationManager { get; set; }

@@ -34,10 +34,10 @@ namespace DaAPI.Host.ApiControllers
             _rootScope = rootScope;
         }
 
-        private void GenerateScopeTree(DHCPv4Scope scope, ICollection<ScopeTreeViewItem> parentChildren)
+        private void GenerateScopeTree(DHCPv4Scope scope, ICollection<DHCPv4ScopeTreeViewItem> parentChildren)
         {
-            List<ScopeTreeViewItem> childItems = new List<ScopeTreeViewItem>();
-            var node = new ScopeTreeViewItem
+            List<DHCPv4ScopeTreeViewItem> childItems = new List<DHCPv4ScopeTreeViewItem>();
+            var node = new DHCPv4ScopeTreeViewItem
             {
                 Id = scope.Id,
                 StartAddress = scope.AddressRelatedProperties.Start.ToString(),
@@ -60,7 +60,7 @@ namespace DaAPI.Host.ApiControllers
         [HttpGet("/api/scopes/dhcpv4/tree")]
         public IActionResult GetScopesAsTreeView()
         {
-            List<ScopeTreeViewItem> result = new List<ScopeTreeViewItem>();
+            List<DHCPv4ScopeTreeViewItem> result = new List<DHCPv4ScopeTreeViewItem>();
 
             foreach (var item in _rootScope.GetRootScopes())
             {
@@ -70,9 +70,9 @@ namespace DaAPI.Host.ApiControllers
             return base.Ok(result);
         }
 
-        private void GenerateScopeList(DHCPv4Scope scope, ICollection<ScopeItem> collection)
+        private void GenerateScopeList(DHCPv4Scope scope, ICollection<DHCPv4ScopeItem> collection)
         {
-            var node = new ScopeItem
+            var node = new DHCPv4ScopeItem
             {
                 Id = scope.Id,
                 StartAddress = scope.AddressRelatedProperties.Start.ToString(),
@@ -94,7 +94,7 @@ namespace DaAPI.Host.ApiControllers
         [HttpGet("/api/scopes/dhcpv4/list")]
         public IActionResult GetScopesAsList()
         {
-            List<ScopeItem> result = new List<ScopeItem>();
+            List<DHCPv4ScopeItem> result = new List<DHCPv4ScopeItem>();
 
             foreach (var item in _rootScope.GetRootScopes())
             {

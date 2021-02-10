@@ -15,12 +15,14 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 using static DaAPI.Shared.Requests.DHCPv4InterfaceRequests.V1;
+using static DaAPI.Shared.Requests.DHCPv4ScopeRequests.V1;
 using static DaAPI.Shared.Requests.DHCPv6InterfaceRequests.V1;
 using static DaAPI.Shared.Requests.DHCPv6ScopeRequests.V1;
 using static DaAPI.Shared.Requests.LocalUserRequests.V1;
 using static DaAPI.Shared.Requests.NotificationPipelineRequests.V1;
 using static DaAPI.Shared.Requests.StatisticsControllerRequests.V1;
 using static DaAPI.Shared.Responses.DHCPv4InterfaceResponses.V1;
+using static DaAPI.Shared.Responses.DHCPv4ScopeResponses.V1;
 using static DaAPI.Shared.Responses.DHCPv6InterfaceResponses.V1;
 using static DaAPI.Shared.Responses.DHCPv6LeasesResponses.V1;
 using static DaAPI.Shared.Responses.DHCPv6ScopeResponses.V1;
@@ -133,9 +135,9 @@ namespace DaAPI.App.Services
         }
 
         public async Task<DHCPv6InterfaceOverview> GetDHCPv6Interfaces() => await GetResponse<DHCPv6InterfaceOverview>("api/interfaces/dhcpv6");
-        public async Task<IEnumerable<ScopeItem>> GetScopesAsList() => await GetResponse<IEnumerable<ScopeItem>>("api/scopes/dhcpv6/list");
-        public async Task<IEnumerable<ScopeTreeViewItem>> GetScopesAsTree() => await GetResponse<IEnumerable<ScopeTreeViewItem>>("api/scopes/dhcpv6/tree");
-        public async Task<IEnumerable<ScopeResolverDescription>> GetDHCPv6ScopeResolverDescription() => await GetResponse<IEnumerable<ScopeResolverDescription>>("api/scopes/dhcpv6/resolvers/description");
+        public async Task<IEnumerable<DHCPv6ScopeItem>> GetDHCPv6ScopesAsList() => await GetResponse<IEnumerable<DHCPv6ScopeItem>>("api/scopes/dhcpv6/list");
+        public async Task<IEnumerable<DHCPv6ScopeTreeViewItem>> GetDHCPv6ScopesAsTree() => await GetResponse<IEnumerable<DHCPv6ScopeTreeViewItem>>("api/scopes/dhcpv6/tree");
+        public async Task<IEnumerable<DHCPv6ScopeResolverDescription>> GetDHCPv6ScopeResolverDescription() => await GetResponse<IEnumerable<DHCPv6ScopeResolverDescription>>("api/scopes/dhcpv6/resolvers/description");
         public async Task<DHCPv6ScopePropertiesResponse> GetDHCPv6ScopeProperties(Guid scopeId, Boolean includeParents = true) => await GetDHCPv6ScopeProperties(scopeId.ToString(), includeParents);
 
         public async Task<DHCPv6ScopePropertiesResponse> GetDHCPv6ScopeProperties(String scopeId, Boolean includeParents = true)
@@ -160,10 +162,7 @@ namespace DaAPI.App.Services
 
 
         public async Task<IEnumerable<NotificationPipelineReadModel>> GetNotifactionPipelines() => await GetResponse<IEnumerable<NotificationPipelineReadModel>>("/api/notifications/pipelines/");
-
         public async Task<NotificationPipelineDescriptions> GetpipelineDescriptions() => await GetResponse<NotificationPipelineDescriptions>("/api/notifications/pipelines/descriptions");
-
-
 
         private async Task<T> GetResult<T>(String url, T fallback)
         {
@@ -292,6 +291,38 @@ namespace DaAPI.App.Services
         public async Task<Boolean> SendDeleteDHCPv4InterfaceRequest(Guid interfaceId) =>
             await ExecuteCommand(() => _client.DeleteAsync($"api/interfaces/dhcpv4/{interfaceId}"));
 
+        public async Task<IEnumerable<DHCPv4ScopeItem>> GetDHCPv4ScopesAsList() => await GetResponse<IEnumerable<DHCPv4ScopeItem>>("api/scopes/dhcpv4/list");
+        public async Task<IEnumerable<DHCPv4ScopeTreeViewItem>> GetDHCPv4ScopesAsTree() => await GetResponse<IEnumerable<DHCPv4ScopeTreeViewItem>>("api/scopes/dhcpv4/tree");
+
+        public async Task<IEnumerable<DHCPv4ScopeResolverDescription>> GetDHCPv4ScopeResolverDescription() => await GetResponse<IEnumerable<DHCPv4ScopeResolverDescription>>("api/scopes/dhcpv4/resolvers/description");
+        public async Task<DHCPv4ScopePropertiesResponse> GetDHCPv4ScopeProperties(Guid scopeId, Boolean includeParents = true) => await GetDHCPv4ScopeProperties(scopeId.ToString(), includeParents);
+
+        public async Task<DHCPv4ScopePropertiesResponse> GetDHCPv4ScopeProperties(String scopeId, Boolean includeParents = true)
+        {
+            var response = await _client.GetAsync(
+                $"api/scopes/dhcpv4/{scopeId}/properties?includeParents={includeParents}");
+
+            if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                return null;
+            }
+
+            String content = await response.Content.ReadAsStringAsync();
+            JsonSerializerSettings settings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+            settings.Converters.Add(new DHCPv4ScopePropertyResponseJsonConverter());
+
+            var result = JsonConvert.DeserializeObject<DHCPv4ScopePropertiesResponse>(
+                content, settings);
+
+            return result;
+        }
+
+        public async Task<Boolean> UpdateDHCPv4Scope(CreateOrUpdateDHCPv4ScopeRequest request, String scopeId) =>
+            await ExecuteCommand(() => _client.PutAsync($"api/scopes/dhcpv4/{scopeId}", GetStringContentAsJson(request)));
+
+        public async Task<Boolean> CreateDHCPv4Scope(CreateOrUpdateDHCPv4ScopeRequest request) =>
+        await ExecuteCommand(() => _client.PostAsync("api/scopes/dhcpv4/", GetStringContentAsJson(request)));
+        
         #endregion
 
     }

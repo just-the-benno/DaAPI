@@ -36,10 +36,10 @@ namespace DaAPI.Host.ApiControllers
             _rootScope = rootScope;
         }
 
-        private void GenerateScopeTree(DHCPv6Scope scope, ICollection<ScopeTreeViewItem> parentChildren)
+        private void GenerateScopeTree(DHCPv6Scope scope, ICollection<DHCPv6ScopeTreeViewItem> parentChildren)
         {
-            List<ScopeTreeViewItem> childItems = new List<ScopeTreeViewItem>();
-            var node = new ScopeTreeViewItem
+            List<DHCPv6ScopeTreeViewItem> childItems = new List<DHCPv6ScopeTreeViewItem>();
+            var node = new DHCPv6ScopeTreeViewItem
             {
                 Id = scope.Id,
                 StartAddress = scope.AddressRelatedProperties.Start.ToString(),
@@ -62,7 +62,7 @@ namespace DaAPI.Host.ApiControllers
         [HttpGet("/api/scopes/dhcpv6/tree")]
         public IActionResult GetScopesAsTreeView()
         {
-            List<ScopeTreeViewItem> result = new List<ScopeTreeViewItem>();
+            List<DHCPv6ScopeTreeViewItem> result = new List<DHCPv6ScopeTreeViewItem>();
 
             foreach (var item in _rootScope.GetRootScopes())
             {
@@ -72,9 +72,9 @@ namespace DaAPI.Host.ApiControllers
             return base.Ok(result);
         }
 
-        private void GenerateScopeList(DHCPv6Scope scope, ICollection<ScopeItem> collection)
+        private void GenerateScopeList(DHCPv6Scope scope, ICollection<DHCPv6ScopeItem> collection)
         {
-            var node = new ScopeItem
+            var node = new DHCPv6ScopeItem
             {
                 Id = scope.Id,
                 StartAddress = scope.AddressRelatedProperties.Start.ToString(),
@@ -96,7 +96,7 @@ namespace DaAPI.Host.ApiControllers
         [HttpGet("/api/scopes/dhcpv6/list")]
         public IActionResult GetScopesAsList()
         {
-            List<ScopeItem> result = new List<ScopeItem>();
+            List<DHCPv6ScopeItem> result = new List<DHCPv6ScopeItem>();
 
             foreach (var item in _rootScope.GetRootScopes())
             {

@@ -9,6 +9,7 @@ using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using DaAPI.Core.Packets.DHCPv4;
 using DaAPI.Infrastructure.StorageEngine.DHCPv4;
+using System.Net.Sockets;
 
 namespace DaAPI.Infrastructure.InterfaceEngines
 {
@@ -28,20 +29,8 @@ namespace DaAPI.Infrastructure.InterfaceEngines
 
         public async Task<IEnumerable<DHCPv4Listener>> GetActiveListeners() => await _storage.GetDHCPv4Listener();
 
-        protected override Boolean IsValidAddress(UnicastIPAddressInformation addressInfo)
-        {
-            if (addressInfo.Address.AddressFamily != System.Net.Sockets.AddressFamily.InterNetworkV6)
-            {
-                return false;
-            }
-
-            if (addressInfo.Address.IsIPv6LinkLocal == true)
-            {
-                return false;
-            }
-
-            return true;
-        }
+        protected override Boolean IsValidAddress(UnicastIPAddressInformation addressInfo) =>
+            addressInfo.Address.AddressFamily == AddressFamily.InterNetwork;
 
         public IEnumerable<DHCPv4Listener> GetPossibleListeners() => GetPossibleListeners((nic, ipAddress) => DHCPv4Listener.FromNIC(nic, ipAddress));
     }

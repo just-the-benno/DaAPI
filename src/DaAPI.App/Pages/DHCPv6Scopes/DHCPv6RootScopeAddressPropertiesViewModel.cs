@@ -10,7 +10,7 @@ using static DaAPI.Shared.Requests.DHCPv6ScopeRequests.V1.DHCPv6ScopeAddressProp
 
 namespace DaAPI.App.Pages.DHCPv6Scopes
 {
-    public class RootScopeAddressPropertiesViewModel
+    public class DHCPv6RootScopeAddressPropertiesViewModel
     {
         [Display(Name = nameof(DHCPv6ScopeDisplay.T1), ResourceType = typeof(DHCPv6ScopeDisplay))]
         [Max(0.95, ErrorMessageResourceName = nameof(ValidationErrorMessages.Max), ErrorMessageResourceType = typeof(ValidationErrorMessages))]
@@ -52,11 +52,11 @@ namespace DaAPI.App.Pages.DHCPv6Scopes
         [Display(Name = nameof(DHCPv6ScopeDisplay.AddressAllocationStrategy), ResourceType = typeof(DHCPv6ScopeDisplay))]
         public AddressAllocationStrategies AddressAllocationStrategy { get; set; }
 
-        public RootScopeAddressPropertiesViewModel()
+        public DHCPv6RootScopeAddressPropertiesViewModel()
         {
         }
 
-        public static RootScopeAddressPropertiesViewModel Default => new RootScopeAddressPropertiesViewModel
+        public static DHCPv6RootScopeAddressPropertiesViewModel Default => new DHCPv6RootScopeAddressPropertiesViewModel
         {
             PreferredLifetime = TimeSpan.FromHours(12),
             ValidLifetime = TimeSpan.FromHours(24),

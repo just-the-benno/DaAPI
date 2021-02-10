@@ -1,4 +1,5 @@
-﻿using DaAPI.App.Pages.DHCPv6Scopes;
+﻿using DaAPI.App.Pages.DHCPScopes;
+using DaAPI.App.Pages.DHCPv6Scopes;
 using DaAPI.Core.Common.DHCPv6;
 using System;
 using System.Collections.Generic;
@@ -9,11 +10,11 @@ using System.Threading.Tasks;
 
 namespace DaAPI.App.Validation
 {
-    public class DHCPv6ScopeResolverValuesViewModelValidationAttribute : ValidationAttribute
+    public class ScopeResolverValuesViewModelValidationAttribute : ValidationAttribute
     {
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            var objectInstance = (DHCPv6ScopeResolverValuesViewModel)validationContext.ObjectInstance;
+            var objectInstance = (DHCPScopeResolverValuesViewModel)validationContext.ObjectInstance;
 
             Boolean isValid = false;
 

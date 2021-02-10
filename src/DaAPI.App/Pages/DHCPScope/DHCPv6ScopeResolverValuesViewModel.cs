@@ -7,9 +7,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using static DaAPI.Core.Scopes.ScopeResolverPropertyDescription;
 
-namespace DaAPI.App.Pages.DHCPv6Scopes
+namespace DaAPI.App.Pages.DHCPScopes
 {
-    public class DHCPv6ScopeResolverValuesViewModel
+    public class DHCPScopeResolverValuesViewModel
     {
         public Boolean IsListValue { get; }
         public Boolean IsTextValue { get; }
@@ -20,11 +20,11 @@ namespace DaAPI.App.Pages.DHCPv6Scopes
         public ScopeResolverPropertyValueTypes ValueType { get; }
         public String Name { get; }
 
-        public IEnumerable<DHCPv6ScopeResolverValuesViewModel> OtherItems { get; }
+        public IEnumerable<DHCPScopeResolverValuesViewModel> OtherItems { get; }
 
-        public DHCPv6ScopeResolverValuesViewModel(
+        public DHCPScopeResolverValuesViewModel(
             String propertyName, ScopeResolverPropertyValueTypes valueType,
-            IEnumerable<DHCPv6ScopeResolverValuesViewModel> otherItems)
+            IEnumerable<DHCPScopeResolverValuesViewModel> otherItems)
         {
             ValueType = valueType;
             Name = propertyName;
@@ -59,9 +59,9 @@ namespace DaAPI.App.Pages.DHCPv6Scopes
             }
         }
 
-        public DHCPv6ScopeResolverValuesViewModel(
+        public DHCPScopeResolverValuesViewModel(
              String propertyName, ScopeResolverPropertyValueTypes valueType,
-            IEnumerable<DHCPv6ScopeResolverValuesViewModel> otherItems,
+            IEnumerable<DHCPScopeResolverValuesViewModel> otherItems,
             String rawValue) : this(propertyName, valueType, otherItems)
         {
             if (IsTextValue == true)
@@ -89,18 +89,18 @@ namespace DaAPI.App.Pages.DHCPv6Scopes
             }
         }
 
-        [DHCPv6ScopeResolverValuesViewModelValidation(ErrorMessageResourceName = nameof(ValidationErrorMessages.DHCPv6ScopeResolverValuesViewModelValidation), ErrorMessageResourceType = typeof(ValidationErrorMessages))]
+        [ScopeResolverValuesViewModelValidation(ErrorMessageResourceName = nameof(ValidationErrorMessages.DHCPv6ScopeResolverValuesViewModelValidation), ErrorMessageResourceType = typeof(ValidationErrorMessages))]
         public String SingleValue { get; set; }
 
-        [DHCPv6ScopeResolverValuesViewModelValidation(ErrorMessageResourceName = nameof(ValidationErrorMessages.DHCPv6ScopeResolverValuesViewModelValidation), ErrorMessageResourceType = typeof(ValidationErrorMessages))]
+        [ScopeResolverValuesViewModelValidation(ErrorMessageResourceName = nameof(ValidationErrorMessages.DHCPv6ScopeResolverValuesViewModelValidation), ErrorMessageResourceType = typeof(ValidationErrorMessages))]
         public Int64? NullableNumericValue { get; set; }
 
-        [DHCPv6ScopeResolverValuesViewModelValidation(ErrorMessageResourceName = nameof(ValidationErrorMessages.DHCPv6ScopeResolverValuesViewModelValidation), ErrorMessageResourceType = typeof(ValidationErrorMessages))]
+        [ScopeResolverValuesViewModelValidation(ErrorMessageResourceName = nameof(ValidationErrorMessages.DHCPv6ScopeResolverValuesViewModelValidation), ErrorMessageResourceType = typeof(ValidationErrorMessages))]
         public Int64 NumericValue { get; set; }
 
         public Boolean BooleanValue { get; set; }
 
-        [DHCPv6ScopeResolverValuesViewModelValidation(ErrorMessageResourceName = nameof(ValidationErrorMessages.DHCPv6ScopeResolverValuesViewModelValidation), ErrorMessageResourceType = typeof(ValidationErrorMessages))]
+        [ScopeResolverValuesViewModelValidation(ErrorMessageResourceName = nameof(ValidationErrorMessages.DHCPv6ScopeResolverValuesViewModelValidation), ErrorMessageResourceType = typeof(ValidationErrorMessages))]
         public IEnumerable<String> MultipleValues { get; set; }
 
         public String GetSerializedValue()

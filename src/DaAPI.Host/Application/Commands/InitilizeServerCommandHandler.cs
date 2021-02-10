@@ -3,6 +3,7 @@ using DaAPI.Host.Infrastrucutre;
 using DaAPI.Infrastructure.StorageEngine.DHCPv6;
 using MediatR;
 using Microsoft.AspNetCore.Identity.UI.V4.Pages.Internal.Account;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -14,59 +15,58 @@ namespace DaAPI.Host.Application.Commands
 {
     public class InitilizeServerCommandHandler : IRequestHandler<InitilizeServerCommand, Boolean>
     {
-        private readonly IDHCPv6ReadStore readStore;
-        private readonly IDHCPv6EventStore eventStore;
-        private readonly OpenIdConnectOptions openIdConnectOptions;
-        private readonly ILocalUserService userService;
-        private readonly ILogger<InitilizeServerCommandHandler> logger;
+
+        private readonly IServiceProvider provider;
 
         public InitilizeServerCommandHandler(
-            IDHCPv6ReadStore readStore, 
-            IDHCPv6EventStore eventStore,
-            OpenIdConnectOptions openIdConnectOptions,
-            ILocalUserService userService,
-            ILogger<InitilizeServerCommandHandler> logger)
+            IServiceProvider provider
+            )
         {
-            this.readStore = readStore ?? throw new ArgumentNullException(nameof(readStore));
-            this.eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
-            this.openIdConnectOptions = openIdConnectOptions;
-            this.userService = userService;
-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.provider = provider ?? throw new ArgumentNullException(nameof(provider));
         }
 
         public async Task<Boolean> Handle(InitilizeServerCommand request, CancellationToken cancellationToken)
         {
-            var properties = await readStore.GetServerProperties();
-            if(properties.IsInitilized == true)
+            using (var scope = provider.CreateScope())
             {
-                logger.LogWarning("server is already intilzied");
-                return false;
-            }
+                IDHCPv6ReadStore readStore = scope.ServiceProvider.GetRequiredService<IDHCPv6ReadStore>();
+                IDHCPv6EventStore eventStore = scope.ServiceProvider.GetRequiredService<IDHCPv6EventStore>();
+                OpenIdConnectOptions openIdConnectOptions = scope.ServiceProvider.GetRequiredService<OpenIdConnectOptions>();
+                ILocalUserService userService = scope.ServiceProvider.GetRequiredService<ILocalUserService>();
+                ILogger<InitilizeServerCommandHandler> logger = scope.ServiceProvider.GetRequiredService<ILogger<InitilizeServerCommandHandler>>();
 
-            Boolean userCreated = false;
-            if(openIdConnectOptions.IsSelfHost == true)
-            {
-                if(await userService.GetUserAmount() == 0)
+                var properties = await readStore.GetServerProperties();
+                if (properties.IsInitilized == true)
                 {
-                    Guid? userId = await userService.CreateUser(request.UserName, request.Password);
-                    userCreated = userId.HasValue;
+                    logger.LogWarning("server is already intilzied");
+                    return false;
                 }
-            }
-            else
-            {
-                userCreated = true;
-            }
 
-            if(userCreated == false)
-            {
-                return false;
+                Boolean userCreated = false;
+                if (openIdConnectOptions.IsSelfHost == true)
+                {
+                    if (await userService.GetUserAmount() == 0)
+                    {
+                        Guid? userId = await userService.CreateUser(request.UserName, request.Password);
+                        userCreated = userId.HasValue;
+                    }
+                }
+                else
+                {
+                    userCreated = true;
+                }
+
+                if (userCreated == false)
+                {
+                    return false;
+                }
+
+                properties.IsInitilized = true;
+                properties.ServerDuid = new UUIDDUID(Guid.NewGuid());
+
+                Boolean saveResult = await eventStore.SaveInitialServerConfiguration(properties);
+                return saveResult;
             }
-
-            properties.IsInitilized = true;
-            properties.ServerDuid = new UUIDDUID(Guid.NewGuid());
-
-            Boolean saveResult = await eventStore.SaveInitialServerConfiguration(properties);
-            return saveResult;
         }
     }
 }

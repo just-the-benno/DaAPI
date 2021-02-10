@@ -1,4 +1,5 @@
-﻿using DaAPI.App.Resources;
+﻿using DaAPI.App.Pages.DHCPScopes;
+using DaAPI.App.Resources;
 using DaAPI.App.Resources.Pages.DHCPv6Scopes;
 using DaAPI.App.Validation;
 using DaAPI.Core.Scopes.DHCPv6.ScopeProperties;
@@ -43,11 +44,11 @@ namespace DaAPI.App.Pages.DHCPv6Scopes
                 if (value == true)
                 {
                     RootAddressProperties = null;
-                    ChildAddressProperties = new ChildScopeAddressPropertiesViewModel();
+                    ChildAddressProperties = new DHCPv6ChildScopeAddressPropertiesViewModel();
                 }
                 else
                 {
-                    RootAddressProperties = new RootScopeAddressPropertiesViewModel();
+                    RootAddressProperties = new DHCPv6RootScopeAddressPropertiesViewModel();
                     ChildAddressProperties = null;
                 }
             }
@@ -120,10 +121,10 @@ namespace DaAPI.App.Pages.DHCPv6Scopes
         public DHCPv6PrefixDelgationViewModel PrefixDelgationInfo { get; set; }
 
         [ValidateComplexType]
-        public RootScopeAddressPropertiesViewModel RootAddressProperties { get; private set; }
+        public DHCPv6RootScopeAddressPropertiesViewModel RootAddressProperties { get; private set; }
 
         [ValidateComplexType]
-        public ChildScopeAddressPropertiesViewModel ChildAddressProperties { get; private set; }
+        public DHCPv6ChildScopeAddressPropertiesViewModel ChildAddressProperties { get; private set; }
 
         [Required(ErrorMessageResourceType = typeof(ValidationErrorMessages), ErrorMessageResourceName = nameof(ValidationErrorMessages.Required))]
         [Display(Name = nameof(DHCPv6ScopeDisplay.ResolverTypeName), ResourceType = typeof(DHCPv6ScopeDisplay))]
@@ -131,7 +132,7 @@ namespace DaAPI.App.Pages.DHCPv6Scopes
 
         [Required(ErrorMessageResourceType = typeof(ValidationErrorMessages), ErrorMessageResourceName = nameof(ValidationErrorMessages.Required))]
         [ValidateComplexType]
-        public IList<DHCPv6ScopeResolverValuesViewModel> ResolverProperties { get; set; }
+        public IList<DHCPScopeResolverValuesViewModel> ResolverProperties { get; set; }
 
         [Required(ErrorMessageResourceType = typeof(ValidationErrorMessages), ErrorMessageResourceName = nameof(ValidationErrorMessages.Required))]
         [ValidateComplexType]
@@ -145,8 +146,8 @@ namespace DaAPI.App.Pages.DHCPv6Scopes
         private CreateDHCPv6ScopeViewModel(Boolean addDefaultProperties)
         {
             ExcludedAddresses = new List<IPv6AddressString>();
-            ResolverProperties = new List<DHCPv6ScopeResolverValuesViewModel>();
-            RootAddressProperties = RootScopeAddressPropertiesViewModel.Default;
+            ResolverProperties = new List<DHCPScopeResolverValuesViewModel>();
+            RootAddressProperties = DHCPv6RootScopeAddressPropertiesViewModel.Default;
             ScopeProperties = new List<DHCPv6ScopePropertyViewModel>();
             if(addDefaultProperties == true)
             {
@@ -161,7 +162,7 @@ namespace DaAPI.App.Pages.DHCPv6Scopes
 
         }
 
-        public CreateDHCPv6ScopeViewModel(DHCPv6ScopePropertiesResponse response, IEnumerable<ScopeResolverDescription> descriptions) : this(false)
+        public CreateDHCPv6ScopeViewModel(DHCPv6ScopePropertiesResponse response, IEnumerable<DHCPv6ScopeResolverDescription> descriptions) : this(false)
         {
             Name = response.Name;
             Description = response.Description;
@@ -183,7 +184,7 @@ namespace DaAPI.App.Pages.DHCPv6Scopes
 
             if (HasParent == true)
             {
-                ChildAddressProperties = new ChildScopeAddressPropertiesViewModel
+                ChildAddressProperties = new DHCPv6ChildScopeAddressPropertiesViewModel
                 {
                     AcceptDecline = response.AddressRelated.AcceptDecline,
                     AddressAllocationStrategy = response.AddressRelated.AddressAllocationStrategy,
@@ -199,7 +200,7 @@ namespace DaAPI.App.Pages.DHCPv6Scopes
             }
             else
             {
-                RootAddressProperties = new RootScopeAddressPropertiesViewModel
+                RootAddressProperties = new DHCPv6RootScopeAddressPropertiesViewModel
                 {
                     AcceptDecline = response.AddressRelated.AcceptDecline.Value,
                     AddressAllocationStrategy = response.AddressRelated.AddressAllocationStrategy.Value,
@@ -245,10 +246,10 @@ namespace DaAPI.App.Pages.DHCPv6Scopes
         public void ClearScopeResolverProperties() => ResolverProperties.Clear();
 
         public void AddScopeResolverProperty(String propertyName, ScopeResolverPropertyValueTypes valueType) =>
-            ResolverProperties.Add(new DHCPv6ScopeResolverValuesViewModel(propertyName, valueType, ResolverProperties));
+            ResolverProperties.Add(new DHCPScopeResolverValuesViewModel(propertyName, valueType, ResolverProperties));
 
         public void AddScopeResolverProperty(String propertyName, ScopeResolverPropertyValueTypes valueType,String value) =>
-    ResolverProperties.Add(new DHCPv6ScopeResolverValuesViewModel(propertyName, valueType, ResolverProperties, value));
+    ResolverProperties.Add(new DHCPScopeResolverValuesViewModel(propertyName, valueType, ResolverProperties, value));
 
         public void AddScopeProperty() => ScopeProperties.Add(new DHCPv6ScopePropertyViewModel());
         public void AddScopeProperty(DHCPv6ScopePropertyResponse response) => AddScopeProperty(new DHCPv6ScopePropertyViewModel(response));

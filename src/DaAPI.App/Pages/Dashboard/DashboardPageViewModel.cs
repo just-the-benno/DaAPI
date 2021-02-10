@@ -18,12 +18,12 @@ namespace DaAPI.App.Pages.Dashboard
     public class DashboardPageViewModel
     {
         public DashboardViewModelResponse Response { get; set; }
-        public IDictionary<Guid, ScopeItem> Scopes { get; set; }
+        public IDictionary<Guid, DHCPv6ScopeItem> Scopes { get; set; }
 
-        private ScopeItem GetDefaultScope() => GetDefaultScope(Guid.Empty);
-        private ScopeItem GetDefaultScope(Guid id) => new ScopeItem { Id = id, Name = String.Empty };
+        private DHCPv6ScopeItem GetDefaultScope() => GetDefaultScope(Guid.Empty);
+        private DHCPv6ScopeItem GetDefaultScope(Guid id) => new DHCPv6ScopeItem { Id = id, Name = String.Empty };
 
-        public void SetScopes(IEnumerable<ScopeItem> scopes)
+        public void SetScopes(IEnumerable<DHCPv6ScopeItem> scopes)
         {
             Scopes = scopes.ToDictionary(x => x.Id, x => x);
 
@@ -38,7 +38,7 @@ namespace DaAPI.App.Pages.Dashboard
             }
         }
 
-        public ScopeItem GetScopeById(Guid id) => Scopes.ContainsKey(id) == false ? GetDefaultScope(id) : Scopes[id];
+        public DHCPv6ScopeItem GetScopeById(Guid id) => Scopes.ContainsKey(id) == false ? GetDefaultScope(id) : Scopes[id];
 
     }
 }

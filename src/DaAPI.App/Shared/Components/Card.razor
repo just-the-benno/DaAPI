@@ -3,8 +3,11 @@
     <div class="card-header border-0 d-flex flex-row align-items-center">
         <h3 class="card-title">@Title</h3>
         <span class="flex-fill"></span>
+        <div class="card-tools">
+            @AddtionalHeaderContent
+        </div>
     </div>
-    <div class="card-body table-responsive p-0">
+    <div class="card-body">
         @Body
     </div>
 </div>
@@ -16,4 +19,7 @@
 
     [Parameter]
     public RenderFragment Body { get; set; }
+
+    [Parameter]
+    public RenderFragment AddtionalHeaderContent { get; set; }
 }

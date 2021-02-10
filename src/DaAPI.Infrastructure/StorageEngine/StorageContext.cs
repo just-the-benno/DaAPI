@@ -222,7 +222,7 @@ namespace DaAPI.Infrastructure.StorageEngine
         {
             return await RunOperation(async () =>
             {
-                var result = await DHCPv6Interfaces
+                var result = await DHCPv4Interfaces
                 .OrderBy(x => x.Name).ToListAsync();
 
                 List<DHCPv4Listener> listeners = new List<DHCPv4Listener>(result.Count);

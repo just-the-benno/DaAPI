@@ -138,6 +138,18 @@ module.exports = function (grunt) {
                 files: [
                     { expand: true, flatten: false, cwd: 'node_modules/jquery/dist', src: '**', dest: 'wwwroot/js-app/plugins/jquery/', filter: 'isFile' },
                 ]
+            },
+            moment:
+            {
+                files: [
+                    { expand: true, flatten: false, cwd: 'node_modules/moment/min', src: '**', dest: 'wwwroot/js-app/plugins/moment/', filter: 'isFile' },
+                ]
+            },
+            chartjs:
+            {
+                files: [
+                    { expand: true, flatten: false, cwd: 'node_modules/chart.js/dist', src: '**', dest: 'wwwroot/js-app/plugins/chartjs/', filter: 'isFile' },
+                ]
             }
         },
         ts: {
@@ -182,14 +194,14 @@ module.exports = function (grunt) {
         'clean:wwwroot', 'clean:temp',
         'ts', 'uglify:ts',
         'sass', 'cssmin',
-        'copy:css', 'copy:assets', 'copy:js', 'copy:ts', 'copy:admin_lte', 'copy:fontawesome', 'copy:icheck_bootstrap', 'copy:bootstrap', 'copy:jquery', 'copy:popper',
+        'copy:css', 'copy:assets', 'copy:js', 'copy:ts', 'copy:admin_lte', 'copy:fontawesome', 'copy:icheck_bootstrap', 'copy:bootstrap', 'copy:jquery', 'copy:popper', "copy:moment","copy:chartjs",
         'clean:temp']);
 
     grunt.registerTask("build-dev", [
         'clean:wwwroot', 'clean:temp',
         'ts', 'uglify:ts',
         'sass', 'cssmin',
-        'copy:css', 'copy:assets', 'copy:js', 'copy:ts', 'copy:ts_debug', 'copy:fontawesome', 'copy:icheck_bootstrap', 'copy:bootstrap', 'copy:jquery', 'copy:popper',
+        'copy:css', 'copy:assets', 'copy:js', 'copy:ts', 'copy:ts_debug', 'copy:fontawesome', 'copy:icheck_bootstrap', 'copy:bootstrap', 'copy:jquery', 'copy:popper', "copy:moment", "copy:chartjs",
         'clean:temp']);
 
     grunt.registerTask('typescript-watch', [

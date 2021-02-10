@@ -10,21 +10,11 @@ using static DaAPI.Shared.Responses.DHCPv6ScopeResponses.V1;
 
 namespace DaAPI.App.Helper
 {
-    public class BaseSpecifiedConcreteClassConverter : CamelCasePropertyNamesContractResolver
-    {
-        protected override JsonConverter ResolveContractConverter(Type objectType)
-        {
-            if (typeof(DHCPv6ScopePropertyResponse).IsAssignableFrom(objectType) && !objectType.IsAbstract)
-                return null; // pretend TableSortRuleConvert is not specified (thus avoiding a stack overflow)
-            return base.ResolveContractConverter(objectType);
-        }
-    }
-
     public class DHCPv6ScopePropertyResponseJsonConverter : JsonConverter
     {
         static readonly JsonSerializerSettings SpecifiedSubclassConversion = new JsonSerializerSettings()
         {
-            ContractResolver = new BaseSpecifiedConcreteClassConverter()
+            ContractResolver = new BaseSpecifiedConcreteClassConverter<DHCPv6ScopePropertyResponse>()
         };
 
         public override bool CanConvert(Type objectType) => objectType == typeof(DHCPv6ScopePropertyResponse);

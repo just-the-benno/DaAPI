@@ -67,19 +67,19 @@ namespace DaAPI.Shared.Responses
                 public DHCPv6PrefixDelgationInfoResponse PrefixDelegationInfo { get; set; }
             }
 
-            public class ScopeResolverDescription
+            public class DHCPv6ScopeResolverDescription
             {
                 public String TypeName { get; set; }
-                public IEnumerable<ScopeResolverPropertyDescription> Properties { get; set; }
+                public IEnumerable<DHCPv6ScopeResolverPropertyDescription> Properties { get; set; }
             }
 
-            public class ScopeResolverPropertyDescription
+            public class DHCPv6ScopeResolverPropertyDescription
             {
                 public String PropertyName { get; set; }
                 public ScopeResolverPropertyValueTypes PropertyValueType { get; set; }
             }
 
-            public class ScopeItem
+            public class DHCPv6ScopeItem
             {
                 public String Name { get; set; }
                 public Guid Id { get; set; }
@@ -87,10 +87,9 @@ namespace DaAPI.Shared.Responses
                 public String EndAddress { get; set; }
             }
 
-
-            public class ScopeTreeViewItem : ScopeItem
+            public class DHCPv6ScopeTreeViewItem : DHCPv6ScopeItem
             {
-                public IEnumerable<ScopeTreeViewItem> ChildScopes { get; set; }
+                public IEnumerable<DHCPv6ScopeTreeViewItem> ChildScopes { get; set; }
             }
 
             public class ScopeResolverResponse

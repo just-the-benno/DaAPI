@@ -18,7 +18,7 @@ namespace DaAPI.Shared.Requests
 
                 [Required]
                 [StringLength(100, MinimumLength = 3)]
-                [IPv6Address]
+                [IPv4Address]
                 public String IPv4Address { get; set; }
 
                 [Required]

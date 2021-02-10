@@ -1,0 +1,116 @@
+﻿@inherits BootstrapInputBase<Nullable<Byte>>
+
+@if (TableMode == true)
+{
+    <td>
+        <div class="icheck-primary">
+            <BootstrapInputCheckbox @bind-Value="HasValue" id="@_nullableCheckBoxId" />
+            <label for="@_nullableCheckBoxId">@EnabledCaption</label>
+        </div>
+    </td>
+    <td>
+        @if (HasValue == true)
+        {
+            <BootstrapInputNumber @bind-Value="NonNullableValue" class="ml-3 form-control" minimum="0" placeholder="Enter a positive number here" />
+        }
+    </td>
+}
+else
+{
+<div class="d-flex flex-row">
+    <div class="icheck-primary">
+        <BootstrapInputCheckbox @bind-Value="HasValue" id="@_nullableCheckBoxId" />
+        <label for="@_nullableCheckBoxId">@EnabledCaption</label>
+    </div>
+
+    @if (FillSpace == true)
+    {
+        <div class="flex-fill"></div>
+    }
+
+    @if (HasValue == true)
+    {
+        <BootstrapInputNumber @bind-Value="NonNullableValue" class="ml-3 form-control" minimum="0" placeholder="Enter a positive number here" />
+    }
+</div>
+}
+
+@code {
+
+    [Parameter] public Boolean FillSpace { get; set; } = false;
+    [Parameter] public Boolean TableMode { get; set; } = true;
+
+    [Parameter] public String EnabledCaption { get; set; } = "Enabled";
+
+    //[Parameter] public Boolean? IsValid { get; set; } = null;
+
+    private Boolean _hasValue;
+
+    [Parameter]
+    public Boolean HasValue
+    {
+        get => _hasValue;
+        set
+        {
+            _hasValue = value;
+            if (value == true)
+            {
+                CurrentValue = _nonNullableValue;
+            }
+            else
+            {
+                CurrentValue = new Byte?();
+            }
+        }
+    }
+
+    private Byte _nonNullableValue;
+
+    [Parameter]
+    public Byte NonNullableValue
+    {
+        get => _nonNullableValue;
+        set
+        {
+            _nonNullableValue = value;
+            CurrentValue = value;
+        }
+    }
+
+    [Parameter] public string ParsingErrorMessage { get; set; } = "The {0} field must be a number.";
+
+    protected override bool TryParseValueFromString(string value, out Byte? result, out string validationErrorMessage)
+    {
+
+        if (BindConverter.TryConvertToNullableLong(value, System.Globalization.CultureInfo.InvariantCulture, out Int64? preResult))
+        {
+            validationErrorMessage = null;
+            if(preResult.HasValue == true && preResult.Value > Byte.MaxValue)
+            {
+                result = null;
+                return false;
+            }
+            else
+            {
+                result = preResult.HasValue == false ? new Byte?() : (Byte)preResult.Value;
+                return true;
+            }
+        }
+        else
+        {
+            validationErrorMessage = string.Format(ParsingErrorMessage, FieldIdentifier.FieldName);
+            result = null;
+            return false;
+        }
+    }
+
+    private String _nullableCheckBoxId;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        _nullableCheckBoxId = $"hasvalue-{Guid.NewGuid()}";
+    }
+
+}

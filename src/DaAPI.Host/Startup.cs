@@ -251,7 +251,10 @@ namespace DaAPI.Host
 
             services.AddHttpContextAccessor();
             services.AddScoped<IUserIdTokenExtractor, HttpContextBasedUserIdTokenExtractor>();
-            services.AddMediatR(typeof(Startup).Assembly);
+            services.AddMediatR( (config) => {
+                config.AsScoped();
+                },
+                typeof(Startup).Assembly);
             services.AddHostedService<HostedService.LeaseTimerHostedService>();
             services.AddHostedService<HostedService.CleanupDatabaseTimerHostedService>();
         }

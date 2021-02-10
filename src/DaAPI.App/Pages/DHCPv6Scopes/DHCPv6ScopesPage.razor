@@ -28,7 +28,7 @@
                         <ul class="nav nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" data-accordion="false">
                             @foreach (var item in _scopes)
                             {
-                                <ScopeTreeItem Item="item" DeleteExecutor="ShowDeleteModal" />
+                                <DHCPv6ScopeTreeItem Item="item" DeleteExecutor="ShowDeleteModal" />
                             }
                         </ul>
                     </LoadingWhileContentNull>
@@ -41,7 +41,7 @@
 
 @code {
 
-    private IEnumerable<ScopeTreeViewItem> _scopes;
+    private IEnumerable<DHCPv6ScopeTreeViewItem> _scopes;
 
     protected override void OnParametersSet()
     {
@@ -54,12 +54,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _scopes = await service.GetScopesAsTree();
+        _scopes = await service.GetDHCPv6ScopesAsTree();
 
         await base.OnInitializedAsync();
     }
 
-    public async Task ShowDeleteModal(ScopeTreeViewItem item)
+    public async Task ShowDeleteModal(DHCPv6ScopeTreeViewItem item)
     {
         var parameters = new ModalParameters();
         parameters.Add(nameof(DeleteDHCPv6ScopeModal.Entry), item);
@@ -72,7 +72,7 @@
             _toastService.ShowSuccess(String.Format(L["DeleteScopeSuccessText"],item.Name), L["DeleteScopeSuccessCaption"]) ;
             _scopes = null;
             StateHasChanged();
-            _scopes = await service.GetScopesAsTree();
+            _scopes = await service.GetDHCPv6ScopesAsTree();
             StateHasChanged();
         }
     }

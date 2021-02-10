@@ -8,35 +8,35 @@ using System.Threading.Tasks;
 
 namespace DaAPI.App.Validation
 {
-    public class TimeSpanInParentRangeAttribute : ValidationAttribute
+    public class DHCPv6RebindTimeAdjustmentInParentRangeAttribute : ValidationAttribute
     {
-        private readonly Boolean _isPreferredLifetime;
+        private readonly Boolean _isT1;
 
-        public TimeSpanInParentRangeAttribute(Boolean isPreferredLifetime) : base("is not in parent range")
+        public DHCPv6RebindTimeAdjustmentInParentRangeAttribute(Boolean isT1) : base("is not in parent range")
         {
-            _isPreferredLifetime = isPreferredLifetime;
+            _isT1 = isT1;
         }
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
             Boolean isValid;
 
-            var vm = (ChildScopeAddressPropertiesViewModel)validationContext.ObjectInstance;
+            var vm = (DHCPv6ChildScopeAddressPropertiesViewModel)validationContext.ObjectInstance;
             if (value == null)
             {
                 isValid = true;
             }
             else
             {
-                TimeSpan currentValue = (TimeSpan)value;
-                if(_isPreferredLifetime == true)
+                Double currentValue = (Double)value;
+                if(_isT1 == true)
                 {
-                    TimeSpan upperValue = vm.ValidLifetime.HasValue == true ? vm.ValidLifetime.Value : vm.Properties.ValidLifetime.Value;
+                    Double upperValue = vm.T2.HasValue == true ? vm.T2.Value : vm.Properties.T2.Value;
                     isValid = currentValue < upperValue;
                 }
                 else
                 {
-                    TimeSpan lowerValue = vm.PreferredLifetime.HasValue == true ? vm.PreferredLifetime.Value : vm.Properties.PreferedLifetime.Value;
+                    Double lowerValue = vm.T1.HasValue == true ? vm.T1.Value : vm.Properties.T1.Value;
                     isValid = currentValue > lowerValue;
                 }
             }

@@ -120,7 +120,13 @@
   <data name="DHCPv6ScopePropertyValidation" xml:space="preserve">
     <value>Wert ist ungültig</value>
   </data>
+  <data name="DHCPv6ScopePropertyValidation1" xml:space="preserve">
+    <value>Wert ist ungültig</value>
+  </data>
   <data name="DHCPv6ScopeResolverValuesViewModelValidation" xml:space="preserve">
+    <value>Wert ist ungültig</value>
+  </data>
+  <data name="DHCPv6ScopeResolverValuesViewModelValidation1" xml:space="preserve">
     <value>Wert ist ungültig</value>
   </data>
   <data name="GreaterThan" xml:space="preserve">

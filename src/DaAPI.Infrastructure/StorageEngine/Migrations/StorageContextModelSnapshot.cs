@@ -14,7 +14,77 @@ namespace DaAPI.Infrastructure.StorageEngine.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.4");
+                .HasAnnotation("ProductVersion", "5.0.0");
+
+            modelBuilder.Entity("DaAPI.Infrastructure.StorageEngine.DHCPv4.DHCPv4InterfaceDataModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("IPv6Address")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("InterfaceId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DHCPv4Interfaces");
+                });
+
+            modelBuilder.Entity("DaAPI.Infrastructure.StorageEngine.DHCPv6.DHCPv4PacketHandledEntryDataModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ErrorCode")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("FilteredBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("HandledSuccessfully")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("InvalidRequest")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<ushort>("RequestSize")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("RequestType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<ushort?>("ResponseSize")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("ResponseType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("ScopeId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("TimestampDay")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("TimestampMonth")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("TimestampWeek")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DHCPv4PacketEntries");
+                });
 
             modelBuilder.Entity("DaAPI.Infrastructure.StorageEngine.DHCPv6.DHCPv6InterfaceDataModel", b =>
                 {

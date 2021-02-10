@@ -1,0 +1,32 @@
+﻿@inject IStringLocalizer<DHCPv6ScopeResolverExplanation> L
+
+@if (OnlyTitle == false)
+{
+    <ToolTipButton Content="@_content" Title="@($"{(ResolverTypeName == ResolverPropertyName ? L["ResolverCaption"]  : L["PropertyCaption"])}: {_title}")" />
+}
+else
+{
+    @_title;
+}
+
+@code {
+
+    private String _title;
+    private String _content;
+
+    [Parameter] public String ResolverTypeName { get; set; }
+    [Parameter] public String ResolverPropertyName { get; set; }
+    [Parameter] public Boolean OnlyTitle { get; set; } = false;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        String keyForTitle = $"{ResolverTypeName}_{ResolverPropertyName}_Caption";
+        String keyForContent = $"{ResolverTypeName}_{ResolverPropertyName}_Content";
+
+        _title = L[keyForTitle];
+        _content = L[keyForContent];
+    }
+
+}

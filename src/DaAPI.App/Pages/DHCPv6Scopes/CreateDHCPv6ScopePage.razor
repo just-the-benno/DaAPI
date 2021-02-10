@@ -965,8 +965,8 @@
 
     private Boolean _sendingRequestInProgress = false;
     private Boolean _serviceErrorOccured = false;
-    private IEnumerable<ScopeResolverDescription> _scopeResolverDescriptions;
-    private IEnumerable<ScopeItem> _parents;
+    private IEnumerable<DHCPv6ScopeResolverDescription> _scopeResolverDescriptions;
+    private IEnumerable<DHCPv6ScopeItem> _parents;
     private Boolean _formHasBeenValidated = false;
 
     #endregion
@@ -1023,7 +1023,7 @@
 
     private async Task SetPossibleParents()
     {
-        _parents = await _service.GetScopesAsList();
+        _parents = await _service.GetDHCPv6ScopesAsList();
     }
 
     private async Task UpdatePropertiesBasedOnParent()
@@ -1067,23 +1067,23 @@
 
     #region Methods
 
-    private IEnumerable<ScopeResolverPropertyDescription> GetScopeResolverProperties()
+    private IEnumerable<DHCPv6ScopeResolverPropertyDescription> GetScopeResolverProperties()
     {
         if (_scopeResolverDescriptions == null)
         {
-            return Array.Empty<ScopeResolverPropertyDescription>();
+            return Array.Empty<DHCPv6ScopeResolverPropertyDescription>();
         }
 
         var resolverDescription = _scopeResolverDescriptions.FirstOrDefault(x => x.TypeName == Model.ResolverTypeName);
         if (resolverDescription == null)
         {
-            return Array.Empty<ScopeResolverPropertyDescription>();
+            return Array.Empty<DHCPv6ScopeResolverPropertyDescription>();
         }
         else
         {
             if (resolverDescription.Properties == null)
             {
-                return Array.Empty<ScopeResolverPropertyDescription>();
+                return Array.Empty<DHCPv6ScopeResolverPropertyDescription>();
             }
 
             return resolverDescription.Properties;

@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using static DaAPI.Shared.Responses.StatisticsControllerResponses.V1;
 
-namespace DaAPI.Infrastructure.StorageEngine.DHCPv6
+namespace DaAPI.Infrastructure.StorageEngine
 {
-    public class DHCPv6LeaseEntryDataModel : ILeaseEntry
+    public interface ILeaseEntry
     {
-        public Guid Id { get; set; }
         public Guid LeaseId { get; set; }
         public String Address { get; set; }
-        public String Prefix { get; set; }
-        public Byte PrefixLength { get; set; }
         public DateTime Start { get; set; }
         public DateTime End { get; set; }
         public Guid ScopeId { get; set; }

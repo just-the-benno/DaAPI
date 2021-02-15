@@ -7,6 +7,9 @@ using System.Text;
 
 namespace DaAPI.Infrastructure.StorageEngine.DHCPv6
 {
+
+
+
     public class DHCPv6PacketHandledEntryDataModel : IPacketHandledEntry<DHCPv6PacketTypes>
     {
         [Key]

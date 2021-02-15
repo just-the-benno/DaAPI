@@ -51,8 +51,12 @@ namespace DaAPI.Infrastructure.StorageEngine
 
         #endregion
 
-        private static readonly List<String> _leasseCorrelatedEventsNames;
-        private static readonly List<String> _handledCorrelatedEventsNames;
+        private static readonly List<String> _dhcpv6leasseCorrelatedEventsNames;
+        private static readonly List<String> _dhcp4leasseCorrelatedEventsNames;
+
+        private static readonly List<String> _handledDHCPv6CorrelatedEventsNames;
+        private static readonly List<String> _handledDHCPv4CorrelatedEventsNames;
+
 
         private static readonly SemaphoreSlim _writeSync = new SemaphoreSlim(1, 1);
 
@@ -73,9 +77,24 @@ namespace DaAPI.Infrastructure.StorageEngine
                 typeof(DHCPv6LeaseEvents.DHCPv6LeaseRevokedEvent),
             };
 
-            _leasseCorrelatedEventsNames = possibleLeaseEventTypes.Select(x => GetBodyType(x)).ToList();
+            _dhcpv6leasseCorrelatedEventsNames = possibleLeaseEventTypes.Select(x => GetBodyType(x)).ToList();
 
-            var possibleLeaseHandledEventTypes = new[]
+            var possibleDHCPv4LeaseEventTypes = new[]
+          {
+                typeof(DHCPv4LeaseEvents.DHCPv4AddressSuspendedEvent),
+                typeof(DHCPv4LeaseEvents.DHCPv4LeaseActivatedEvent),
+                typeof(DHCPv4LeaseEvents.DHCPv4LeaseCanceledEvent),
+                typeof(DHCPv4LeaseEvents.DHCPv4LeaseCreatedEvent),
+                typeof(DHCPv4LeaseEvents.DHCPv4LeaseExpiredEvent),
+                typeof(DHCPv4LeaseEvents.DHCPv4LeaseReleasedEvent),
+                typeof(DHCPv4LeaseEvents.DHCPv4LeaseReleasedEvent),
+                typeof(DHCPv4LeaseEvents.DHCPv4LeaseRenewedEvent),
+                typeof(DHCPv4LeaseEvents.DHCPv4LeaseRevokedEvent),
+            };
+
+            _dhcp4leasseCorrelatedEventsNames = possibleDHCPv4LeaseEventTypes.Select(x => GetBodyType(x)).ToList();
+
+            var possibleDHCPv6LeaseHandledEventTypes = new[]
           {
                 typeof(DHCPv6PacketHandledEvents.DHCPv6ConfirmHandledEvent),
                 typeof(DHCPv6PacketHandledEvents.DHCPv6DeclineHandledEvent),
@@ -88,9 +107,19 @@ namespace DaAPI.Infrastructure.StorageEngine
                 typeof(DHCPv6PacketHandledEvents.DHCPv6SolicitHandledEvent),
             };
 
-            _handledCorrelatedEventsNames = possibleLeaseHandledEventTypes.Select(x => GetBodyType(x)).ToList();
+            _handledDHCPv6CorrelatedEventsNames = possibleDHCPv6LeaseHandledEventTypes.Select(x => GetBodyType(x)).ToList();
 
+            var possibleDHCPv4LeaseHandledEventTypes = new[]
+            {
+                typeof(DHCPv4PacketHandledEvents.DHCPv4DeclineHandledEvent),
+                typeof(DHCPv4PacketHandledEvents.DHCPv4InformHandledEvent),
+                typeof(DHCPv4PacketHandledEvents.DHCPv4PacketHandledEvent),
+                typeof(DHCPv4PacketHandledEvents.DHCPv4ReleaseHandledEvent),
+                typeof(DHCPv4PacketHandledEvents.DHCPv4RequestHandledEvent),
+                typeof(DHCPv4PacketHandledEvents.DHCPv4DiscoverHandledEvent),
+            };
 
+            _handledDHCPv4CorrelatedEventsNames = possibleDHCPv4LeaseHandledEventTypes.Select(x => GetBodyType(x)).ToList();
         }
 
         public StorageContext(DbContextOptions<StorageContext> options) : base(options)
@@ -669,19 +698,35 @@ namespace DaAPI.Infrastructure.StorageEngine
             });
         }
 
-        public async Task<Boolean> DeleteLeaseRelatedEventsOlderThan(DateTime leaseThreshold) => await DeleteEntriesBasedOnTimestampAndEventType(leaseThreshold, _leasseCorrelatedEventsNames, true);
-        public async Task<Boolean> DeletePacketHandledEventsOlderThan(DateTime handledEventThreshold) => await DeleteEntriesBasedOnTimestampAndEventType(handledEventThreshold, _handledCorrelatedEventsNames, false);
+        public async Task<Boolean> DeleteLeaseRelatedEventsOlderThan(DateTime leaseThreshold)
+        {
+            Boolean result =
+                 await DeleteEntriesBasedOnTimestampAndEventType(leaseThreshold, _dhcpv6leasseCorrelatedEventsNames, true) &&
+                 await DeleteEntriesBasedOnTimestampAndEventType(leaseThreshold, _dhcp4leasseCorrelatedEventsNames, true);
+            return result;
+        }
+
+        public async Task<Boolean> DeletePacketHandledEventsOlderThan(DateTime handledEventThreshold)
+        {
+            Boolean result =
+                await DeleteEntriesBasedOnTimestampAndEventType(handledEventThreshold, _handledDHCPv6CorrelatedEventsNames, false) &&
+                await DeleteEntriesBasedOnTimestampAndEventType(handledEventThreshold, _handledDHCPv4CorrelatedEventsNames, false);
+
+            return result;
+
+        }
 
         public async Task<Boolean> DeletePacketHandledEventMoreThan(UInt32 threshold)
         {
             return await RunOperation(async () =>
             {
-                Int32 total = await Entries.Where(x => _handledCorrelatedEventsNames.Contains(x.BodyType) == true).CountAsync();
+                Int32 total = await Entries.Where(x => _handledDHCPv6CorrelatedEventsNames.Contains(x.BodyType) == true).CountAsync();
                 if (total < threshold) { return true; }
 
                 Int32 diff = (Int32)threshold - total;
 
-                var entriesToRemove = await Entries.Where(x => _handledCorrelatedEventsNames.Contains(x.BodyType) == true).OrderBy(x => x.Timestamp).Take(diff).ToListAsync();
+                var entriesToRemove = await Entries.Where(x => _handledDHCPv6CorrelatedEventsNames.Contains(x.BodyType) == true || _handledDHCPv4CorrelatedEventsNames.Contains(x.BodyType) == true)
+                .OrderBy(x => x.Timestamp).Take(diff).ToListAsync();
                 Entries.RemoveRange(entriesToRemove);
 
                 {
@@ -728,7 +773,7 @@ namespace DaAPI.Infrastructure.StorageEngine
 
         private async Task<IList<DHCPv6PacketHandledEntry>> GetDHCPv6PacketsFromHandledEvents(Int32 amount, Guid? scopeId)
         {
-            return await GetPacketsFromHandledEvents(amount, scopeId, _handledCorrelatedEventsNames, (@event) =>
+            return await GetPacketsFromHandledEvents(amount, scopeId, _handledDHCPv6CorrelatedEventsNames, (@event) =>
               {
                   DHCPv6PacketHandledEntry entry = null;
                   entry = @event switch
@@ -745,6 +790,31 @@ namespace DaAPI.Infrastructure.StorageEngine
                   };
                   return entry;
               });
+        }
+
+        public async Task<IDictionary<DateTime, IDictionary<DHCPv6PacketTypes, Int32>>> GetIncomingDHCPv6PacketTypes(DateTime? start, DateTime? end, GroupStatisticsResultBy groupedBy)
+        {
+            return await GetIncomingPacketTypes(DHCPv6PacketEntries, start, end, groupedBy);
+        }
+
+        public async Task<IDictionary<DateTime, Int32>> GetFileredDHCPv6Packets(DateTime? start, DateTime? end, GroupStatisticsResultBy groupedBy)
+        {
+            return await GetFileredDHCPPackets(DHCPv6PacketEntries, start, end, groupedBy);
+        }
+
+        public async Task<IDictionary<DateTime, Int32>> GetErrorDHCPv6Packets(DateTime? start, DateTime? end, GroupStatisticsResultBy groupedBy)
+        {
+            return await GetErrorFromDHCPPackets(DHCPv6PacketEntries, start, end, groupedBy);
+        }
+
+        public async Task<IDictionary<DateTime, Int32>> GetIncomingDHCPv6PacketAmount(DateTime? start, DateTime? end, GroupStatisticsResultBy groupedBy)
+        {
+            return await GetIncomingDHCPPacketAmount(DHCPv6PacketEntries, start, end, groupedBy);
+        }
+
+        public async Task<IDictionary<DateTime, Int32>> GetActiveDHCPv6Leases(DateTime? start, DateTime? end, GroupStatisticsResultBy groupedBy)
+        {
+            return await GetActiveDHCPLeases(DHCPv6LeaseEntries, start, end, groupedBy);
         }
 
         public async Task<DashboardResponse> GetDashboardOverview()
@@ -793,15 +863,17 @@ namespace DaAPI.Infrastructure.StorageEngine
             });
         }
 
-        public async Task<IDictionary<DateTime, IDictionary<DHCPv6PacketTypes, Int32>>> GetIncomingDHCPv6PacketTypes(DateTime? start, DateTime? end, GroupStatisticsResultBy groupedBy)
+        public async Task<IDictionary<DateTime, IDictionary<TPacketType, Int32>>> GetIncomingPacketTypes<TPacketType>(
+            IQueryable<IPacketHandledEntry<TPacketType>> set,
+            DateTime? start, DateTime? end, GroupStatisticsResultBy groupedBy) where TPacketType : struct
         {
             return await RunOperation(async () =>
             {
-                IQueryable<DHCPv6PacketHandledEntryDataModel> packets = GetPrefiltedPackets(start, end);
+                IQueryable<IPacketHandledEntry<TPacketType>> packets = GetPrefiltedPackets(set, start, end);
 
                 var packetEntryResult = await packets.ToListAsync();
 
-                IEnumerable<IGrouping<DateTime, DHCPv6PacketHandledEntryDataModel>> groupedResult = null;
+                IEnumerable<IGrouping<DateTime, IPacketHandledEntry<TPacketType>>> groupedResult = null;
                 switch (groupedBy)
                 {
                     case GroupStatisticsResultBy.Day:
@@ -823,45 +895,47 @@ namespace DaAPI.Infrastructure.StorageEngine
                     RequestTypes = x.Select(x => x.RequestType)
                 }).ToDictionary(
                         x => x.Key,
-                        x => x.RequestTypes.GroupBy(y => y).ToDictionary(y => y.Key, y => y.Count()) as IDictionary<DHCPv6PacketTypes, Int32>);
+                        x => x.RequestTypes.GroupBy(y => y).ToDictionary(y => y.Key, y => y.Count()) as IDictionary<TPacketType, Int32>);
 
                 return result;
             });
         }
 
-        public async Task<IDictionary<DateTime, Int32>> GetFileredDHCPv6Packets(DateTime? start, DateTime? end, GroupStatisticsResultBy groupedBy)
+        private async Task<IDictionary<DateTime, Int32>> GetFileredDHCPPackets<TMessageType>(
+            IQueryable<IPacketHandledEntry<TMessageType>> packets, DateTime? start, DateTime? end, GroupStatisticsResultBy groupedBy) where TMessageType : struct
         {
             return await RunOperation(async () =>
             {
-                IQueryable<DHCPv6PacketHandledEntryDataModel> packets = GetPrefiltedPackets(start, end);
+                var prefilter =  GetPrefiltedPackets(packets, start, end);
                 packets = packets.Where(x => x.FilteredBy != null);
                 return await GroupPackets(groupedBy, packets);
             });
         }
 
-        public async Task<IDictionary<DateTime, Int32>> GetErrorDHCPv6Packets(DateTime? start, DateTime? end, GroupStatisticsResultBy groupedBy)
+        private async Task<IDictionary<DateTime, Int32>> GetErrorFromDHCPPackets<TMessageType>(
+            IQueryable<IPacketHandledEntry<TMessageType>> packets, DateTime? start, DateTime? end, GroupStatisticsResultBy groupedBy) where TMessageType : struct
         {
             return await RunOperation(async () =>
             {
-                IQueryable<DHCPv6PacketHandledEntryDataModel> packets = GetPrefiltedPackets(start, end);
+                var prefilter = GetPrefiltedPackets(packets, start, end);
                 packets = packets.Where(x => x.InvalidRequest == true);
                 return await GroupPackets(groupedBy, packets);
             });
         }
 
-        public async Task<IDictionary<DateTime, Int32>> GetIncomingDHCPv6PacketAmount(DateTime? start, DateTime? end, GroupStatisticsResultBy groupedBy)
+        private async Task<IDictionary<DateTime, Int32>> GetIncomingDHCPPacketAmount<TMessageType>(
+            IQueryable<IPacketHandledEntry<TMessageType>> packets, DateTime? start, DateTime? end, GroupStatisticsResultBy groupedBy) where TMessageType : struct
         {
             return await RunOperation(async () =>
             {
-                IQueryable<DHCPv6PacketHandledEntryDataModel> packets = GetPrefiltedPackets(start, end);
-                return await GroupPackets(groupedBy, packets);
+                var prefilter = GetPrefiltedPackets(packets, start, end);
+                return await GroupPackets(groupedBy, prefilter);
             });
         }
 
-        private static async Task<IDictionary<DateTime, int>> GroupPackets(GroupStatisticsResultBy groupedBy, IQueryable<DHCPv6PacketHandledEntryDataModel> packets)
+        private static async Task<IDictionary<DateTime, Int32>> GroupPackets<TMessageType>(GroupStatisticsResultBy groupedBy, IQueryable<IPacketHandledEntry<TMessageType>> packets) where TMessageType:  struct
         {
-
-            IQueryable<IGrouping<DateTime, DHCPv6PacketHandledEntryDataModel>> groupedResult = null;
+            IQueryable<IGrouping<DateTime, IPacketHandledEntry<TMessageType>>> groupedResult = null;
             switch (groupedBy)
             {
                 case GroupStatisticsResultBy.Day:
@@ -884,30 +958,29 @@ namespace DaAPI.Infrastructure.StorageEngine
             }).ToDictionaryAsync(x => x.Key, x => x.Amount);
 
             return result;
-
         }
 
-        private IQueryable<DHCPv6PacketHandledEntryDataModel> GetPrefiltedPackets(DateTime? start, DateTime? end)
+        private IQueryable<IPacketHandledEntry<TMessageType>> GetPrefiltedPackets<TMessageType>(IQueryable<IPacketHandledEntry<TMessageType>> set, DateTime? start, DateTime? end)
+            where TMessageType: struct
         {
-            IQueryable<DHCPv6PacketHandledEntryDataModel> packets = DHCPv6PacketEntries;
             if (start.HasValue == true)
             {
-                packets = packets.Where(x => x.Timestamp >= start);
+                set = set.Where(x => x.Timestamp >= start);
             }
             if (end.HasValue == true)
             {
-                packets = packets.Where(x => x.Timestamp <= end.Value);
+                set = set.Where(x => x.Timestamp <= end.Value);
             }
 
-            return packets;
+            return set;
         }
 
-        public async Task<IDictionary<Int32, Int32>> GetErrorCodesPerDHCPV6RequestType(DateTime? start, DateTime? end, DHCPv6PacketTypes type)
+        public async Task<IDictionary<Int32, Int32>> GetErrorCodesPerDHCPRequestType<TMessageType>(IQueryable<IPacketHandledEntry<TMessageType>> set, DateTime? start, DateTime? end, TMessageType type) where TMessageType : struct
         {
             return await RunOperation(async () =>
             {
-                IQueryable<DHCPv6PacketHandledEntryDataModel> packets = GetPrefiltedPackets(start, end);
-                packets = packets.Where(x => x.RequestType == type);
+                IQueryable<IPacketHandledEntry<TMessageType>> packets = GetPrefiltedPackets(set, start, end);
+                packets = packets.Where(x => x.RequestType.Equals(type) == true);
 
                 var result = await packets.GroupBy(x => x.ErrorCode).Select(x => new
                 {
@@ -919,6 +992,11 @@ namespace DaAPI.Infrastructure.StorageEngine
             });
         }
 
+        public async Task<IDictionary<Int32, Int32>> GetErrorCodesPerDHCPV6RequestType(DateTime? start, DateTime? end, DHCPv6PacketTypes type)
+        {
+            return await GetErrorCodesPerDHCPRequestType(DHCPv6PacketEntries, start, end, type);
+        }
+
         private class DateTimeRange
         {
             public DateTime RangeStart { get; set; }
@@ -928,11 +1006,12 @@ namespace DaAPI.Infrastructure.StorageEngine
         private Int32 CountTimeIntersection(DateTime start, DateTime end, IEnumerable<DateTimeRange> ranges) =>
             ranges.Count(x => start < x.RangeEnd && end >= x.RangeStart);
 
-        public async Task<IDictionary<DateTime, Int32>> GetActiveDHCPv6Leases(DateTime? start, DateTime? end, GroupStatisticsResultBy groupedBy)
+
+        public async Task<IDictionary<DateTime, Int32>> GetActiveDHCPLeases(IQueryable<ILeaseEntry> set, DateTime? start, DateTime? end, GroupStatisticsResultBy groupedBy)
         {
             return await RunOperation(async () =>
             {
-                start ??= await DHCPv6LeaseEntries.OrderBy(x => x.Timestamp).Select(x => x.Timestamp).FirstOrDefaultAsync();
+                start ??= await set.OrderBy(x => x.Timestamp).Select(x => x.Timestamp).FirstOrDefaultAsync();
                 if (start.Value == default)
                 {
                     return new Dictionary<DateTime, Int32>();
@@ -941,7 +1020,7 @@ namespace DaAPI.Infrastructure.StorageEngine
                 end ??= DateTime.UtcNow;
                 DateTime currentStart;
 
-                var preResult = await DHCPv6LeaseEntries.Where(x => start.Value < x.End && end.Value >= x.Start)
+                var preResult = await set.Where(x => start.Value < x.End && end.Value >= x.Start)
                     .Select(x => new DateTimeRange { RangeStart = x.Start, RangeEnd = x.End }).ToListAsync();
 
                 if (preResult.Count == 0)
@@ -1038,7 +1117,7 @@ namespace DaAPI.Infrastructure.StorageEngine
 
         private async Task<IList<DHCPv4PacketHandledEntry>> GetDHCPv4PacketsFromHandledEvents(Int32 amount, Guid? scopeId)
         {
-            return await GetPacketsFromHandledEvents(amount, scopeId, _handledCorrelatedEventsNames, (@event) =>
+            return await GetPacketsFromHandledEvents(amount, scopeId, _handledDHCPv6CorrelatedEventsNames, (@event) =>
             {
                 DHCPv4PacketHandledEntry entry = null;
                 entry = @event switch
@@ -1054,5 +1133,31 @@ namespace DaAPI.Infrastructure.StorageEngine
             });
         }
 
+        public async Task<IDictionary<DateTime, IDictionary<DHCPv4MessagesTypes, Int32>>> GetIncomingDHCPv4PacketTypes(DateTime? start, DateTime? end, GroupStatisticsResultBy groupedBy)
+        {
+            return await GetIncomingPacketTypes(DHCPv4PacketEntries, start, end, groupedBy);
+        }
+
+        public async Task<IDictionary<DateTime, Int32>> GetFileredDHCPv4Packets(DateTime? start, DateTime? end, GroupStatisticsResultBy groupedBy)
+        {
+            return await GetFileredDHCPPackets(DHCPv4PacketEntries, start, end, groupedBy);
+        }
+
+        public async Task<IDictionary<DateTime, Int32>> GetErrorDHCPv4Packets(DateTime? start, DateTime? end, GroupStatisticsResultBy groupedBy)
+        {
+            return await GetErrorFromDHCPPackets(DHCPv4PacketEntries, start, end, groupedBy);
+        }
+
+        public async Task<IDictionary<DateTime, Int32>> GetIncomingDHCPv4PacketAmount(DateTime? start, DateTime? end, GroupStatisticsResultBy groupedBy)
+        {
+            return await GetIncomingDHCPPacketAmount(DHCPv4PacketEntries, start, end, groupedBy);
+        }
+
+        public async Task<IDictionary<DateTime, Int32>> GetActiveDHCPv4Leases(DateTime? start, DateTime? end, GroupStatisticsResultBy groupedBy)
+        {
+            return await GetActiveDHCPLeases(DHCPv4LeaseEntries, start, end, groupedBy);
+        }
+
+        public async Task<IEnumerable<DHCPv4PacketHandledEntry>> GetHandledDHCPv4PacketByScopeId(Guid scopeId, Int32 amount) => await GetDHCPv4PacketsFromHandledEvents(amount, scopeId);
     }
 }

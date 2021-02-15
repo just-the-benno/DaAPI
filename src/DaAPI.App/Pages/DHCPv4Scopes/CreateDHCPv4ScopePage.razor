@@ -716,7 +716,8 @@
                                                 case Core.Scopes.ScopeResolverPropertyDescription.ScopeResolverPropertyValueTypes.IPv6Subnet:
                                                 case Core.Scopes.ScopeResolverPropertyDescription.ScopeResolverPropertyValueTypes.String:
                                                 case Core.Scopes.ScopeResolverPropertyDescription.ScopeResolverPropertyValueTypes.ByteArray:
-
+                                                case Core.Scopes.ScopeResolverPropertyDescription.ScopeResolverPropertyValueTypes.IPv4Address:
+                                                case Core.Scopes.ScopeResolverPropertyDescription.ScopeResolverPropertyValueTypes.IPv4Subnetmask:
                                                     <BootstrapInputText @bind-Value="Model.ResolverProperties[index].SingleValue" class="form-control" id="@Model.ResolverProperties[index].Name" />
                                                     break;
                                                 default:

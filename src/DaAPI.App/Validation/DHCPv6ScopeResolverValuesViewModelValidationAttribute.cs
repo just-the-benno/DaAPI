@@ -1,5 +1,6 @@
 ﻿using DaAPI.App.Pages.DHCPScopes;
 using DaAPI.App.Pages.DHCPv6Scopes;
+using DaAPI.Core.Common;
 using DaAPI.Core.Common.DHCPv6;
 using System;
 using System.Collections.Generic;
@@ -77,6 +78,29 @@ namespace DaAPI.App.Validation
                         catch (Exception)
                         {
                             isValid = false;
+                        }
+                        break;
+                    case Core.Scopes.ScopeResolverPropertyDescription.ScopeResolverPropertyValueTypes.IPv4Address:
+                        try
+                        {
+                            IPv4Address.FromString(castedValue);
+                            isValid = true;
+                        }
+                        catch (Exception)
+                        {
+                            isValid = false;
+                        }
+                        break;
+                    case Core.Scopes.ScopeResolverPropertyDescription.ScopeResolverPropertyValueTypes.IPv4Subnetmask:
+                        {
+                            if (Byte.TryParse(castedValue, out Byte mask) == true)
+                            {
+                                isValid = mask <= 32;
+                            }
+                            else
+                            {
+                                isValid = false;
+                            }
                         }
                         break;
                     case Core.Scopes.ScopeResolverPropertyDescription.ScopeResolverPropertyValueTypes.ByteArray:

@@ -120,6 +120,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         IPv4Address.FromString("192.168.178.255"),
                         new List<IPv4Address>{IPv4Address.FromString("192.168.178.1") },
                         leaseTime: TimeSpan.FromDays(1),
+                        maskLength: 24,
                         addressAllocationStrategy: DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next),
                     ResolverInformation = resolverInformations,
                     Name = "Testscope",
@@ -131,6 +132,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 
             DHCPv4Packet result = rootScope.HandleDiscover(discoverPacket);
             CheckPacket(expectedAdress, result);
+            CheckPacketOptions(scopeId, rootScope, result);
 
             DHCPv4Lease lease = CheckLease(0, 1, expectedAdress, scopeId, rootScope, DateTime.UtcNow);
 
@@ -184,6 +186,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         IPv4Address.FromString("192.168.178.10"),
                         new List<IPv4Address>(),
                         leaseTime: TimeSpan.FromDays(1),
+                        maskLength: 24,
                         addressAllocationStrategy: allocationStrategy),
                     ResolverInformation = resolverInformations,
                     Name = "Testscope",
@@ -195,6 +198,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 
             DHCPv4Packet result = rootScope.HandleDiscover(discoverPacket);
             CheckPacket(expectedAdress, result);
+            CheckPacketOptions(scopeId, rootScope, result);
 
             DHCPv4Lease lease = CheckLease(0, 1, expectedAdress, scopeId, rootScope, DateTime.UtcNow);
 
@@ -258,6 +262,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         IPv4Address.FromString("192.168.178.255"),
                         excludedAddress,
                         leaseTime: TimeSpan.FromDays(1),
+                        maskLength: 24,
                         addressAllocationStrategy: allocationStrategy),
                     ResolverInformation = resolverInformations,
                     Name = "Testscope",
@@ -269,6 +274,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 
             DHCPv4Packet result = rootScope.HandleDiscover(discoverPacket);
             CheckPacket(expectedAdress, result);
+            CheckPacketOptions(scopeId, rootScope, result);
 
             DHCPv4Lease lease = CheckLease(0, 1, expectedAdress, scopeId, rootScope, DateTime.UtcNow);
 
@@ -322,6 +328,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         new List<IPv4Address>{IPv4Address.FromString("192.168.178.1") },
                         leaseTime: TimeSpan.FromDays(1),
                         reuseAddressIfPossible: true,
+                        maskLength: 24,
                         addressAllocationStrategy: DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next),
                     ResolverInformation = resolverInformations,
                     Name = "Testscope",
@@ -340,6 +347,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 
             DHCPv4Packet result = rootScope.HandleDiscover(discoverPacket);
             CheckPacket(leasedAddress, result);
+            CheckPacketOptions(scopeId, rootScope, result);
 
             DHCPv4Lease lease = CheckLease(0, 1, leasedAddress, scopeId, rootScope, leaseCreatedAt);
             Assert.Equal(leaseId, lease.Id);
@@ -397,6 +405,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                             IPv4Address.FromString("192.168.178.1") 
                         },
                         leaseTime: TimeSpan.FromDays(1),
+                        maskLength: 24,
                         reuseAddressIfPossible: false,
                         addressAllocationStrategy: DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next),
                     ResolverInformation = resolverInformations,
@@ -416,6 +425,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 
             DHCPv4Packet result = rootScope.HandleDiscover(discoverPacket);
             CheckPacket(expectedAddress, result);
+            CheckPacketOptions(scopeId, rootScope, result);
 
             DHCPv4Lease lease = CheckLease(1, 2, expectedAddress, scopeId, rootScope, DateTime.UtcNow);
 
@@ -477,6 +487,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         IPv4Address.FromString("192.168.178.255"),
                         new List<IPv4Address>{IPv4Address.FromString("192.168.178.1") },
                         leaseTime: TimeSpan.FromDays(1),
+                        maskLength: 24,
                         reuseAddressIfPossible: false,
                         addressAllocationStrategy: DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next),
                     ResolverInformation = resolverInformations,
@@ -496,6 +507,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 
             DHCPv4Packet result = rootScope.HandleDiscover(discoverPacket);
             CheckPacket(expectedAddress, result);
+            CheckPacketOptions(scopeId, rootScope, result);
 
             DHCPv4Lease lease = CheckLease(1, 2, expectedAddress, scopeId, rootScope, DateTime.UtcNow);
 
@@ -562,6 +574,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                             IPv4Address.FromString("192.168.178.2"),
                         },
                         leaseTime: TimeSpan.FromDays(1),
+                        maskLength: 24,
                         reuseAddressIfPossible: false,
                         addressAllocationStrategy: DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next),
                     ResolverInformation = resolverInformations,
@@ -582,6 +595,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 
             DHCPv4Packet result = rootScope.HandleDiscover(discoverPacket);
             CheckPacket(expectedAddress, result);
+            CheckPacketOptions(scopeId, rootScope, result);
 
             DHCPv4Lease lease = CheckLease(
                 1, 2, expectedAddress, scopeId, rootScope, DateTime.UtcNow, uniqueIdentifier);
@@ -647,6 +661,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         IPv4Address.FromString("192.168.178.255"),
                         new List<IPv4Address>{IPv4Address.FromString("192.168.178.1") },
                         leaseTime: TimeSpan.FromDays(1),
+                        maskLength: 24,
                         reuseAddressIfPossible: false,
                         addressAllocationStrategy: DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next),
                     ResolverInformation = resolverInformations,
@@ -667,6 +682,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 
             DHCPv4Packet result = rootScope.HandleDiscover(discoverPacket);
             CheckPacket(expectedAddress, result);
+            CheckPacketOptions(scopeId, rootScope, result);
 
             DHCPv4Lease lease = CheckLease(
                 1, 2, expectedAddress, scopeId, rootScope, DateTime.UtcNow, uniqueIdentifier);
@@ -732,6 +748,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         new List<IPv4Address>{IPv4Address.FromString("192.168.178.1") },
                         leaseTime: TimeSpan.FromDays(1),
                         reuseAddressIfPossible: true,
+                        maskLength: 24,
                         addressAllocationStrategy: DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next),
                     ResolverInformation = resolverInformations,
                     Name = "Testscope",
@@ -751,6 +768,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 
             DHCPv4Packet result = rootScope.HandleDiscover(discoverPacket);
             CheckPacket(leasedAddress, result);
+            CheckPacketOptions(scopeId, rootScope, result);
 
             DHCPv4Lease lease = CheckLease(
                 1, 2, leasedAddress, scopeId, rootScope, DateTime.UtcNow, uniqueIdentifier);
@@ -815,6 +833,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         new List<IPv4Address>{IPv4Address.FromString("192.168.178.1") },
                         leaseTime: TimeSpan.FromDays(1),
                         reuseAddressIfPossible: true,
+                        maskLength: 24,
                         addressAllocationStrategy: DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next),
                     ResolverInformation = resolverInformations,
                     Name = "Testscope",
@@ -834,6 +853,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 
             DHCPv4Packet result = rootScope.HandleDiscover(discoverPacket);
             CheckPacket(expectedAddress, result);
+            CheckPacketOptions(scopeId, rootScope, result);
 
             DHCPv4Lease lease = CheckLease(
                 1, 2, expectedAddress, scopeId, rootScope, DateTime.UtcNow, uniqueIdentifier);
@@ -891,6 +911,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                             IPv4Address.FromString("192.168.178.1"),
                             IPv4Address.FromString("192.168.178.2")},
                         leaseTime: TimeSpan.FromDays(1),
+                        maskLength: 24,
                         addressAllocationStrategy: allocationStrategy),
                     ResolverInformation = resolverInformations,
                     Name = "Testscope",

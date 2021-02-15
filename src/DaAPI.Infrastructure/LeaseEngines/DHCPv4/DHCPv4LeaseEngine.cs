@@ -29,14 +29,19 @@ namespace DaAPI.Infrastructure.LeaseEngines.DHCPv4
             switch (input.MessageType)
             {
                 case DHCPv4MessagesTypes.Discover:
+                    response = RootScope.HandleDiscover(input);
                     break;
                 case DHCPv4MessagesTypes.Request:
+                    response = RootScope.HandleRequest(input);
                     break;
                 case DHCPv4MessagesTypes.Decline:
+                    response = RootScope.HandleDecline(input);
                     break;
                 case DHCPv4MessagesTypes.Release:
+                    response = RootScope.HandleRelease(input);
                     break;
                 case DHCPv4MessagesTypes.Inform:
+                    response = RootScope.HandleInform(input);
                     break;
                 default:
                     break;

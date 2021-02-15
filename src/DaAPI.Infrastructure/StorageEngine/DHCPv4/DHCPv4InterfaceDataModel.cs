@@ -11,7 +11,7 @@ namespace DaAPI.Infrastructure.StorageEngine.DHCPv4
         public Guid Id { get; set; }
 
         public String Name { get; set; }
-        public String IPv6Address { get; set; }
+        public String IPv4Address { get; set; }
         public String InterfaceId { get; set; }
 
         public DHCPv4InterfaceDataModel()

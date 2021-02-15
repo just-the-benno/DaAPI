@@ -40,6 +40,6 @@ namespace DaAPI.Infrastructure.InterfaceEngines
             return packet;
         }
 
-        protected override UInt16 GetResponsePort(DHCPv4Packet response) => response.GatewayIPAdress == IPv4Address.Empty ? _dhcpRelayPort : _dhcpClientPort;
+        protected override UInt16 GetResponsePort(DHCPv4Packet response) => response.GatewayIPAdress == IPv4Address.Empty ? _dhcpClientPort : _dhcpRelayPort;
     }
 }

@@ -1,9 +1,12 @@
-﻿using DaAPI.Core.Common.DHCPv6;
+﻿using DaAPI.Core.Common;
+using DaAPI.Core.Common.DHCPv6;
 using DaAPI.Core.Packets;
+using DaAPI.Core.Packets.DHCPv4;
 using DaAPI.Core.Packets.DHCPv6;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static DaAPI.Core.Scopes.DHCPv4.DHCPv4PacketHandledEvents;
 using static DaAPI.Core.Scopes.DHCPv6.DHCPv6PacketHandledEvents;
 
 namespace DaAPI.Shared.Responses
@@ -162,8 +165,126 @@ namespace DaAPI.Shared.Responses
             public class DashboardResponse
             {
                 public DHCPOverview<DHCPv6LeaseEntry, DHCPv6PacketHandledEntry> DHCPv6 { get; set; }
+                public DHCPOverview<DHCPv4LeaseEntry, DHCPv4PacketHandledEntry> DHCPv4 { get; set; }
+
                 public Int32 AmountOfPipelines { get; set; }
             }
+
+            public class DHCPv4LeaseEntry
+            {
+                public Guid LeaseId { get; set; }
+                public String Address { get; set; }
+                public DateTime Start { get; set; }
+                public DateTime End { get; set; }
+                public Guid ScopeId { get; set; }
+                public ReasonToEndLease EndReason { get; set; }
+                public DateTime Timestamp { get; set; }
+            }
+
+            public class DHCPv4PacketHandledEntry
+            {
+                public DHCPv4PacketHandledEntry()
+                {
+
+                }
+
+                private DHCPv4PacketHandledEntry(DHCPv4PacketHandledEvent handledEvent, DHCPv4MessagesTypes type) : this()
+                {
+                    Timestamp = handledEvent.Timestamp;
+                    RequestType = type;
+                    Request = new DHCPv4PacketInformation(handledEvent.Request);
+                    ResultCode = handledEvent.ErrorCode;
+                    ScopeId = handledEvent.ScopeId;
+
+                    if (handledEvent.Response != null)
+                    {
+                        ResponseType = handledEvent.Response.MessageType;
+                        Response = new DHCPv4PacketInformation(handledEvent.Response);
+                    }
+                }
+
+                public DHCPv4PacketHandledEntry(DHCPv4DiscoverHandledEvent entry) : this(entry, DHCPv4MessagesTypes.Discover)
+                {
+                }
+
+                public DHCPv4PacketHandledEntry(DHCPv4DeclineHandledEvent entry) : this(entry, DHCPv4MessagesTypes.Decline)
+                {
+                }
+
+                public DHCPv4PacketHandledEntry(DHCPv4InformHandledEvent entry) : this(entry, DHCPv4MessagesTypes.Inform)
+                {
+                }
+
+                public DHCPv4PacketHandledEntry(DHCPv4ReleaseHandledEvent entry) : this(entry, DHCPv4MessagesTypes.Release)
+                {
+                }
+
+
+                public DHCPv4PacketHandledEntry(DHCPv4RequestHandledEvent entry) : this(entry, DHCPv4MessagesTypes.Request)
+                {
+                }
+
+                public DateTime Timestamp { get; set; }
+                public DHCPv4MessagesTypes RequestType { get; set; }
+                public Int32 ResultCode { get; set; }
+                public Guid? ScopeId { get; set; }
+                public Guid? LeaseId { get; set; }
+                public DHCPv4MessagesTypes? ResponseType { get; set; }
+                public String FilteredBy { get; set; }
+                public Boolean InvalidRequest { get; set; }
+                public DHCPv4PacketInformation Request { get; set; }
+                public DHCPv4PacketInformation Response { get; set; }
+            }
+
+            public class SimplifiedIPv4HeaderInformation
+            {
+                public String Source { get; set; }
+                public String Destination { get; set; }
+
+                public SimplifiedIPv4HeaderInformation()
+                {
+
+                }
+
+                public SimplifiedIPv4HeaderInformation(IPHeader<IPv4Address> headerInformation)
+                {
+                    Destination = headerInformation.Destionation.ToString();
+                    Source = headerInformation.Source.ToString();
+                }
+            }
+
+            public class DHCPv4PacketInformation
+            {
+                public SimplifiedIPv4HeaderInformation Header { get; set; }
+                public Byte[] Content { get; set; }
+
+                public DHCPv4PacketInformation()
+                {
+
+                }
+
+                public DHCPv4PacketInformation(DHCPv4Packet packet)
+                {
+                    Content = packet.GetAsStream();
+                    Header = new SimplifiedIPv4HeaderInformation(packet.Header);
+                }
+
+                private DHCPv4Packet _packet;
+
+                public DHCPv4Packet GetPacket()
+                {
+                    if (_packet == null)
+                    {
+                        _packet = DHCPv4Packet.FromByteArray(Content,
+                            new IPv4HeaderInformation(IPv4Address.FromString(Header.Source), IPv4Address.FromString(Header.Destination)));
+                    }
+
+                    return _packet;
+                }
+            }
         }
+
+
+
     }
 }

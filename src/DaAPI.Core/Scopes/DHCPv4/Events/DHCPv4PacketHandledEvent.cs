@@ -17,6 +17,7 @@ namespace DaAPI.Core.Scopes.DHCPv4
             public DHCPv4Packet Response { get; set; }
             public Boolean WasSuccessfullHandled { get; set; }
             public Guid? ScopeId { get; set; }
+            public abstract Int32 ErrorCode { get; }
 
             #endregion
 
@@ -59,6 +60,7 @@ namespace DaAPI.Core.Scopes.DHCPv4
             }
 
             public DeclineErros Error { get; set; }
+            public override int ErrorCode => (Int32)Error;
 
             public DHCPv4DeclineHandledEvent()
             {
@@ -102,6 +104,7 @@ namespace DaAPI.Core.Scopes.DHCPv4
             }
 
             public DisoverErros Error { get; set; }
+            public override int ErrorCode => (Int32)Error;
 
             public DHCPv4DiscoverHandledEvent()
             {
@@ -159,6 +162,7 @@ namespace DaAPI.Core.Scopes.DHCPv4
             }
 
             public InformErros Error { get; set; }
+            public override int ErrorCode => (Int32)Error;
 
             public DHCPv4InformHandledEvent()
             {
@@ -217,6 +221,7 @@ namespace DaAPI.Core.Scopes.DHCPv4
             }
 
             public ReleaseError Error { get; set; }
+            public override int ErrorCode => (Int32)Error;
 
             public DHCPv4ReleaseHandledEvent()
             {
@@ -255,6 +260,7 @@ namespace DaAPI.Core.Scopes.DHCPv4
             }
 
             public RequestErros Error { get; set; }
+            public override int ErrorCode => (Int32)Error;
 
             public DHCPv4RequestHandledEvent()
             {

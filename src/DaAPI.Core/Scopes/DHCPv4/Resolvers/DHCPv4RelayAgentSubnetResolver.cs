@@ -73,7 +73,7 @@ namespace DaAPI.Core.Scopes.DHCPv4
         public IDictionary<String, String> GetValues() => new Dictionary<String, String>
         {
             { nameof(NetworkAddress), NetworkAddress.ToString() },
-            { nameof(Mask), Mask.ToString() },
+            { nameof(Mask), Mask.GetSlashNotation().ToString() },
         };
 
         #endregion

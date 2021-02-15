@@ -112,5 +112,29 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 
             Assert.Equal(castedEvent.EntityId, scopeId);
         }
+
+        protected void CheckPacketOptions(Guid scopeId, DHCPv4RootScope rootScope, DHCPv4Packet result)
+        {
+            var scope = rootScope.GetScopeById(scopeId);
+
+            if(scope.Properties != null)
+            {     
+                foreach (var item in scope.Properties.Properties)
+                {
+
+                }
+            }
+
+            var subnetOption = result.GetOptionByIdentifier((Byte)DHCPv4OptionTypes.SubnetMask) as DHCPv4PacketAddressOption;
+            if(result.YourIPAdress == IPv4Address.Empty)
+            {
+                Assert.Null(subnetOption);
+            }
+            else
+            {
+                Assert.NotNull(subnetOption);
+                Assert.True(ByteHelper.AreEqual(subnetOption.Address.GetBytes(), scope.AddressRelatedProperties.Mask.GetBytes()));
+            }
+        }
     }
 }

@@ -3,6 +3,7 @@ using DaAPI.Core.Common.DHCPv6;
 using DaAPI.Core.Listeners;
 using DaAPI.Core.Packets.DHCPv4;
 using DaAPI.Core.Packets.DHCPv6;
+using DaAPI.Core.Scopes.DHCPv4;
 using DaAPI.Core.Scopes.DHCPv6;
 using DaAPI.Infrastructure.Helper;
 using DaAPI.Infrastructure.StorageEngine.Converters;
@@ -19,6 +20,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using static DaAPI.Core.Listeners.DHCPListenerEvents;
+using static DaAPI.Core.Scopes.DHCPv4.DHCPv4LeaseEvents;
+using static DaAPI.Core.Scopes.DHCPv4.DHCPv4PacketHandledEvents;
 using static DaAPI.Core.Scopes.DHCPv6.DHCPv6LeaseEvents;
 using static DaAPI.Core.Scopes.DHCPv6.DHCPv6PacketHandledEvents;
 using static DaAPI.Shared.Requests.StatisticsControllerRequests.V1;
@@ -26,7 +29,7 @@ using static DaAPI.Shared.Responses.StatisticsControllerResponses.V1;
 
 namespace DaAPI.Infrastructure.StorageEngine
 {
-    public class StorageContext : DbContext, IDHCPv6EventStore, IDHCPv6ReadStore, IDHCPv4ReadStore, IDHCPv4EventStore 
+    public class StorageContext : DbContext, IDHCPv6EventStore, IDHCPv6ReadStore, IDHCPv4ReadStore, IDHCPv4EventStore
     {
         #region Fields
 
@@ -44,6 +47,7 @@ namespace DaAPI.Infrastructure.StorageEngine
 
         public DbSet<DHCPv4InterfaceDataModel> DHCPv4Interfaces { get; set; }
         public DbSet<DHCPv4PacketHandledEntryDataModel> DHCPv4PacketEntries { get; set; }
+        public DbSet<DHCPv4LeaseEntryDataModel> DHCPv4LeaseEntries { get; set; }
 
         #endregion
 
@@ -143,6 +147,11 @@ namespace DaAPI.Infrastructure.StorageEngine
                 {
                     streamId = nameof(DHCPv6RootScope);
                 }
+                else if (aggregateRoot is DHCPv4RootScope)
+                {
+                    streamId = nameof(DHCPv4RootScope);
+
+                }
                 Int32 version = aggregateRoot.Version;
                 Int64 rowCount = await Entries.OrderByDescending(x => x.Position).Select(x => x.Position).FirstOrDefaultAsync();
 
@@ -235,7 +244,7 @@ namespace DaAPI.Infrastructure.StorageEngine
                          Id = item.Id,
                          Name = item.Name,
                          InterfaceId = item.InterfaceId,
-                         Address = item.IPv6Address,
+                         Address = item.IPv4Address,
                         }
                     });
 
@@ -245,7 +254,165 @@ namespace DaAPI.Infrastructure.StorageEngine
                 return listeners;
             });
         }
-       
+
+        private async Task<Boolean?> ProjectDHCPv6PacketAndLeaseRelatedEvents(DomainEvent @event)
+        {
+            Boolean? hasChanges = new Boolean?();
+            switch (@event)
+            {
+
+                case DHCPv6PacketHandledEvent e:
+                    DHCPv6PacketHandledEntryDataModel entry = new DHCPv6PacketHandledEntryDataModel
+                    {
+                        HandledSuccessfully = e.WasSuccessfullHandled,
+                        ErrorCode = e.ErrorCode,
+                        Id = Guid.NewGuid(),
+                        RequestSize = e.Request.GetSize(),
+                        ScopeId = e.ScopeId,
+                        RequestType = e.Request.GetInnerPacket().PacketType,
+                        Timestamp = e.Timestamp,
+                        ResponseSize = e.Response?.GetSize(),
+                        ResponseType = e.Response?.GetInnerPacket().PacketType
+                    };
+
+                    entry.SetTimestampDates();
+
+                    DHCPv6PacketEntries.Add(entry);
+                    hasChanges = true;
+                    break;
+
+                case DHCPv6LeaseCreatedEvent e:
+                    {
+                        DHCPv6LeaseEntryDataModel leaseEntry = new DHCPv6LeaseEntryDataModel
+                        {
+                            Id = Guid.NewGuid(),
+                            Address = e.Address.ToString(),
+                            Start = e.StartedAt,
+                            End = e.ValidUntil,
+                            LeaseId = e.EntityId,
+                            ScopeId = e.ScopeId,
+                            Prefix = e.HasPrefixDelegation == true ? e.DelegatedNetworkAddress.ToString() : null,
+                            PrefixLength = e.HasPrefixDelegation == true ? e.PrefixLength : (Byte)0,
+                            Timestamp = e.Timestamp,
+                        };
+
+                        DHCPv6LeaseEntries.Add(leaseEntry);
+                        hasChanges = true;
+                    }
+                    break;
+
+                case DHCPv6LeaseExpiredEvent e:
+                    hasChanges = await UpdateEndToDHCPv6LeaseEntry(e, ReasonToEndLease.Expired);
+                    break;
+
+                case DHCPv6LeasePrefixAddedEvent e:
+                    hasChanges = await UpdateLastestDHCPv6LeaseEntry(e, (leaseEntry) =>
+                    {
+                        leaseEntry.Prefix = e.NetworkAddress.ToString();
+                        leaseEntry.PrefixLength = e.PrefixLength;
+                    });
+                    break;
+
+                case DHCPv6LeaseCanceledEvent e:
+                    hasChanges = await UpdateEndToDHCPv6LeaseEntry(e, ReasonToEndLease.Canceled);
+                    break;
+
+                case DHCPv6LeaseReleasedEvent e:
+                    hasChanges = await UpdateEndToDHCPv6LeaseEntry(e, ReasonToEndLease.Released);
+                    break;
+
+                case DHCPv6LeaseRenewedEvent e:
+                    hasChanges = await UpdateLastestDHCPv6LeaseEntry(e, (leaseEntry) =>
+                    {
+                        leaseEntry.End = e.End;
+                    });
+                    break;
+
+                case DHCPv6LeaseRevokedEvent e:
+                    hasChanges = await UpdateEndToDHCPv6LeaseEntry(e, ReasonToEndLease.Revoked);
+                    break;
+                default:
+                    hasChanges = null;
+                    break;
+            }
+
+            return hasChanges;
+        }
+
+        private async Task<Boolean?> ProjectDHCPv4PacketAndLeaseRelatedEvents(DomainEvent @event)
+        {
+            Boolean? hasChanges = new Boolean?();
+            switch (@event)
+            {
+
+                case DHCPv4PacketHandledEvent e:
+                    DHCPv4PacketHandledEntryDataModel entry = new DHCPv4PacketHandledEntryDataModel
+                    {
+                        HandledSuccessfully = e.WasSuccessfullHandled,
+                        ErrorCode = e.ErrorCode,
+                        Id = Guid.NewGuid(),
+                        RequestSize = e.Request.GetSize(),
+                        ScopeId = e.ScopeId,
+                        RequestType = e.Request.MessageType,
+                        Timestamp = e.Timestamp,
+                        ResponseSize = e.Response?.GetSize(),
+                        ResponseType = e.Response?.MessageType
+                    };
+
+                    entry.SetTimestampDates();
+
+                    DHCPv4PacketEntries.Add(entry);
+                    hasChanges = true;
+                    break;
+
+                case DHCPv4LeaseCreatedEvent e:
+                    {
+                        DHCPv4LeaseEntryDataModel leaseEntry = new DHCPv4LeaseEntryDataModel
+                        {
+                            Id = Guid.NewGuid(),
+                            Address = e.Address.ToString(),
+                            Start = e.StartedAt,
+                            End = e.ValidUntil,
+                            LeaseId = e.EntityId,
+                            ScopeId = e.ScopeId,
+                            Timestamp = e.Timestamp,
+                        };
+
+                        DHCPv4LeaseEntries.Add(leaseEntry);
+                        hasChanges = true;
+                    }
+                    break;
+
+                case DHCPv4LeaseExpiredEvent e:
+                    hasChanges = await UpdateEndToDHCPv4LeaseEntry(e, ReasonToEndLease.Expired);
+                    break;
+
+                case DHCPv4LeaseCanceledEvent e:
+                    hasChanges = await UpdateEndToDHCPv4LeaseEntry(e, ReasonToEndLease.Canceled);
+                    break;
+
+                case DHCPv4LeaseReleasedEvent e:
+                    hasChanges = await UpdateEndToDHCPv4LeaseEntry(e, ReasonToEndLease.Released);
+                    break;
+
+                case DHCPv4LeaseRenewedEvent e:
+                    hasChanges = await UpdateLastestDHCPv4LeaseEntry(e, (leaseEntry) =>
+                    {
+                        leaseEntry.End = e.End;
+                    });
+                    break;
+
+                case DHCPv4LeaseRevokedEvent e:
+                    hasChanges = await UpdateEndToDHCPv4LeaseEntry(e, ReasonToEndLease.Revoked);
+                    break;
+                default:
+                    hasChanges = null;
+                    break;
+            }
+
+            return hasChanges;
+        }
+
         public async Task<Boolean> Project(IEnumerable<DomainEvent> events)
         {
             return await RunOperation(async () =>
@@ -253,6 +420,7 @@ namespace DaAPI.Infrastructure.StorageEngine
                 Boolean hasChanges = true;
                 foreach (var item in events)
                 {
+                    Boolean handled = true;
                     switch (item)
                     {
                         case DHCPv6ListenerCreatedEvent e:
@@ -276,7 +444,7 @@ namespace DaAPI.Infrastructure.StorageEngine
                             {
                                 Id = e.Id,
                                 InterfaceId = e.InterfaceId,
-                                IPv6Address = e.Address,
+                                IPv4Address = e.Address,
                                 Name = e.Name,
                             });
                             break;
@@ -286,79 +454,32 @@ namespace DaAPI.Infrastructure.StorageEngine
                             DHCPv4Interfaces.Remove(existingv4Interface);
                             hasChanges = true;
                             break;
-
-                        case DHCPv6PacketHandledEvent e:
-                            DHCPv6PacketHandledEntryDataModel entry = new DHCPv6PacketHandledEntryDataModel
-                            {
-                                HandledSuccessfully = e.WasSuccessfullHandled,
-                                ErrorCode = e.ErrorCode,
-                                Id = Guid.NewGuid(),
-                                RequestSize = e.Request.GetSize(),
-                                ScopeId = e.ScopeId,
-                                RequestType = e.Request.GetInnerPacket().PacketType,
-                                Timestamp = e.Timestamp,
-                                ResponseSize = e.Response?.GetSize(),
-                                ResponseType = e.Response?.GetInnerPacket().PacketType
-                            };
-
-                            entry.SetTimestampDates();
-
-                            DHCPv6PacketEntries.Add(entry);
-                            break;
-
-                        case DHCPv6LeaseCreatedEvent e:
-                            {
-                                DHCPv6LeaseEntryDataModel leaseEntry = new DHCPv6LeaseEntryDataModel
-                                {
-                                    Id = Guid.NewGuid(),
-                                    Address = e.Address.ToString(),
-                                    Start = e.StartedAt,
-                                    End = e.ValidUntil,
-                                    LeaseId = e.EntityId,
-                                    ScopeId = e.ScopeId,
-                                    Prefix = e.HasPrefixDelegation == true ? e.DelegatedNetworkAddress.ToString() : null,
-                                    PrefixLength = e.HasPrefixDelegation == true ? e.PrefixLength : (Byte)0,
-                                    Timestamp = e.Timestamp,
-                                };
-
-                                DHCPv6LeaseEntries.Add(leaseEntry);
-                            }
-                            break;
-
-                        case DHCPv6LeaseExpiredEvent e:
-                            hasChanges = await UpdateEndToLeaseEntry(e, ReasonToEndLease.Expired);
-                            break;
-
-                        case DHCPv6LeasePrefixAddedEvent e:
-                            hasChanges = await UpdateLastestLeaseEntry(e, (leaseEntry) =>
-                            {
-                                leaseEntry.Prefix = e.NetworkAddress.ToString();
-                                leaseEntry.PrefixLength = e.PrefixLength;
-                            });
-                            break;
-
-                        case DHCPv6LeaseCanceledEvent e:
-                            hasChanges = await UpdateEndToLeaseEntry(e, ReasonToEndLease.Canceled);
-                            break;
-
-                        case DHCPv6LeaseReleasedEvent e:
-                            hasChanges = await UpdateEndToLeaseEntry(e, ReasonToEndLease.Released);
-                            break;
-
-                        case DHCPv6LeaseRenewedEvent e:
-                            hasChanges = await UpdateLastestLeaseEntry(e, (leaseEntry) =>
-                            {
-                                leaseEntry.End = e.End;
-                            });
-                            break;
-
-                        case DHCPv6LeaseRevokedEvent e:
-                            hasChanges = await UpdateEndToLeaseEntry(e, ReasonToEndLease.Revoked);
-                            break;
-
                         default:
                             hasChanges = false;
+                            handled = false;
                             break;
+                    }
+
+                    if (handled == true)
+                    {
+                        continue;
+                    }
+
+                    Boolean? dhcpv6Related = await ProjectDHCPv6PacketAndLeaseRelatedEvents(item);
+                    if (dhcpv6Related.HasValue == true)
+                    {
+                        if (hasChanges == false && dhcpv6Related.Value == true)
+                        {
+                            hasChanges = true;
+                        }
+                    }
+                    else
+                    {
+                        Boolean? dhcpv4Related = await ProjectDHCPv4PacketAndLeaseRelatedEvents(item);
+                        if (dhcpv4Related.HasValue == true && hasChanges == false && dhcpv4Related.Value == true)
+                        {
+                            hasChanges = true;
+                        }
                     }
                 }
 
@@ -368,19 +489,36 @@ namespace DaAPI.Infrastructure.StorageEngine
             });
         }
 
-        private async Task<Boolean> UpdateEndToLeaseEntry(DHCPv6ScopeRelatedEvent e, ReasonToEndLease reason)
-        {
+        private async Task<Boolean> UpdateEndToDHCPv6LeaseEntry(DHCPv6ScopeRelatedEvent e, ReasonToEndLease reason) =>
 
-            return await UpdateLastestLeaseEntry(e, (leaseEntry) =>
+             await UpdateLastestDHCPv6LeaseEntry(e, (leaseEntry) =>
              {
                  leaseEntry.End = e.Timestamp;
                  leaseEntry.EndReason = reason;
              });
-        }
 
-        private async Task<Boolean> UpdateLastestLeaseEntry(DHCPv6ScopeRelatedEvent e, Action<DHCPv6LeaseEntryDataModel> updater)
+        private async Task<Boolean> UpdateLastestDHCPv6LeaseEntry(DHCPv6ScopeRelatedEvent e, Action<DHCPv6LeaseEntryDataModel> updater)
         {
             var entry = await DHCPv6LeaseEntries.Where(x => x.LeaseId == e.EntityId).OrderByDescending(x => x.Timestamp).FirstOrDefaultAsync();
+            if (entry != null)
+            {
+                updater(entry);
+                return true;
+            }
+
+            return false;
+        }
+
+        private async Task<Boolean> UpdateEndToDHCPv4LeaseEntry(DHCPv4ScopeRelatedEvent e, ReasonToEndLease reason) =>
+             await UpdateLastestDHCPv4LeaseEntry(e, (leaseEntry) =>
+             {
+                 leaseEntry.End = e.Timestamp;
+                 leaseEntry.EndReason = reason;
+             });
+
+        private async Task<Boolean> UpdateLastestDHCPv4LeaseEntry(DHCPv4ScopeRelatedEvent e, Action<DHCPv4LeaseEntryDataModel> updater)
+        {
+            var entry = await DHCPv4LeaseEntries.Where(x => x.LeaseId == e.EntityId).OrderByDescending(x => x.Timestamp).FirstOrDefaultAsync();
             if (entry != null)
             {
                 updater(entry);
@@ -546,18 +684,26 @@ namespace DaAPI.Infrastructure.StorageEngine
                 var entriesToRemove = await Entries.Where(x => _handledCorrelatedEventsNames.Contains(x.BodyType) == true).OrderBy(x => x.Timestamp).Take(diff).ToListAsync();
                 Entries.RemoveRange(entriesToRemove);
 
-                Int32 statisticsDiff = (Int32)threshold - await DHCPv6PacketEntries.CountAsync();
-                var statisticEntriesToRemove = await DHCPv6PacketEntries.OrderBy(x => x.Timestamp).Take(statisticsDiff).ToListAsync();
-                DHCPv6PacketEntries.RemoveRange(statisticEntriesToRemove);
+                {
+                    Int32 statisticsDiff = (Int32)threshold - await DHCPv6PacketEntries.CountAsync();
+                    var statisticEntriesToRemove = await DHCPv6PacketEntries.OrderBy(x => x.Timestamp).Take(statisticsDiff).ToListAsync();
+                    DHCPv6PacketEntries.RemoveRange(statisticEntriesToRemove);
+                }
+                {
+                    Int32 statisticsDiff = (Int32)threshold - await DHCPv4PacketEntries.CountAsync();
+                    var statisticEntriesToRemove = await DHCPv4PacketEntries.OrderBy(x => x.Timestamp).Take(statisticsDiff).ToListAsync();
+                    DHCPv4PacketEntries.RemoveRange(statisticEntriesToRemove);
+                }
 
                 return await SaveChangesAsyncInternal();
             });
         }
 
-        private async Task<IList<DHCPv6PacketHandledEntry>> GetPacketsFromHandledEvents(Int32 amount, Guid? scopeId)
+        private async Task<IList<TEntry>> GetPacketsFromHandledEvents<TEntry>(Int32 amount, Guid? scopeId, ICollection<String> eventNames, Func<DomainEvent, TEntry> activator)
+            where TEntry : class
         {
             IQueryable<EventEntry> preEvents = Entries
-               .Where(x => _handledCorrelatedEventsNames.Contains(x.BodyType));
+               .Where(x => eventNames.Contains(x.BodyType));
 
             if (scopeId.HasValue == true)
             {
@@ -567,47 +713,38 @@ namespace DaAPI.Infrastructure.StorageEngine
             var entries = await preEvents.OrderByDescending(x => x.Timestamp).Take(amount)
                .ToListAsync();
 
-            List<DHCPv6PacketHandledEntry> result = new List<DHCPv6PacketHandledEntry>(entries.Count);
+            List<TEntry> result = new List<TEntry>(entries.Count);
 
             foreach (var item in entries)
             {
-                DHCPv6PacketHandledEntry entry = null;
                 DomainEvent @event = GetEventFromString(item.Body, item.BodyType);
-                switch (@event)
-                {
-                    case DHCPv6SolicitHandledEvent e:
-                        entry = new DHCPv6PacketHandledEntry(e);
-                        break;
-                    case DHCPv6DeclineHandledEvent e:
-                        entry = new DHCPv6PacketHandledEntry(e);
-                        break;
-                    case DHCPv6InformRequestHandledEvent e:
-                        entry = new DHCPv6PacketHandledEntry(e);
-                        break;
-                    case DHCPv6ReleaseHandledEvent e:
-                        entry = new DHCPv6PacketHandledEntry(e);
-                        break;
-                    case DHCPv6RequestHandledEvent e:
-                        entry = new DHCPv6PacketHandledEntry(e);
-                        break;
-                    case DHCPv6RenewHandledEvent e:
-                        entry = new DHCPv6PacketHandledEntry(e);
-                        break;
-                    case DHCPv6RebindHandledEvent e:
-                        entry = new DHCPv6PacketHandledEntry(e);
-                        break;
-                    case DHCPv6ConfirmHandledEvent e:
-                        entry = new DHCPv6PacketHandledEntry(e);
-                        break;
 
-                    default:
-                        break;
-                }
-
+                TEntry entry = activator(@event);
                 result.Add(entry);
             }
 
             return result;
+        }
+
+        private async Task<IList<DHCPv6PacketHandledEntry>> GetDHCPv6PacketsFromHandledEvents(Int32 amount, Guid? scopeId)
+        {
+            return await GetPacketsFromHandledEvents(amount, scopeId, _handledCorrelatedEventsNames, (@event) =>
+              {
+                  DHCPv6PacketHandledEntry entry = null;
+                  entry = @event switch
+                  {
+                      DHCPv6SolicitHandledEvent e => new DHCPv6PacketHandledEntry(e),
+                      DHCPv6DeclineHandledEvent e => new DHCPv6PacketHandledEntry(e),
+                      DHCPv6InformRequestHandledEvent e => new DHCPv6PacketHandledEntry(e),
+                      DHCPv6ReleaseHandledEvent e => new DHCPv6PacketHandledEntry(e),
+                      DHCPv6RequestHandledEvent e => new DHCPv6PacketHandledEntry(e),
+                      DHCPv6RenewHandledEvent e => new DHCPv6PacketHandledEntry(e),
+                      DHCPv6RebindHandledEvent e => new DHCPv6PacketHandledEntry(e),
+                      DHCPv6ConfirmHandledEvent e => new DHCPv6PacketHandledEntry(e),
+                      _ => null,
+                  };
+                  return entry;
+              });
         }
 
         public async Task<DashboardResponse> GetDashboardOverview()
@@ -633,7 +770,22 @@ namespace DaAPI.Infrastructure.StorageEngine
                             Start = x.Start,
                             Timestamp = x.Timestamp,
                         }).Take(1000).ToListAsync(),
-                        Packets = await GetPacketsFromHandledEvents(100, null),
+                        Packets = await GetDHCPv6PacketsFromHandledEvents(100, null),
+                    },
+                    DHCPv4 = new DHCPOverview<DHCPv4LeaseEntry, DHCPv4PacketHandledEntry>
+                    {
+                        ActiveInterfaces = await DHCPv4Interfaces.CountAsync(),
+                        ActiveLeases = await DHCPv4LeaseEntries.Where(x => now >= x.Start && now <= x.End).OrderByDescending(x => x.End).Select(x => new DHCPv4LeaseEntry
+                        {
+                            Address = x.Address,
+                            End = x.End,
+                            EndReason = x.EndReason,
+                            LeaseId = x.LeaseId,
+                            ScopeId = x.ScopeId,
+                            Start = x.Start,
+                            Timestamp = x.Timestamp,
+                        }).Take(1000).ToListAsync(),
+                        Packets = await GetDHCPv4PacketsFromHandledEvents(100, null),
                     },
                 };
 
@@ -859,7 +1011,7 @@ namespace DaAPI.Infrastructure.StorageEngine
         public async Task<Boolean> LogInvalidDHCPv6Packet(DHCPv6Packet packet) => await AddDHCPv6PacketHandledEntryDataModel(packet, (x) => x.InvalidRequest = true);
         public async Task<Boolean> LogFilteredDHCPv6Packet(DHCPv6Packet packet, String filterName) => await AddDHCPv6PacketHandledEntryDataModel(packet, (x) => x.FilteredBy = filterName);
 
-        public async Task<IEnumerable<DHCPv6PacketHandledEntry>> GetHandledDHCPv6PacketByScopeId(Guid scopeId, Int32 amount) => await GetPacketsFromHandledEvents(amount, scopeId);
+        public async Task<IEnumerable<DHCPv6PacketHandledEntry>> GetHandledDHCPv6PacketByScopeId(Guid scopeId, Int32 amount) => await GetDHCPv6PacketsFromHandledEvents(amount, scopeId);
 
         private async Task<Boolean> AddDHCPv4PacketHandledEntryDataModel(DHCPv4Packet packet, Action<DHCPv4PacketHandledEntryDataModel> modifier)
         {
@@ -883,6 +1035,24 @@ namespace DaAPI.Infrastructure.StorageEngine
 
         public async Task<Boolean> LogInvalidDHCPv4Packet(DHCPv4Packet packet) => await AddDHCPv4PacketHandledEntryDataModel(packet, (x) => x.InvalidRequest = true);
         public async Task<Boolean> LogFilteredDHCPv4Packet(DHCPv4Packet packet, String filterName) => await AddDHCPv4PacketHandledEntryDataModel(packet, (x) => x.FilteredBy = filterName);
+
+        private async Task<IList<DHCPv4PacketHandledEntry>> GetDHCPv4PacketsFromHandledEvents(Int32 amount, Guid? scopeId)
+        {
+            return await GetPacketsFromHandledEvents(amount, scopeId, _handledCorrelatedEventsNames, (@event) =>
+            {
+                DHCPv4PacketHandledEntry entry = null;
+                entry = @event switch
+                {
+                    DHCPv4DiscoverHandledEvent e => new DHCPv4PacketHandledEntry(e),
+                    DHCPv4DeclineHandledEvent e => new DHCPv4PacketHandledEntry(e),
+                    DHCPv4InformHandledEvent e => new DHCPv4PacketHandledEntry(e),
+                    DHCPv4ReleaseHandledEvent e => new DHCPv4PacketHandledEntry(e),
+                    DHCPv4RequestHandledEvent e => new DHCPv4PacketHandledEntry(e),
+                    _ => null,
+                };
+                return entry;
+            });
+        }
 
     }
 }

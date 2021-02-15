@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace DaAPI.Infrastructure.StorageEngine.DHCPv6
+namespace DaAPI.Infrastructure.StorageEngine.DHCPv4
 {
-    public class DHCPv4PacketHandledEntryDataModel
+    public class DHCPv4PacketHandledEntryDataModel : IPacketHandledEntry<DHCPv4MessagesTypes>
     {
         [Key]
         public Guid Id { get; set; }

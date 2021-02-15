@@ -314,13 +314,19 @@ namespace DaAPI.Core.Packets.DHCPv4
         DHCPv4ScopeAddressProperties addressProperties,
         IEnumerable<DHCPv4ScopeProperty> scopeProperties)
         {
+            List<DHCPv4ScopeProperty> propertiesToInsert = new List<DHCPv4ScopeProperty>(scopeProperties)
+            {
+                new DHCPv4AddressScopeProperty(DHCPv4OptionTypes.SubnetMask, IPv4Address.FromByteArray(addressProperties.Mask.GetBytes()))
+            };
+
             Dictionary<DHCPv4OptionTypes, TimeSpan?> timeRelatedOptions = new Dictionary<DHCPv4OptionTypes, TimeSpan?>();
             if (addressProperties != null)
             {
                 timeRelatedOptions.Add(DHCPv4OptionTypes.IPAddressLeaseTime, addressProperties.LeaseTime);
+                timeRelatedOptions.Add(DHCPv4OptionTypes.RenewalTimeValue, addressProperties.RenewalTime);
+                timeRelatedOptions.Add(DHCPv4OptionTypes.RebindingTimeValue, addressProperties.PreferredLifetime);
             }
 
-            List<DHCPv4ScopeProperty> propertiesToInsert = new List<DHCPv4ScopeProperty>(scopeProperties);
             foreach (var item in timeRelatedOptions)
             {
                 if (item.Value.HasValue == false) { continue; }
@@ -728,6 +734,9 @@ namespace DaAPI.Core.Packets.DHCPv4
 
             throw new InvalidOperationException("unable to determinate the request type");
         }
+
+        public DHCPv4PacketOption GetOptionByIdentifier(DHCPv4OptionTypes optionIdentifier) =>
+            GetOptionByIdentifier((Byte)optionIdentifier);
 
         public DHCPv4PacketOption GetOptionByIdentifier(byte optionIdentifier)
         {

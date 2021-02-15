@@ -1,7 +1,9 @@
 ﻿using DaAPI.Core.Common;
 using DaAPI.Core.Common.DHCPv6;
+using DaAPI.Core.Packets.DHCPv4;
 using DaAPI.Core.Packets.DHCPv6;
 using DaAPI.Infrastructure.StorageEngine;
+using DaAPI.Infrastructure.StorageEngine.DHCPv4;
 using DaAPI.Infrastructure.StorageEngine.DHCPv6;
 using DaAPI.TestHelper;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +15,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Xunit;
+using static DaAPI.Core.Scopes.DHCPv4.DHCPv4LeaseEvents;
+using static DaAPI.Core.Scopes.DHCPv4.DHCPv4PacketHandledEvents;
 using static DaAPI.Core.Scopes.DHCPv6.DHCPv6LeaseEvents;
 using static DaAPI.Core.Scopes.DHCPv6.DHCPv6PacketHandledEvents;
 using static DaAPI.Infrastructure.StorageEngine.StorageContext;
@@ -32,6 +36,17 @@ namespace DaAPI.IntegrationTests.StorageEngine
                 Math.Abs((x.Timestamp - y.Timestamp).TotalSeconds) < 20;
 
             public int GetHashCode([DisallowNull] DHCPv6PacketHandledEntryDataModel obj) => 2;
+        }
+
+        private class DHCPv4PacketHandledEntryDataModelEqualityComparer : IEqualityComparer<DHCPv4PacketHandledEntryDataModel>
+        {
+            public bool Equals([AllowNull] DHCPv4PacketHandledEntryDataModel x, [AllowNull] DHCPv4PacketHandledEntryDataModel y) =>
+                x.ErrorCode == y.ErrorCode && x.FilteredBy == y.FilteredBy && x.HandledSuccessfully == y.HandledSuccessfully &&
+                x.InvalidRequest == y.InvalidRequest && x.RequestSize == y.RequestSize && x.RequestType == y.RequestType &&
+                x.ResponseSize == y.ResponseSize && x.ResponseType == y.ResponseType && x.ScopeId == y.ScopeId &&
+                Math.Abs((x.Timestamp - y.Timestamp).TotalSeconds) < 20;
+
+            public int GetHashCode([DisallowNull] DHCPv4PacketHandledEntryDataModel obj) => 2;
         }
 
         private static (StorageContext, String) GetContext(Random random)
@@ -54,7 +69,7 @@ namespace DaAPI.IntegrationTests.StorageEngine
         }
 
         [Fact]
-        public async Task Project_PaketHandledEvents()
+        public async Task Project_DHCPv6PaketHandledEvents()
         {
             Random random = new Random();
 
@@ -115,6 +130,84 @@ namespace DaAPI.IntegrationTests.StorageEngine
             }
         }
 
+        [Fact]
+        public async Task Project_DHCPv4PaketHandledEvents()
+        {
+            Random random = new Random();
+
+            var preContext = GetContext(random);
+            StorageContext context = preContext.Item1;
+            try
+            {
+                IPv4HeaderInformation headerInformation =
+                                 new IPv4HeaderInformation(IPv4Address.FromString("192.178.10.10"), IPv4Address.Broadcast);
+
+                Byte[] opt82Value = random.NextBytes(6);
+
+                DHCPv4Packet requestPacket = new DHCPv4Packet(
+               headerInformation, random.NextBytes(6), (UInt32)random.Next(),
+               IPv4Address.Empty, IPv4Address.Empty, IPv4Address.Empty,
+               new DHCPv4PacketMessageTypeOption(DHCPv4MessagesTypes.Discover),
+               new DHCPv4PacketRawByteOption(82, opt82Value));
+
+                DHCPv4Packet releasePacket = new DHCPv4Packet(
+                headerInformation, random.NextBytes(6), (UInt32)random.Next(),
+                IPv4Address.Empty, IPv4Address.Empty, IPv4Address.Empty,
+                new DHCPv4PacketMessageTypeOption(DHCPv4MessagesTypes.Release),
+                new DHCPv4PacketRawByteOption(82, opt82Value));
+
+                DHCPv4Packet responsePacket = new DHCPv4Packet(
+               new IPv4HeaderInformation(headerInformation.Destionation, headerInformation.Source), random.NextBytes(6), (UInt32)random.Next(),
+               IPv4Address.Empty, IPv4Address.Empty, IPv4Address.Empty,
+               new DHCPv4PacketMessageTypeOption(DHCPv4MessagesTypes.Offer),
+               new DHCPv4PacketRawByteOption(82, opt82Value));
+
+                Guid scopeId = Guid.NewGuid();
+
+                List<DHCPv4PacketHandledEvent> events = new List<DHCPv4PacketHandledEvent>
+            {
+                new DHCPv4DiscoverHandledEvent(scopeId,requestPacket,responsePacket),
+                new DHCPv4ReleaseHandledEvent(releasePacket),
+            };
+
+                List<DHCPv4PacketHandledEntryDataModel> expectedResults = new List<DHCPv4PacketHandledEntryDataModel>
+            {
+                new DHCPv4PacketHandledEntryDataModel {
+                    ErrorCode = 0,
+                    HandledSuccessfully = true,
+                    InvalidRequest = false,
+                    RequestSize = requestPacket.GetSize(),
+                    RequestType = DHCPv4MessagesTypes.Discover,
+                    ScopeId = scopeId,
+                    ResponseSize = responsePacket.GetSize(),
+                    ResponseType = DHCPv4MessagesTypes.Offer,
+                    Timestamp = DateTime.UtcNow,
+                },
+                new DHCPv4PacketHandledEntryDataModel {
+                    ErrorCode = (Int32)DHCPv4ReleaseHandledEvent.ReleaseError.NoLeaseFound,
+                    HandledSuccessfully = false,
+                    InvalidRequest = false,
+                    RequestSize = releasePacket.GetSize(),
+                    RequestType = DHCPv4MessagesTypes.Release,
+                    ScopeId = null,
+                    ResponseSize = null,
+                    ResponseType = null,
+                    Timestamp = DateTime.UtcNow,
+                }
+            };
+
+                Boolean actual = await context.Project(events);
+                Assert.True(actual);
+
+                List<DHCPv4PacketHandledEntryDataModel> actualEntries = await context.DHCPv4PacketEntries.ToListAsync();
+
+                Assert.Equal(expectedResults, actualEntries, new DHCPv4PacketHandledEntryDataModelEqualityComparer());
+            }
+            finally
+            {
+                File.Delete(preContext.Item2);
+            }
+        }
 
         [Fact]
         public async Task Project_DHCPv6LeaseCycle()
@@ -271,7 +364,157 @@ namespace DaAPI.IntegrationTests.StorageEngine
             {
                 File.Delete(preContext.Item2);
             }
+        }
 
+
+        [Fact]
+        public async Task Project_DHCPv4LeaseCycle()
+        {
+            Random random = new Random();
+
+            var preContext = GetContext(random);
+            StorageContext context = preContext.Item1;
+
+            try
+            {
+                IPv4HeaderInformation headerInformation =
+                   new IPv4HeaderInformation(IPv4Address.FromString("192.178.10.10"), IPv4Address.Broadcast);
+
+                Byte[] opt82Value = random.NextBytes(6);
+
+                DHCPv4Packet requestPacket = new DHCPv4Packet(
+               headerInformation, random.NextBytes(6), (UInt32)random.Next(),
+               IPv4Address.Empty, IPv4Address.Empty, IPv4Address.Empty,
+               new DHCPv4PacketMessageTypeOption(DHCPv4MessagesTypes.Discover),
+               new DHCPv4PacketRawByteOption(82, opt82Value));
+
+                DHCPv4Packet responsePacket = new DHCPv4Packet(
+               new IPv4HeaderInformation(headerInformation.Destionation, headerInformation.Source), random.NextBytes(6), (UInt32)random.Next(),
+               IPv4Address.Empty, IPv4Address.Empty, IPv4Address.Empty,
+               new DHCPv4PacketMessageTypeOption(DHCPv4MessagesTypes.Discover),
+               new DHCPv4PacketRawByteOption(82, opt82Value));
+
+                Guid scopeId = Guid.NewGuid();
+                Guid leaseId = Guid.NewGuid();
+
+                IPv4Address leaseAddress = IPv4Address.FromString("192.178.10.30");
+                var createdEvent = new DHCPv4LeaseCreatedEvent
+                {
+                    Address = leaseAddress,
+                    StartedAt = DateTime.UtcNow.AddHours(-random.Next(3, 10)),
+                    ValidUntil = DateTime.UtcNow.AddHours(random.Next(3, 10)),
+                    ScopeId = scopeId,
+                    EntityId = leaseId,
+                };
+                {
+                    Boolean actual = await context.Project(new[] { createdEvent });
+                    Assert.True(actual);
+
+                    DHCPv4LeaseEntryDataModel dataModel = await context.DHCPv4LeaseEntries.FirstOrDefaultAsync(x => x.LeaseId == leaseId);
+
+                    CheckLeaseEntry(scopeId, leaseId, dataModel, leaseAddress);
+
+                    Assert.Equal(createdEvent.ValidUntil, dataModel.End);
+                    Assert.True((DateTime.UtcNow - dataModel.Timestamp).TotalSeconds < 20);
+
+                }
+                {
+                    DateTime expectedEndTime = DateTime.UtcNow.AddHours(random.Next(50, 100));
+
+                    Boolean actual = await context.Project(new[] {
+                        new DHCPv4LeaseRenewedEvent {
+                     EntityId = leaseId,
+                     ScopeId = scopeId,
+                     End = expectedEndTime,
+                    } });
+
+                    Assert.True(actual);
+
+                    DHCPv4LeaseEntryDataModel dataModel = await context.DHCPv4LeaseEntries.FirstOrDefaultAsync(x => x.LeaseId == leaseId);
+                    CheckLeaseEntry(scopeId, leaseId, dataModel, leaseAddress);
+                    Assert.Equal(expectedEndTime, dataModel.End);
+                }
+                {
+                    DateTime timesstamp = DateTime.UtcNow.AddHours(random.NextDouble());
+
+                    Boolean actual = await context.Project(new[] {
+                        new DHCPv4LeaseRevokedEvent {
+                     EntityId = leaseId,
+                     ScopeId = scopeId,
+                     Timestamp = timesstamp,
+                    } });
+
+                    Assert.True(actual);
+
+                    DHCPv4LeaseEntryDataModel dataModel = await context.DHCPv4LeaseEntries.FirstOrDefaultAsync(x => x.LeaseId == leaseId);
+                    Assert.Equal(ReasonToEndLease.Revoked, dataModel.EndReason);
+                    Assert.Equal(timesstamp, dataModel.End);
+                }
+                {
+                    DateTime timesstamp = DateTime.UtcNow.AddHours(random.NextDouble());
+
+                    Boolean actual = await context.Project(new[] {
+                        new DHCPv4LeaseCanceledEvent {
+                     EntityId = leaseId,
+                     ScopeId = scopeId,
+                     Timestamp = timesstamp,
+                    } });
+
+                    Assert.True(actual);
+
+                    DHCPv4LeaseEntryDataModel dataModel = await context.DHCPv4LeaseEntries.FirstOrDefaultAsync(x => x.LeaseId == leaseId);
+                    Assert.Equal(ReasonToEndLease.Canceled, dataModel.EndReason);
+                    Assert.Equal(timesstamp, dataModel.End);
+                }
+                {
+                    DateTime timesstamp = DateTime.UtcNow.AddHours(random.NextDouble());
+
+                    Boolean actual = await context.Project(new[] {
+                        new DHCPv4LeaseReleasedEvent {
+                     EntityId = leaseId,
+                     ScopeId = scopeId,
+                     Timestamp = timesstamp,
+                    } });
+
+                    Assert.True(actual);
+
+                    DHCPv4LeaseEntryDataModel dataModel = await context.DHCPv4LeaseEntries.FirstOrDefaultAsync(x => x.LeaseId == leaseId);
+                    Assert.Equal(ReasonToEndLease.Released, dataModel.EndReason);
+                    Assert.Equal(timesstamp, dataModel.End);
+                }
+                {
+                    DateTime timesstamp = DateTime.UtcNow.AddHours(random.NextDouble());
+
+                    Boolean actual = await context.Project(new[] {
+                        new DHCPv4LeaseExpiredEvent {
+                     EntityId = leaseId,
+                     ScopeId = scopeId,
+                     Timestamp = timesstamp,
+                    } });
+
+                    Assert.True(actual);
+
+                    DHCPv4LeaseEntryDataModel dataModel = await context.DHCPv4LeaseEntries.FirstOrDefaultAsync(x => x.LeaseId == leaseId);
+                    Assert.Equal(ReasonToEndLease.Expired, dataModel.EndReason);
+                    Assert.Equal(timesstamp, dataModel.End);
+                }
+                {
+                    Boolean nonFoundLease = await context.Project(new[] {
+                        new DHCPv4LeaseCanceledEvent {
+                     EntityId = Guid.NewGuid(),
+                     ScopeId = scopeId,
+                    } });
+
+                    Assert.True(nonFoundLease);
+
+                    DHCPv4LeaseEntryDataModel dataModel = await context.DHCPv4LeaseEntries.FirstOrDefaultAsync(x => x.LeaseId == leaseId);
+                    Assert.Equal(ReasonToEndLease.Expired, dataModel.EndReason);
+                }
+            }
+            finally
+            {
+                File.Delete(preContext.Item2);
+            }
         }
 
         private static void CheckLeaseEntry(Guid scopeId, Guid leaseId, DHCPv6LeaseEntryDataModel dataModel)
@@ -285,6 +528,17 @@ namespace DaAPI.IntegrationTests.StorageEngine
             Assert.Equal(ReasonToEndLease.Nothing, dataModel.EndReason);
             Assert.Equal("2000::", dataModel.Prefix);
             Assert.Equal(64, dataModel.PrefixLength);
+        }
+
+        private static void CheckLeaseEntry(Guid scopeId, Guid leaseId, DHCPv4LeaseEntryDataModel dataModel, IPv4Address address)
+        {
+            Assert.NotNull(dataModel);
+
+            Assert.NotEqual(Guid.Empty, dataModel.Id);
+            Assert.Equal(leaseId, dataModel.LeaseId);
+            Assert.Equal(scopeId, dataModel.ScopeId);
+            Assert.Equal(address.ToString(), dataModel.Address);
+            Assert.Equal(ReasonToEndLease.Nothing, dataModel.EndReason);
         }
 
         [Fact]

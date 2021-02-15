@@ -197,6 +197,7 @@ namespace DaAPI.Host.ApiControllers
                     PreferredLifetime = addressProperties.PreferredLifetime,
                     LeaseTime = addressProperties.LeaseTime,
                     RenewalTime = addressProperties.RenewalTime,
+                    Mask = (Byte)addressProperties.Mask.GetSlashNotation(),
                 }
             };
 

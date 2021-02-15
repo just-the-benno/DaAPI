@@ -16,7 +16,9 @@ namespace DaAPI.Infrastructure.Services
             ISerializer serializer,
             ILogger<DHCPv4ScopeResolverManager> logger) : base(serializer, logger)
         {
-            //AddOrUpdateScopeResolver(nameof(DHCPv6AndResolver), () => new DHCPv6AndResolver());
+            AddOrUpdateScopeResolver(nameof(DHCPv4RelayAgentResolver), () => new DHCPv4RelayAgentResolver());
+            AddOrUpdateScopeResolver(nameof(DHCPv4RelayAgentSubnetResolver), () => new DHCPv4RelayAgentSubnetResolver());
+            AddOrUpdateScopeResolver(nameof(DHCPv4Option82Resolver), () => new DHCPv4Option82Resolver());
         }
     }
 }

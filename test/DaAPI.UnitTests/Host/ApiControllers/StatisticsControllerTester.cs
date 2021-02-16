@@ -81,7 +81,7 @@ namespace DaAPI.UnitTests.Host.ApiControllers
             Mock<INotificationEngine> notificationEngineMock = new Mock<INotificationEngine>(MockBehavior.Strict);
             notificationEngineMock.Setup(x => x.GetPipelineAmount()).Returns(expectedPipelineAmount).Verifiable();
 
-            var controller = new StatisticsController(rootScope, readStoreMock.Object, notificationEngineMock.Object);
+            var controller = new DHCPv6StatisticsController(rootScope, readStoreMock.Object, notificationEngineMock.Object);
             var actionResult = await controller.GetDashboard();
 
             var result = actionResult.EnsureOkObjectResult<DashboardResponse>(true);
@@ -110,7 +110,7 @@ namespace DaAPI.UnitTests.Host.ApiControllers
             Mock<IDHCPv6ReadStore> readStoreMock = new Mock<IDHCPv6ReadStore>(MockBehavior.Strict);
             readStoreMock.Setup(x => x.GetIncomingDHCPv6PacketTypes(start, end, groupBy)).ReturnsAsync(response).Verifiable();
 
-            var controller = new StatisticsController(rootScope, readStoreMock.Object, Mock.Of<INotificationEngine>(MockBehavior.Strict));
+            var controller = new DHCPv6StatisticsController(rootScope, readStoreMock.Object, Mock.Of<INotificationEngine>(MockBehavior.Strict));
             var actionResult = await controller.GetIncomingDHCPv6PacketTypes(new GroupedTimeSeriesFilterRequest
             {
                 Start = start,
@@ -143,7 +143,7 @@ namespace DaAPI.UnitTests.Host.ApiControllers
             Mock<IDHCPv6ReadStore> readStoreMock = new Mock<IDHCPv6ReadStore>(MockBehavior.Strict);
             readStoreMock.Setup(x => x.GetHandledDHCPv6PacketByScopeId(scopeId, amount)).ReturnsAsync(response).Verifiable();
 
-            var controller = new StatisticsController(rootScope, readStoreMock.Object, Mock.Of<INotificationEngine>(MockBehavior.Strict));
+            var controller = new DHCPv6StatisticsController(rootScope, readStoreMock.Object, Mock.Of<INotificationEngine>(MockBehavior.Strict));
             var actionResult = await controller.GetHandledDHCPv6PacketByScopeId(scopeId, amount);
 
             var result = actionResult.EnsureOkObjectResult<IEnumerable<DHCPv6PacketHandledEntry>>(true);
@@ -163,7 +163,7 @@ namespace DaAPI.UnitTests.Host.ApiControllers
 
             DHCPv6RootScope rootScope = GetRootScope();
 
-            var controller = new StatisticsController(rootScope, Mock.Of<IDHCPv6ReadStore>(MockBehavior.Strict), Mock.Of<INotificationEngine>(MockBehavior.Strict));
+            var controller = new DHCPv6StatisticsController(rootScope, Mock.Of<IDHCPv6ReadStore>(MockBehavior.Strict), Mock.Of<INotificationEngine>(MockBehavior.Strict));
             var actionResult = await controller.GetHandledDHCPv6PacketByScopeId(scopeId, amount);
 
             actionResult.EnsureNotFoundObjectResult("scope not found");
@@ -184,7 +184,7 @@ namespace DaAPI.UnitTests.Host.ApiControllers
             Mock<IDHCPv6ReadStore> readStoreMock = new Mock<IDHCPv6ReadStore>(MockBehavior.Strict);
             readStoreMock.Setup(x => x.GetFileredDHCPv6Packets(start, end, groupBy)).ReturnsAsync(response).Verifiable();
 
-            var controller = new StatisticsController(rootScope, readStoreMock.Object, Mock.Of<INotificationEngine>(MockBehavior.Strict));
+            var controller = new DHCPv6StatisticsController(rootScope, readStoreMock.Object, Mock.Of<INotificationEngine>(MockBehavior.Strict));
             var actionResult = await controller.GetFileredDHCPv6Packets(new GroupedTimeSeriesFilterRequest
             {
                 Start = start,
@@ -214,7 +214,7 @@ namespace DaAPI.UnitTests.Host.ApiControllers
             Mock<IDHCPv6ReadStore> readStoreMock = new Mock<IDHCPv6ReadStore>(MockBehavior.Strict);
             readStoreMock.Setup(x => x.GetErrorDHCPv6Packets(start, end, groupBy)).ReturnsAsync(response).Verifiable();
 
-            var controller = new StatisticsController(rootScope, readStoreMock.Object, Mock.Of<INotificationEngine>(MockBehavior.Strict));
+            var controller = new DHCPv6StatisticsController(rootScope, readStoreMock.Object, Mock.Of<INotificationEngine>(MockBehavior.Strict));
             var actionResult = await controller.GetErrorDHCPv6Packets(new GroupedTimeSeriesFilterRequest
             {
                 Start = start,
@@ -244,7 +244,7 @@ namespace DaAPI.UnitTests.Host.ApiControllers
             Mock<IDHCPv6ReadStore> readStoreMock = new Mock<IDHCPv6ReadStore>(MockBehavior.Strict);
             readStoreMock.Setup(x => x.GetIncomingDHCPv6PacketAmount(start, end, groupBy)).ReturnsAsync(response).Verifiable();
 
-            var controller = new StatisticsController(rootScope, readStoreMock.Object, Mock.Of<INotificationEngine>(MockBehavior.Strict));
+            var controller = new DHCPv6StatisticsController(rootScope, readStoreMock.Object, Mock.Of<INotificationEngine>(MockBehavior.Strict));
             var actionResult = await controller.GetIncomingDHCPv6PacketAmount(new GroupedTimeSeriesFilterRequest
             {
                 Start = start,
@@ -273,7 +273,7 @@ namespace DaAPI.UnitTests.Host.ApiControllers
             Mock<IDHCPv6ReadStore> readStoreMock = new Mock<IDHCPv6ReadStore>(MockBehavior.Strict);
             readStoreMock.Setup(x => x.GetActiveDHCPv6Leases(start, end, groupBy)).ReturnsAsync(response).Verifiable();
 
-            var controller = new StatisticsController(rootScope, readStoreMock.Object, Mock.Of<INotificationEngine>(MockBehavior.Strict));
+            var controller = new DHCPv6StatisticsController(rootScope, readStoreMock.Object, Mock.Of<INotificationEngine>(MockBehavior.Strict));
             var actionResult = await controller.GetActiveDHCPv6Leases(new GroupedTimeSeriesFilterRequest
             {
                 Start = start,
@@ -302,7 +302,7 @@ namespace DaAPI.UnitTests.Host.ApiControllers
             Mock<IDHCPv6ReadStore> readStoreMock = new Mock<IDHCPv6ReadStore>(MockBehavior.Strict);
             readStoreMock.Setup(x => x.GetErrorCodesPerDHCPV6RequestType(start, end, packetType)).ReturnsAsync(response).Verifiable();
 
-            var controller = new StatisticsController(rootScope, readStoreMock.Object, Mock.Of<INotificationEngine>(MockBehavior.Strict));
+            var controller = new DHCPv6StatisticsController(rootScope, readStoreMock.Object, Mock.Of<INotificationEngine>(MockBehavior.Strict));
             var actionResult = await controller.GetErrorCodesPerDHCPV6RequestType(new DHCPv6PacketTypeBasedTimeSeriesFilterRequest
             {
                 Start = start,

@@ -1,4 +1,5 @@
-﻿using DaAPI.Core.Scopes.DHCPv6;
+﻿using DaAPI.Core.Scopes.DHCPv4;
+using DaAPI.Core.Scopes.DHCPv6;
 using DaAPI.Infrastructure.NotificationEngine;
 using DaAPI.Infrastructure.StorageEngine.DHCPv6;
 using Microsoft.AspNetCore.Authorization;
@@ -15,18 +16,21 @@ namespace DaAPI.Host.ApiControllers
 {
     [Authorize(AuthenticationSchemes = "Bearer", Policy = "DaAPI-API")]
     [ApiController]
-    public class StatisticsController : ControllerBase
+    public class DHCPv6StatisticsController : ControllerBase
     {
         private readonly IDHCPv6ReadStore _storage;
         private readonly INotificationEngine _notificationEngine;
         private readonly DHCPv6RootScope _rootScope;
+        private readonly DHCPv4RootScope _dhcpv4RootScope;
 
-        public StatisticsController(
+        public DHCPv6StatisticsController(
             DHCPv6RootScope rootScope,
+            DHCPv4RootScope dhcpv4RootScope,
             IDHCPv6ReadStore storage,
             INotificationEngine notificationEngine)
         {
             _rootScope = rootScope ?? throw new ArgumentNullException(nameof(rootScope));
+            _dhcpv4RootScope = dhcpv4RootScope ?? throw new ArgumentNullException(nameof(dhcpv4RootScope));
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
             _notificationEngine = notificationEngine ?? throw new ArgumentNullException(nameof(notificationEngine));
         }
@@ -36,6 +40,7 @@ namespace DaAPI.Host.ApiControllers
         {
             DashboardResponse response = await _storage.GetDashboardOverview();
             response.DHCPv6.ScopeAmount = _rootScope.GetTotalAmountOfScopes();
+            response.DHCPv4.ScopeAmount = _dhcpv4RootScope.GetTotalAmountOfScopes();
             response.AmountOfPipelines =  _notificationEngine.GetPipelineAmount();
             return base.Ok(response);
         }

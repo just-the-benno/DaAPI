@@ -1,4 +1,5 @@
-﻿using DaAPI.Core.Packets.DHCPv6;
+﻿using DaAPI.Core.Packets.DHCPv4;
+using DaAPI.Core.Packets.DHCPv6;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -39,6 +40,11 @@ namespace DaAPI.Shared.Requests
             public class DHCPv6PacketTypeBasedTimeSeriesFilterRequest : TimeSeriesFilterRequest
             {
                 public DHCPv6PacketTypes PacketType { get; set; }
+            }
+
+            public class DHCPv4PacketTypeBasedTimeSeriesFilterRequest : TimeSeriesFilterRequest
+            {
+                public DHCPv4MessagesTypes PacketType { get; set; }
             }
         }
     }

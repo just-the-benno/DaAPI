@@ -1,10 +1,10 @@
 ﻿<div class="alert alert-@AlertType">
-    @Content
+    @ChildContent
 </div>
 @code {
 
     [Parameter]
-    public String Content { get; set; }
+    public RenderFragment ChildContent { get; set; }
 
     [Parameter]
     public String AlertType { get; set; } = "danger";

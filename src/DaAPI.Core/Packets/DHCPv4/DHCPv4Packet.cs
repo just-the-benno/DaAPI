@@ -314,10 +314,12 @@ namespace DaAPI.Core.Packets.DHCPv4
         DHCPv4ScopeAddressProperties addressProperties,
         IEnumerable<DHCPv4ScopeProperty> scopeProperties)
         {
-            List<DHCPv4ScopeProperty> propertiesToInsert = new List<DHCPv4ScopeProperty>(scopeProperties)
+            List<DHCPv4ScopeProperty> propertiesToInsert = new List<DHCPv4ScopeProperty>(scopeProperties);
+            
+            if(addressProperties != null)
             {
-                new DHCPv4AddressScopeProperty(DHCPv4OptionTypes.SubnetMask, IPv4Address.FromByteArray(addressProperties.Mask.GetBytes()))
-            };
+                propertiesToInsert.Add(new DHCPv4AddressScopeProperty(DHCPv4OptionTypes.SubnetMask, IPv4Address.FromByteArray(addressProperties.Mask.GetBytes())));
+            }
 
             Dictionary<DHCPv4OptionTypes, TimeSpan?> timeRelatedOptions = new Dictionary<DHCPv4OptionTypes, TimeSpan?>();
             if (addressProperties != null)

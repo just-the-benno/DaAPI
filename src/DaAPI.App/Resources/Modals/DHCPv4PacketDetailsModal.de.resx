@@ -117,34 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="DHCPv4MenuInterfacesCaption" xml:space="preserve">
-    <value>Interfaces</value>
-  </data>
-  <data name="DHCPv4MenuMainCaption" xml:space="preserve">
-    <value>DHCPv4</value>
-  </data>
-  <data name="DHCPv4MenuScopesCaption" xml:space="preserve">
-    <value>Scopes</value>
-  </data>
-  <data name="DHCPv6MenuInterfacesCaption" xml:space="preserve">
-    <value>Interfaces</value>
-  </data>
-  <data name="DHCPv6MenuMainCaption" xml:space="preserve">
-    <value>DHCPv6</value>
-  </data>
-  <data name="DHCPv6MenuScopesCaption" xml:space="preserve">
-    <value>Scopes</value>
-  </data>
-  <data name="MenuMainDashboardCaption" xml:space="preserve">
-    <value>Dashboard</value>
-  </data>
-  <data name="MenuMainMenuCaption" xml:space="preserve">
-    <value>Main</value>
-  </data>
-  <data name="MenuMainPipelinesCaption" xml:space="preserve">
-    <value>Pipelines</value>
-  </data>
-  <data name="MenuMainUsersCaption" xml:space="preserve">
-    <value>Users</value>
+  <data name="CloseButtonCaption" xml:space="preserve">
+    <value>Close</value>
   </data>
 </root>

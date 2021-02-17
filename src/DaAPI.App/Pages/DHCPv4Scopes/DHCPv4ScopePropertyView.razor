@@ -1,0 +1,24 @@
+﻿@if (Property != null)
+{
+    @switch (Property)
+    {
+        case DHCPv4AddressListScopePropertyResponse property:
+            <ul class="list-unstyled">
+                @foreach (var address in property.Addresses)
+                {
+                    <li>@address</li>
+                }
+            </ul>
+            break;
+        case DHCPv4NumericScopePropertyResponse property:
+            <span>@property.Value</span>
+            break;
+        default:
+            break;
+    }
+}
+
+@code {
+
+    [Parameter] public DHCPv4ScopePropertyResponse Property { get; set; }
+}

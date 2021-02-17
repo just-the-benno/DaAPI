@@ -30,9 +30,9 @@ namespace DaAPI.UnitTests.Host.ApiControllers
             return scope;
         }
 
-        private class LeaseOverviewEqualityComparer : IEqualityComparer<LeaseOverview>
+        private class LeaseOverviewEqualityComparer : IEqualityComparer<DHCPv6LeaseOverview>
         {
-            public bool Equals([AllowNull] LeaseOverview x, [AllowNull] LeaseOverview y)
+            public bool Equals([AllowNull] DHCPv6LeaseOverview x, [AllowNull] DHCPv6LeaseOverview y)
             {
                 if (x.Address == y.Address &&
                    x.ClientIdentifier == y.ClientIdentifier &&
@@ -64,7 +64,7 @@ namespace DaAPI.UnitTests.Host.ApiControllers
                 }
             }
 
-            public int GetHashCode([DisallowNull] LeaseOverview obj) => obj.Id.GetHashCode();
+            public int GetHashCode([DisallowNull] DHCPv6LeaseOverview obj) => obj.Id.GetHashCode();
         }
 
         [Fact]
@@ -74,7 +74,7 @@ namespace DaAPI.UnitTests.Host.ApiControllers
             Guid scopeId = random.NextGuid();
             String scopeName = "Testscope";
 
-            LeaseOverview activeLeaseWithoutPrefix = new LeaseOverview
+            DHCPv6LeaseOverview activeLeaseWithoutPrefix = new DHCPv6LeaseOverview
             {
                 Address = random.GetIPv6Address().ToString(),
                 ClientIdentifier = new UUIDDUID(random.NextGuid()),
@@ -91,7 +91,7 @@ namespace DaAPI.UnitTests.Host.ApiControllers
                 }
             };
 
-            LeaseOverview expiredLeaseWithPrefix = new LeaseOverview
+            DHCPv6LeaseOverview expiredLeaseWithPrefix = new DHCPv6LeaseOverview
             {
                 Address = random.GetIPv6Address().ToString(),
                 ClientIdentifier = new UUIDDUID(random.NextGuid()),
@@ -167,7 +167,7 @@ namespace DaAPI.UnitTests.Host.ApiControllers
             var controller = new DHCPv6LeaseController(rootScope, Mock.Of<ILogger<DHCPv6LeaseController>>());
 
             var actionResult = controller.GetLeasesByScope(scopeId);
-            var result = actionResult.EnsureOkObjectResult<IEnumerable<LeaseOverview>>(true);
+            var result = actionResult.EnsureOkObjectResult<IEnumerable<DHCPv6LeaseOverview>>(true);
 
             Assert.Equal(new[] { activeLeaseWithoutPrefix, expiredLeaseWithPrefix }, result, new LeaseOverviewEqualityComparer());
 
@@ -186,7 +186,7 @@ namespace DaAPI.UnitTests.Host.ApiControllers
             Guid childId = random.NextGuid();
             String childScopeName = "Child";
 
-            LeaseOverview activeLeaseWithoutPrefix = new LeaseOverview
+            DHCPv6LeaseOverview activeLeaseWithoutPrefix = new DHCPv6LeaseOverview
             {
                 Address = random.GetIPv6Address().ToString(),
                 ClientIdentifier = new UUIDDUID(random.NextGuid()),
@@ -203,7 +203,7 @@ namespace DaAPI.UnitTests.Host.ApiControllers
                 }
             };
 
-            LeaseOverview expiredLeaseWithPrefix = new LeaseOverview
+            DHCPv6LeaseOverview expiredLeaseWithPrefix = new DHCPv6LeaseOverview
             {
                 Address = random.GetIPv6Address().ToString(),
                 ClientIdentifier = new UUIDDUID(random.NextGuid()),
@@ -291,7 +291,7 @@ namespace DaAPI.UnitTests.Host.ApiControllers
             var controller = new DHCPv6LeaseController(rootScope, Mock.Of<ILogger<DHCPv6LeaseController>>());
 
             var actionResult = controller.GetLeasesByScope(grantParentId, true);
-            var result = actionResult.EnsureOkObjectResult<IEnumerable<LeaseOverview>>(true);
+            var result = actionResult.EnsureOkObjectResult<IEnumerable<DHCPv6LeaseOverview>>(true);
 
             Assert.Equal(new[] { activeLeaseWithoutPrefix, expiredLeaseWithPrefix }, result, new LeaseOverviewEqualityComparer());
 

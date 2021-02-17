@@ -1160,7 +1160,7 @@ namespace DaAPI.Infrastructure.StorageEngine
 
         public async Task<IEnumerable<DHCPv4PacketHandledEntry>> GetHandledDHCPv4PacketByScopeId(Guid scopeId, Int32 amount) => await GetDHCPv4PacketsFromHandledEvents(amount, scopeId);
 
-        public async Task<IDictionary<Int32, Int32>> GetErrorCodesPerDHCPv4RequestType(DateTime? start, DateTime? end, DHCPv4MessagesTypes type)
+        public async Task<IDictionary<Int32, Int32>> GetErrorCodesPerDHCPv4DHCPv4MessagesTypes(DateTime? start, DateTime? end, DHCPv4MessagesTypes type)
         {
             return await GetErrorCodesPerDHCPRequestType(DHCPv4PacketEntries, start, end, type);
         }

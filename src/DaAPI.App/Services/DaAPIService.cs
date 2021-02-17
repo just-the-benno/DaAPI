@@ -22,6 +22,7 @@ using static DaAPI.Shared.Requests.LocalUserRequests.V1;
 using static DaAPI.Shared.Requests.NotificationPipelineRequests.V1;
 using static DaAPI.Shared.Requests.StatisticsControllerRequests.V1;
 using static DaAPI.Shared.Responses.DHCPv4InterfaceResponses.V1;
+using static DaAPI.Shared.Responses.DHCPv4LeasesResponses.V1;
 using static DaAPI.Shared.Responses.DHCPv4ScopeResponses.V1;
 using static DaAPI.Shared.Responses.DHCPv6InterfaceResponses.V1;
 using static DaAPI.Shared.Responses.DHCPv6LeasesResponses.V1;
@@ -185,19 +186,8 @@ namespace DaAPI.App.Services
             }
         }
 
-        public async Task<IEnumerable<LeaseOverview>> GetLeasesByScope(String scopeId, Boolean includeChildScopes)
-        {
-            try
-            {
-                var result = await GetResult<IEnumerable<LeaseOverview>>($"/api/leases/dhcpv6/scopes/{scopeId}?includeChildren={includeChildScopes}", null);
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "unable to send service request");
-                return null;
-            }
-        }
+        public async Task<IEnumerable<DHCPv6LeaseOverview>> GetDHCPv6LeasesByScope(String scopeId, Boolean includeChildScopes) =>
+            await GetResponse<IEnumerable<DHCPv6LeaseOverview>>($"/api/leases/dhcpv6/scopes/{scopeId}?includeChildren={includeChildScopes}");
 
         public async Task<DashboardResponse> GetDashboard() => await GetDashboard<DashboardResponse>();
 
@@ -273,13 +263,17 @@ namespace DaAPI.App.Services
         private async Task<IDictionary<DateTime, T>> GetSimpleStatisticsData<T>(String baseurl, DateTime? start, DateTime? end, GroupStatisticsResultBy group) =>
             await GetSimpleStatisticsData<T>(AppendGroupingToUrl(baseurl, start, end, group));
 
-        public async Task<IEnumerable<DHCPv6PacketHandledEntry>> GetHandledDHCPv6PacketByScopeId(String scopeId, Int32 amount = 100) => await GetHandledDHCPv6PacketByScopeId<DHCPv6PacketHandledEntry>(scopeId, amount);
-
-        public async Task<IEnumerable<THandeled>> GetHandledDHCPv6PacketByScopeId<THandeled>(String scopeId, Int32 amount = 100) where THandeled : DHCPv6PacketHandledEntry
+        private async Task<IEnumerable<THandeled>> GetHandledDHCPPacketByScopeId<THandeled>(String url) where THandeled : class
         {
-            var result = await GetResult<IEnumerable<THandeled>>($"/api/Statistics/HandledDHCPv6Packet/{scopeId}?amount={amount}", Array.Empty<THandeled>());
+            var result = await GetResult<IEnumerable<THandeled>>(url, Array.Empty<THandeled>());
             return result;
         }
+
+        public async Task<IEnumerable<DHCPv6PacketHandledEntry>> GetHandledDHCPv6PacketByScopeId(String scopeId, Int32 amount = 100) => await GetHandledDHCPv6PacketByScopeId<DHCPv6PacketHandledEntry>(scopeId, amount);
+
+        public async Task<IEnumerable<THandeled>> GetHandledDHCPv6PacketByScopeId<THandeled>(String scopeId, Int32 amount = 100) where THandeled : DHCPv6PacketHandledEntry =>
+            await GetHandledDHCPPacketByScopeId<THandeled>($"/api/Statistics/HandledDHCPv6Packet/{scopeId}?amount={amount}");
+
 
         #region DHCPv4
 
@@ -322,7 +316,17 @@ namespace DaAPI.App.Services
 
         public async Task<Boolean> CreateDHCPv4Scope(CreateOrUpdateDHCPv4ScopeRequest request) =>
         await ExecuteCommand(() => _client.PostAsync("api/scopes/dhcpv4/", GetStringContentAsJson(request)));
-        
+
+        public async Task<IEnumerable<DHCPv4LeaseOverview>> GetDHCPv4LeasesByScope(String scopeId, Boolean includeChildScopes) =>
+        await GetResponse<IEnumerable<DHCPv4LeaseOverview>>($"/api/leases/dhcpv4/scopes/{scopeId}?includeChildren={includeChildScopes}");
+
+
+        public async Task<IEnumerable<DHCPv4PacketHandledEntry>> GetHandledDHCPv4PacketByScopeId(String scopeId, Int32 amount = 100) => await GetHandledDHCPv4PacketByScopeId<DHCPv4PacketHandledEntry>(scopeId, amount);
+
+        public async Task<IEnumerable<THandeled>> GetHandledDHCPv4PacketByScopeId<THandeled>(String scopeId, Int32 amount = 100) where THandeled : DHCPv4PacketHandledEntry =>
+            await GetHandledDHCPPacketByScopeId<THandeled>($"/api/Statistics/HandledDHCPv4Packet/{scopeId}?amount={amount}");
+
+
         #endregion
 
     }

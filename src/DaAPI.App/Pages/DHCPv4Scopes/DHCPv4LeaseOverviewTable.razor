@@ -1,0 +1,83 @@
+﻿@inject DaAPIService service
+@implements IDisposable
+@inject IStringLocalizer<DHCPv4LeaseOverviewTable> L
+
+<div class="card">
+    <LoadingWhileContentNull Item="_leases">
+        <div class="card-header border-0 d-flex flex-row align-items-center">
+            <h3 class="card-title"> @L["Title"]</h3>
+            <span class="flex-fill"></span>
+            <div class="card-tools">
+                <EditForm EditContext="@_editContext">
+                    <div class="icheck-primary">
+                        <BootstrapInputCheckbox @bind-Value="IncludeChildren" id="includeChildren" />
+                        <label for="includeChildren">@L["IncludeChildrenCaption"]</label>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+        <div class="card-body table-responsive p-3">
+            <DataTable TModel="DHCPv4LeaseOverview" PageSize="20" Items="_leases" UsePaging="true" SearchOnApplyHeaderFilter="true" IncludeHeaderFilters="true" IncludeAdvancedFilters="false">
+                <DataTableColumn TModel="DHCPv4LeaseOverview" IsSortable="true" IsFilterable="true" Property="(e) => e.State" CustomTitle="@L["ColumnHeaderForState"]" />
+                <DataTableColumn TModel="DHCPv4LeaseOverview" IsSortable="true" IsFilterable="true" Property="(e) => e.Address" CustomTitle="@L["ColumnHeaderForAddress"]" />
+               
+                <DataTableColumn TModel="DHCPv4LeaseOverview" IsSortable="false" IsFilterable="false" Property="(e) => e.Address" CustomTitle="@L["CustomerHeaderForClientId"]">
+                    <RowTemplate Context="lease">
+                        <span>@lease.MacAddress</span>
+                    </RowTemplate>
+                </DataTableColumn>
+                <DataTableColumn TModel="DHCPv4LeaseOverview" IsSortable="true" IsFilterable="true" Property="(e) => e.Started" CustomTitle="@L["CustomerHeaderForStart"]" />
+                <DataTableColumn TModel="DHCPv4LeaseOverview" IsSortable="true" IsFilterable="true" Property="(e) => e.ExpectedEnd" CustomTitle="@L["CustomerHeaderForEnd"]" />
+                @if (IncludeChildren == true)
+                {
+                    <DataTableColumn TModel="DHCPv4LeaseOverview" IsSortable="true" IsFilterable="true" Property="(e) => e.Scope.Name" CustomTitle="@L["CustomerHeaderForScope"]" />
+                }
+            </DataTable>
+        </div>
+    </LoadingWhileContentNull>
+</div>
+
+@code {
+
+    private IList<DHCPv4LeaseOverview> _leases;
+    private EditContext _editContext;
+
+    [Parameter]
+    public Boolean IncludeChildren { get; set; }
+
+    [Parameter]
+    public String ScopeId { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _editContext = new EditContext(IncludeChildren);
+        _editContext.OnFieldChanged += UpdatesLeases;
+    }
+
+    private async void UpdatesLeases(Object sender, FieldChangedEventArgs args)
+    {
+        _leases = null;
+        StateHasChanged();
+
+        _leases = (await service.GetDHCPv4LeasesByScope(ScopeId, IncludeChildren)).ToList();
+        StateHasChanged();
+    }
+
+    protected override void OnParametersSet()
+    {
+        _leases = null;
+        base.OnParametersSet();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        _leases = (await service.GetDHCPv4LeasesByScope(ScopeId, IncludeChildren)).ToList();
+    }
+
+    void IDisposable.Dispose()
+    {
+        _editContext.OnFieldChanged -= UpdatesLeases;
+    }
+
+}

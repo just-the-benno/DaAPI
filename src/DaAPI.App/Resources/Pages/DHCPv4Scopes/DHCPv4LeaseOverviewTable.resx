@@ -117,34 +117,34 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="DHCPv4MenuInterfacesCaption" xml:space="preserve">
-    <value>Interfaces</value>
+  <data name="ColumnHeaderForAddress" xml:space="preserve">
+    <value>Address</value>
   </data>
-  <data name="DHCPv4MenuMainCaption" xml:space="preserve">
-    <value>DHCPv4</value>
+  <data name="ColumnHeaderForState" xml:space="preserve">
+    <value>State</value>
   </data>
-  <data name="DHCPv4MenuScopesCaption" xml:space="preserve">
-    <value>Scopes</value>
+  <data name="CustomerHeaderForClientId" xml:space="preserve">
+    <value>MAC</value>
   </data>
-  <data name="DHCPv6MenuInterfacesCaption" xml:space="preserve">
-    <value>Interfaces</value>
+  <data name="CustomerHeaderForEnd" xml:space="preserve">
+    <value>End</value>
   </data>
-  <data name="DHCPv6MenuMainCaption" xml:space="preserve">
-    <value>DHCPv6</value>
+  <data name="CustomerHeaderForPrefix" xml:space="preserve">
+    <value>Prefix</value>
   </data>
-  <data name="DHCPv6MenuScopesCaption" xml:space="preserve">
-    <value>Scopes</value>
+  <data name="CustomerHeaderForScope" xml:space="preserve">
+    <value>Scope</value>
   </data>
-  <data name="MenuMainDashboardCaption" xml:space="preserve">
-    <value>Dashboard</value>
+  <data name="CustomerHeaderForStart" xml:space="preserve">
+    <value>Start</value>
   </data>
-  <data name="MenuMainMenuCaption" xml:space="preserve">
-    <value>Main</value>
+  <data name="IncludeChildrenCaption" xml:space="preserve">
+    <value>Include child scopes?</value>
   </data>
-  <data name="MenuMainPipelinesCaption" xml:space="preserve">
-    <value>Pipelines</value>
+  <data name="NoPrefixLabel" xml:space="preserve">
+    <value>None</value>
   </data>
-  <data name="MenuMainUsersCaption" xml:space="preserve">
-    <value>Users</value>
+  <data name="Title" xml:space="preserve">
+    <value>Leases</value>
   </data>
 </root>

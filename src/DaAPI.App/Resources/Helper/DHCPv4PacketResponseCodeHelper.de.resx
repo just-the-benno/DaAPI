@@ -117,34 +117,73 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="DHCPv4MenuInterfacesCaption" xml:space="preserve">
-    <value>Interfaces</value>
+  <data name="Decline_0" xml:space="preserve">
+    <value>Erfolg</value>
   </data>
-  <data name="DHCPv4MenuMainCaption" xml:space="preserve">
-    <value>DHCPv4</value>
+  <data name="Decline_1" xml:space="preserve">
+    <value>Bereich nicht gefunden</value>
   </data>
-  <data name="DHCPv4MenuScopesCaption" xml:space="preserve">
-    <value>Scopes</value>
+  <data name="Decline_2" xml:space="preserve">
+    <value>Decline nicht erlaubt </value>
   </data>
-  <data name="DHCPv6MenuInterfacesCaption" xml:space="preserve">
-    <value>Interfaces</value>
+  <data name="Decline_3" xml:space="preserve">
+    <value>Lease nicht gefunden</value>
   </data>
-  <data name="DHCPv6MenuMainCaption" xml:space="preserve">
-    <value>DHCPv6</value>
+  <data name="Decline_4" xml:space="preserve">
+    <value>Lease ist im falschen Zustand</value>
   </data>
-  <data name="DHCPv6MenuScopesCaption" xml:space="preserve">
-    <value>Scopes</value>
+  <data name="Decline_5" xml:space="preserve">
+    <value>Adress bereits suspendiert</value>
   </data>
-  <data name="MenuMainDashboardCaption" xml:space="preserve">
-    <value>Dashboard</value>
+  <data name="Decline_6" xml:space="preserve">
+    <value>Adresse nicht gefunden</value>
   </data>
-  <data name="MenuMainMenuCaption" xml:space="preserve">
-    <value>Main</value>
+  <data name="Discover_0" xml:space="preserve">
+    <value>Erfolg</value>
   </data>
-  <data name="MenuMainPipelinesCaption" xml:space="preserve">
-    <value>Pipelines</value>
+  <data name="Discover_1" xml:space="preserve">
+    <value>Bereich nicht gefunden</value>
   </data>
-  <data name="MenuMainUsersCaption" xml:space="preserve">
-    <value>Users</value>
+  <data name="Discover_2" xml:space="preserve">
+    <value>Keine Adressen mehr</value>
+  </data>
+  <data name="Inform_0" xml:space="preserve">
+    <value>Erfolg</value>
+  </data>
+  <data name="Inform_1" xml:space="preserve">
+    <value>Bereich nicht gefunden</value>
+  </data>
+  <data name="Inform_2" xml:space="preserve">
+    <value>Informs nicht erlaubt</value>
+  </data>
+  <data name="Release_0" xml:space="preserve">
+    <value>Erfolg</value>
+  </data>
+  <data name="Release_1" xml:space="preserve">
+    <value>Lease nicht gefunden</value>
+  </data>
+  <data name="Release_2" xml:space="preserve">
+    <value>Lease ist nicht aktiv</value>
+  </data>
+  <data name="Request_0" xml:space="preserve">
+    <value>Erfolg</value>
+  </data>
+  <data name="Request_1" xml:space="preserve">
+    <value>Bereich nicht gefunden</value>
+  </data>
+  <data name="Request_3" xml:space="preserve">
+    <value>Lease nicht gefunden</value>
+  </data>
+  <data name="Request_4" xml:space="preserve">
+    <value>Lease ist im falschen Zustand</value>
+  </data>
+  <data name="Request_5" xml:space="preserve">
+    <value>Renewing ist nicht erlaubt</value>
+  </data>
+  <data name="Request_6" xml:space="preserve">
+    <value>Keine Adressen mehr</value>
+  </data>
+  <data name="Request_7" xml:space="preserve">
+    <value>Lease ist nicht aktiv</value>
   </data>
 </root>

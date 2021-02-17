@@ -117,34 +117,121 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="DHCPv4MenuInterfacesCaption" xml:space="preserve">
-    <value>Interfaces</value>
+  <data name="AcceptDeclinesPropertyCaption" xml:space="preserve">
+    <value>Accept declines</value>
   </data>
-  <data name="DHCPv4MenuMainCaption" xml:space="preserve">
-    <value>DHCPv4</value>
+  <data name="AcceptInformsPropertyCaption" xml:space="preserve">
+    <value>Accept informs</value>
   </data>
-  <data name="DHCPv4MenuScopesCaption" xml:space="preserve">
-    <value>Scopes</value>
+  <data name="AddressAllocationStrategyPropertyCaption" xml:space="preserve">
+    <value>Address Allocation Strategy</value>
   </data>
-  <data name="DHCPv6MenuInterfacesCaption" xml:space="preserve">
-    <value>Interfaces</value>
+  <data name="AddressRangeCaption" xml:space="preserve">
+    <value>Address Range</value>
   </data>
-  <data name="DHCPv6MenuMainCaption" xml:space="preserve">
-    <value>DHCPv6</value>
+  <data name="AddressRangeEndCaption" xml:space="preserve">
+    <value>End</value>
   </data>
-  <data name="DHCPv6MenuScopesCaption" xml:space="preserve">
-    <value>Scopes</value>
+  <data name="AddressRangeExcludedAddressesCaption" xml:space="preserve">
+    <value>Excluded Addresses</value>
   </data>
-  <data name="MenuMainDashboardCaption" xml:space="preserve">
-    <value>Dashboard</value>
+  <data name="AddressRangeExcludedAddressesNone" xml:space="preserve">
+    <value>None</value>
   </data>
-  <data name="MenuMainMenuCaption" xml:space="preserve">
-    <value>Main</value>
+  <data name="AddressRangeNoPrefixCaption" xml:space="preserve">
+    <value>None</value>
   </data>
-  <data name="MenuMainPipelinesCaption" xml:space="preserve">
-    <value>Pipelines</value>
+  <data name="AddressRangePrefixCaption" xml:space="preserve">
+    <value>Prefix</value>
   </data>
-  <data name="MenuMainUsersCaption" xml:space="preserve">
-    <value>Users</value>
+  <data name="AddressRangeStartCaption" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="AddressRelatedPropertiesCaption" xml:space="preserve">
+    <value>Address related properties</value>
+  </data>
+  <data name="AddressRelatedPropertyTableHeaderForProperty" xml:space="preserve">
+    <value>Property</value>
+  </data>
+  <data name="AddressRelatedTableHeaderForSetByParent" xml:space="preserve">
+    <value>Set by parent</value>
+  </data>
+  <data name="AddressRelatedTableHeaderForValue" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="BreadcrumbHomeCaption" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="BreadcrumbScopeCaption" xml:space="preserve">
+    <value>DHCPv4 scopes</value>
+  </data>
+  <data name="DescriptionCaption" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="EditButtonCaption" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="Headline" xml:space="preserve">
+    <value>DHCPv4 Scope {0} Properties</value>
+  </data>
+  <data name="NameCaption" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="NetworkMaskCaption" xml:space="preserve">
+    <value>Network mask</value>
+  </data>
+  <data name="NoParentCaption" xml:space="preserve">
+    <value>No Parent</value>
+  </data>
+  <data name="OptionsCaptions" xml:space="preserve">
+    <value>Options</value>
+  </data>
+  <data name="OptionsTableHeaderForProperty" xml:space="preserve">
+    <value>Property</value>
+  </data>
+  <data name="OptionsTableHeaderForSetByParent" xml:space="preserve">
+    <value>Set by parent</value>
+  </data>
+  <data name="OptionsTableHeaderForValue" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="PageTitle" xml:space="preserve">
+    <value>DHCPv4 Scope {0} Details</value>
+  </data>
+  <data name="PageTitleWithLoadingObjects" xml:space="preserve">
+    <value>Loading DHCPv4 Scope ...</value>
+  </data>
+  <data name="ParentCaption" xml:space="preserve">
+    <value>Parent</value>
+  </data>
+  <data name="PreferredLifetimePropertyCaption" xml:space="preserve">
+    <value>Preferred Lifetime</value>
+  </data>
+  <data name="RapitCommitEnabledPropertyCaption" xml:space="preserve">
+    <value>Rapit Commit enabled</value>
+  </data>
+  <data name="ResolverCaption" xml:space="preserve">
+    <value>Resolver</value>
+  </data>
+  <data name="ResolverNameCaption" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="ReuseAddressIfPossiblePropertyCaption" xml:space="preserve">
+    <value>Reuse address if possible</value>
+  </data>
+  <data name="ScopePropertiesCaption" xml:space="preserve">
+    <value>Scope Properties</value>
+  </data>
+  <data name="SupportDirectUnicastPropertyCaption" xml:space="preserve">
+    <value>Support direct unicast</value>
+  </data>
+  <data name="T1PropertyCaption" xml:space="preserve">
+    <value>T1</value>
+  </data>
+  <data name="T2PropertyCaption" xml:space="preserve">
+    <value>T2</value>
+  </data>
+  <data name="ValidLifetimePropertyCaption" xml:space="preserve">
+    <value>Valid Lifetime</value>
   </data>
 </root>

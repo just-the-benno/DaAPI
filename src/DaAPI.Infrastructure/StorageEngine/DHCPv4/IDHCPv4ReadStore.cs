@@ -21,7 +21,7 @@ namespace DaAPI.Infrastructure.StorageEngine.DHCPv4
         Task<IDictionary<DateTime, Int32>> GetErrorDHCPv4Packets(DateTime? start, DateTime? end, GroupStatisticsResultBy groupedBy);
         Task<IDictionary<DateTime, Int32>> GetActiveDHCPv4Leases(DateTime? start, DateTime? end, GroupStatisticsResultBy groupedBy);
 
-        Task<IDictionary<Int32, Int32>> GetErrorCodesPerDHCPv4RequestType(DateTime? start, DateTime? end, DHCPv4MessagesTypes type);
+        Task<IDictionary<Int32, Int32>> GetErrorCodesPerDHCPv4DHCPv4MessagesTypes(DateTime? start, DateTime? end, DHCPv4MessagesTypes type);
         Task<IEnumerable<StatisticsControllerResponses.V1.DHCPv4PacketHandledEntry>> GetHandledDHCPv4PacketByScopeId(Guid scopeId, Int32 amount);
     }
 }

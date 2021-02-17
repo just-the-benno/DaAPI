@@ -118,114 +118,114 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Confirm_0" xml:space="preserve">
-    <value>Success</value>
+    <value>Erfolg</value>
   </data>
   <data name="Confirm_1" xml:space="preserve">
-    <value>Scope not found</value>
+    <value>Bereich nicht gefunden</value>
   </data>
   <data name="Confirm_3" xml:space="preserve">
-    <value>Lease not found</value>
+    <value>Lease nicht gefunden</value>
   </data>
   <data name="Confirm_4" xml:space="preserve">
-    <value>Lease not active</value>
+    <value>Lease nicht aktiv</value>
   </data>
   <data name="Confirm_5" xml:space="preserve">
-    <value>Address mismatch</value>
+    <value>Addressen stimmen nicht überein</value>
   </data>
   <data name="Decline_0" xml:space="preserve">
-    <value>Success</value>
+    <value>Erfolg</value>
   </data>
   <data name="Decline_1" xml:space="preserve">
-    <value>Scope not found</value>
+    <value>Bereich nicht gefunden</value>
   </data>
   <data name="Decline_2" xml:space="preserve">
-    <value>not allowed</value>
+    <value>Nicht erlaubt</value>
   </data>
   <data name="Decline_3" xml:space="preserve">
-    <value>Lease not found</value>
+    <value>Lease nicht gefunden</value>
   </data>
   <data name="Decline_4" xml:space="preserve">
-    <value>Lease not active</value>
+    <value>Lease nicht aktiv</value>
   </data>
   <data name="Decline_5" xml:space="preserve">
-    <value>Address already suspended</value>
+    <value>Adresse bereits suspendiert</value>
   </data>
   <data name="Decline_6" xml:space="preserve">
-    <value>Address found</value>
+    <value>Addresse nicht gefunden</value>
   </data>
   <data name="Rebind_0" xml:space="preserve">
-    <value>Success</value>
+    <value>Erfolg</value>
   </data>
   <data name="Rebind_1" xml:space="preserve">
-    <value>Scope not found</value>
+    <value>Bereich nicht gefunden</value>
   </data>
   <data name="Rebind_3" xml:space="preserve">
-    <value>Lease not found</value>
+    <value>Lease nicht gefunden</value>
   </data>
   <data name="Rebind_4" xml:space="preserve">
-    <value>No Address</value>
+    <value>Keine Adresse mehr</value>
   </data>
   <data name="Rebind_5" xml:space="preserve">
-    <value>only prefix is not allowed</value>
+    <value>Nur Präfix ist nicht erlaubt</value>
   </data>
   <data name="Release_0" xml:space="preserve">
-    <value>Success</value>
+    <value>Erfolg</value>
   </data>
   <data name="Release_1" xml:space="preserve">
-    <value>Lease not found</value>
+    <value>Lease nicht gefunden</value>
   </data>
   <data name="Release_2" xml:space="preserve">
-    <value>Lease not active</value>
+    <value>Lease nicht aktiv</value>
   </data>
   <data name="Release_3" xml:space="preserve">
-    <value>Scope not found</value>
+    <value>Bereich nicht gefunden</value>
   </data>
   <data name="Renew_0" xml:space="preserve">
-    <value>Success</value>
+    <value>Erfolg</value>
   </data>
   <data name="Renew_1" xml:space="preserve">
-    <value>Scope not found</value>
+    <value>Bereich nicht gefunden</value>
   </data>
   <data name="Renew_3" xml:space="preserve">
-    <value>Lease not found</value>
+    <value>Lease nicht gefunden</value>
   </data>
   <data name="Renew_4" xml:space="preserve">
-    <value>No Address</value>
+    <value>Keine Adresse mehr</value>
   </data>
   <data name="Renew_5" xml:space="preserve">
-    <value>only prefix is not allowed</value>
+    <value>Nur Präfix ist nicht erlaubt</value>
   </data>
   <data name="Request_0" xml:space="preserve">
-    <value>Success</value>
+    <value>Erfolg</value>
   </data>
   <data name="Request_1" xml:space="preserve">
-    <value>Scope not found</value>
+    <value>Bereich nicht gefunden</value>
   </data>
   <data name="Request_3" xml:space="preserve">
-    <value>Lease not found</value>
+    <value>Lease nicht gefunden</value>
   </data>
   <data name="Request_8" xml:space="preserve">
-    <value>Lease not in a valid state</value>
+    <value>Lease ist in keinem gültigen Zustand</value>
   </data>
   <data name="Request_9" xml:space="preserve">
-    <value>Lease is pending but prefix is requested</value>
+    <value>Lease ist wartend, jedoch wurde ein Prefix angefragt</value>
   </data>
   <data name="Solicit_0" xml:space="preserve">
-    <value>Success</value>
+    <value>Erfolg</value>
   </data>
   <data name="Solicit_1" xml:space="preserve">
-    <value>Scope not found</value>
+    <value>Bereich nicht gefunden</value>
   </data>
   <data name="Solicit_2" xml:space="preserve">
-    <value>No Address</value>
+    <value>Keine Adressen mehr</value>
   </data>
   <data name="Solicit_3" xml:space="preserve">
-    <value>Lease not found</value>
+    <value>Lease nicht gefunden</value>
   </data>
   <data name="Solicit_4" xml:space="preserve">
-    <value>Lease not active</value>
+    <value>Lease nicht aktiv</value>
   </data>
   <data name="Solicit_5" xml:space="preserve">
-    <value>Prefix Delegation not allowed</value>
+    <value>Präfix Delegation nicht erlaubt</value>
   </data>
 </root>

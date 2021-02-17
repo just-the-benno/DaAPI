@@ -19,30 +19,14 @@ namespace DaAPI.Host.ApiControllers
     public class DHCPv6StatisticsController : ControllerBase
     {
         private readonly IDHCPv6ReadStore _storage;
-        private readonly INotificationEngine _notificationEngine;
         private readonly DHCPv6RootScope _rootScope;
-        private readonly DHCPv4RootScope _dhcpv4RootScope;
 
         public DHCPv6StatisticsController(
             DHCPv6RootScope rootScope,
-            DHCPv4RootScope dhcpv4RootScope,
-            IDHCPv6ReadStore storage,
-            INotificationEngine notificationEngine)
+            IDHCPv6ReadStore storage)
         {
             _rootScope = rootScope ?? throw new ArgumentNullException(nameof(rootScope));
-            _dhcpv4RootScope = dhcpv4RootScope ?? throw new ArgumentNullException(nameof(dhcpv4RootScope));
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
-            _notificationEngine = notificationEngine ?? throw new ArgumentNullException(nameof(notificationEngine));
-        }
-
-        [HttpGet("/api/Statistics/Dashboard")]
-        public async Task<IActionResult> GetDashboard()
-        {
-            DashboardResponse response = await _storage.GetDashboardOverview();
-            response.DHCPv6.ScopeAmount = _rootScope.GetTotalAmountOfScopes();
-            response.DHCPv4.ScopeAmount = _dhcpv4RootScope.GetTotalAmountOfScopes();
-            response.AmountOfPipelines =  _notificationEngine.GetPipelineAmount();
-            return base.Ok(response);
         }
 
         [HttpGet("/api/Statistics/HandledDHCPv6Packet/{id}")]

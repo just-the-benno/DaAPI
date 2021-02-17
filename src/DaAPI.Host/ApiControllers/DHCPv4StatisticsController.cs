@@ -23,12 +23,10 @@ namespace DaAPI.Host.ApiControllers
 
         public DHCPv4StatisticsController(
             DHCPv4RootScope rootScope,
-            IDHCPv4ReadStore storage,
-            INotificationEngine notificationEngine)
+            IDHCPv4ReadStore storage)
         {
             _rootScope = rootScope ?? throw new ArgumentNullException(nameof(rootScope));
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
-            _notificationEngine = notificationEngine ?? throw new ArgumentNullException(nameof(notificationEngine));
         }
 
         [HttpGet("/api/Statistics/HandledDHCPv4Packet/{id}")]
@@ -78,10 +76,10 @@ namespace DaAPI.Host.ApiControllers
             return base.Ok(response);
         }
 
-        [HttpGet("/api/Statistics/ErrorCodesPerDHCPV4RequestType")]
-        public async Task<IActionResult> GetErrorCodesPerDHCPV4RequestType([FromQuery] DHCPv4PacketTypeBasedTimeSeriesFilterRequest request)
+        [HttpGet("/api/Statistics/ErrorCodesPerDHCPV4MessageType")]
+        public async Task<IActionResult> GetErrorCodesPerDHCPv4MessageTypes([FromQuery] DHCPv4PacketTypeBasedTimeSeriesFilterRequest request)
         {
-            var response = await _storage.GetErrorCodesPerDHCPv4RequestType(request.Start, request.End, request.PacketType);
+            var response = await _storage.GetErrorCodesPerDHCPv4DHCPv4MessagesTypes(request.Start, request.End, request.PacketType);
             return base.Ok(response);
         }
     }

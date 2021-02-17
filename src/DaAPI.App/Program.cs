@@ -35,6 +35,9 @@ namespace DaAPI.App
             builder.Services.AddSingleton<DHCPv6PacketOptionCodeToNameConverter>();
             builder.Services.AddSingleton<DHCPv6PacketResponseCodeHelper>();
 
+            builder.Services.AddSingleton<DHCPv4PacketOptionCodeToNameConverter>();
+            builder.Services.AddSingleton<DHCPv4PacketResponseCodeHelper>();
+
             builder.Services.AddApiAuthorization((opt) =>
            {
                opt.ProviderOptions.ConfigurationEndpoint = "/_configuration/OidcClientConfig.json";

@@ -168,7 +168,8 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         IPv4Address.FromString("192.168.178.1"),
                         IPv4Address.FromString("192.168.178.255"),
                         new List<IPv4Address>{IPv4Address.FromString("192.168.178.1") },
-                        leaseTime: TimeSpan.FromDays(1)
+                        leaseTime: TimeSpan.FromDays(1),
+                        maskLength: 24
                         ),
                     ResolverInformation = resolverInformations,
                     Name = "Testscope",
@@ -394,7 +395,8 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         new List<IPv4Address>{IPv4Address.FromString("192.168.178.1") },
                         leaseTime: TimeSpan.FromDays(1),
                         supportDirectUnicast:  true,
-                        reuseAddressIfPossible: true
+                        reuseAddressIfPossible: true,
+                        maskLength: 24
                         ),
                     ResolverInformation = resolverInformations,
                     Name = "Testscope",
@@ -469,6 +471,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         leaseTime: TimeSpan.FromDays(1),
                         supportDirectUnicast: true,
                         reuseAddressIfPossible: false,
+                        maskLength: 24,
                         addressAllocationStrategy: DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next
                         ),
                     ResolverInformation = resolverInformations,
@@ -753,6 +756,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         IPv4Address.FromString("192.168.178.255"),
                         new List<IPv4Address>{IPv4Address.FromString("192.168.178.1") },
                         leaseTime: TimeSpan.FromDays(1),
+                        maskLength: 24,
                         reuseAddressIfPossible: true
                         ),
                     ResolverInformation = resolverInformations,
@@ -834,6 +838,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         new List<IPv4Address>{IPv4Address.FromString("192.168.178.1") },
                         leaseTime: TimeSpan.FromDays(1),
                         reuseAddressIfPossible: false,
+                        maskLength: 24,
                         addressAllocationStrategy: DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next
                         ),
                     ResolverInformation = resolverInformations,
@@ -920,6 +925,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         new List<IPv4Address>{IPv4Address.FromString("192.168.178.1") },
                         leaseTime: TimeSpan.FromDays(1),
                         reuseAddressIfPossible: true,
+                        maskLength: 24,
                         addressAllocationStrategy: DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next
                         ),
                     ResolverInformation = resolverInformations,
@@ -1006,6 +1012,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         new List<IPv4Address>{IPv4Address.FromString("192.168.178.1") },
                         leaseTime: TimeSpan.FromDays(1),
                         reuseAddressIfPossible: true,
+                        maskLength: 24,
                         addressAllocationStrategy: DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next
                         ),
                     ResolverInformation = resolverInformations,
@@ -1108,6 +1115,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         new List<IPv4Address>{IPv4Address.FromString("192.168.178.1") },
                         leaseTime: TimeSpan.FromDays(1),
                         reuseAddressIfPossible: false,
+                        maskLength: 24,
                         addressAllocationStrategy: DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next
                         ),
                     ResolverInformation = resolverInformations,

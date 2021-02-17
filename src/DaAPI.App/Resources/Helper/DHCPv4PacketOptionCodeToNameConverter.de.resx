@@ -117,34 +117,79 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="DHCPv4MenuInterfacesCaption" xml:space="preserve">
-    <value>Interfaces</value>
+  <data name="1" xml:space="preserve">
+    <value>Client Identifier</value>
   </data>
-  <data name="DHCPv4MenuMainCaption" xml:space="preserve">
-    <value>DHCPv4</value>
+  <data name="12" xml:space="preserve">
+    <value>Server Unicast Address</value>
   </data>
-  <data name="DHCPv4MenuScopesCaption" xml:space="preserve">
-    <value>Scopes</value>
+  <data name="14" xml:space="preserve">
+    <value>Rapit Commit</value>
   </data>
-  <data name="DHCPv6MenuInterfacesCaption" xml:space="preserve">
-    <value>Interfaces</value>
+  <data name="15" xml:space="preserve">
+    <value>User Class</value>
   </data>
-  <data name="DHCPv6MenuMainCaption" xml:space="preserve">
-    <value>DHCPv6</value>
+  <data name="16" xml:space="preserve">
+    <value>Vendor Class</value>
   </data>
-  <data name="DHCPv6MenuScopesCaption" xml:space="preserve">
-    <value>Scopes</value>
+  <data name="17" xml:space="preserve">
+    <value>Vendor Options</value>
   </data>
-  <data name="MenuMainDashboardCaption" xml:space="preserve">
-    <value>Dashboard</value>
+  <data name="18" xml:space="preserve">
+    <value>Interface Id</value>
   </data>
-  <data name="MenuMainMenuCaption" xml:space="preserve">
-    <value>Main</value>
+  <data name="19" xml:space="preserve">
+    <value>Reconfigure</value>
   </data>
-  <data name="MenuMainPipelinesCaption" xml:space="preserve">
-    <value>Pipelines</value>
+  <data name="2" xml:space="preserve">
+    <value>Server Identifier</value>
   </data>
-  <data name="MenuMainUsersCaption" xml:space="preserve">
-    <value>Users</value>
+  <data name="20" xml:space="preserve">
+    <value>Reconfigure Accpeted</value>
+  </data>
+  <data name="21" xml:space="preserve">
+    <value>SIP Server Domain List</value>
+  </data>
+  <data name="22" xml:space="preserve">
+    <value>SIP Servers</value>
+  </data>
+  <data name="23" xml:space="preserve">
+    <value>DNS Servers</value>
+  </data>
+  <data name="24" xml:space="preserve">
+    <value>Domain Search List</value>
+  </data>
+  <data name="25" xml:space="preserve">
+    <value>IA Prefix</value>
+  </data>
+  <data name="3" xml:space="preserve">
+    <value>IA NonTemporary</value>
+  </data>
+  <data name="32" xml:space="preserve">
+    <value>Information Refresh Time</value>
+  </data>
+  <data name="37" xml:space="preserve">
+    <value>Remote Identifier</value>
+  </data>
+  <data name="4" xml:space="preserve">
+    <value>IA Temporary</value>
+  </data>
+  <data name="5" xml:space="preserve">
+    <value>Requested Options</value>
+  </data>
+  <data name="7" xml:space="preserve">
+    <value>Preference</value>
+  </data>
+  <data name="8" xml:space="preserve">
+    <value>Elapsed Time</value>
+  </data>
+  <data name="82" xml:space="preserve">
+    <value>SOL_MAX_RT</value>
+  </data>
+  <data name="83" xml:space="preserve">
+    <value>INF_MAX_RT</value>
+  </data>
+  <data name="9" xml:space="preserve">
+    <value>Relay Message</value>
   </data>
 </root>

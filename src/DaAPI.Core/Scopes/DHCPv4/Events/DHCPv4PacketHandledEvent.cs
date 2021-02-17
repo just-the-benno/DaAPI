@@ -251,7 +251,6 @@ namespace DaAPI.Core.Scopes.DHCPv4
             {
                 NoError = 0,
                 ScopeNotFound = 1,
-                InformsNotAllowed = 2,
                 LeaseNotFound = 3,
                 LeaseNotPending = 4,
                 RenewingNotAllowed = 5,

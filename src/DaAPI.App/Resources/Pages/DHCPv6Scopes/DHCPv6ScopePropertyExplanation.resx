@@ -117,6 +117,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="RenewalTimeContent" xml:space="preserve">
+    <value>The time that is expected to pass before a client tries to the RENEWING state. In this state the client tries to extend the lease by contancting the the server issued the lease</value>
+  </data>
+  <data name="RenewalTimeName" xml:space="preserve">
+    <value>Renewal Time</value>
+  </data>
   <data name="ScopePropertyAcceptDeclinesContent" xml:space="preserve">
     <value>If this option is enabled, DaAPI accepts DHCPv6 DECLINE messages and banning the specified address from being assigned to other clients for a limited time interval. DEClINE message should be sent by the client, to indicate that the suggested address is already in use (DAD).  However, DECLINE message can also be used by malicious clients to provoke address exhaustion.</value>
   </data>

@@ -40,8 +40,6 @@ namespace DaAPI.Core.Scopes.DHCPv6
             }
         }
 
-
-
         private DHCPv6Packet HandlePacketByResolver(
             DHCPv6Packet packet,
             Func<DHCPv6Scope, DHCPv6Packet> handler, Func<DHCPv6Scope, DHCPv6Packet> onlyPrefixHandler,
@@ -185,10 +183,6 @@ namespace DaAPI.Core.Scopes.DHCPv6
 
         #endregion
 
-        #region Helper
-
-        #endregion
-
         #region Applies and when
 
         public Boolean AddScope(
@@ -271,8 +265,6 @@ namespace DaAPI.Core.Scopes.DHCPv6
             return true;
         }
 
-        #endregion
-
         protected override void When(DomainEvent domainEvent)
         {
             DHCPv6Scope scope;
@@ -308,5 +300,8 @@ namespace DaAPI.Core.Scopes.DHCPv6
                     break;
             }
         }
+
+        #endregion
+
     }
 }

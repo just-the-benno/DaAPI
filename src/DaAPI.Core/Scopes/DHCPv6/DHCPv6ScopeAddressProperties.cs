@@ -10,10 +10,9 @@ namespace DaAPI.Core.Scopes.DHCPv6
 {
     public class DHCPv6ScopeAddressProperties : ScopeAddressProperties<DHCPv6ScopeAddressProperties, IPv6Address>
     {
-
         #region const
 
-        private const int _maxTriesForRandom = 5000;
+        private const int _maxTriesForRandom = 10000;
 
         #endregion
 
@@ -38,12 +37,9 @@ namespace DaAPI.Core.Scopes.DHCPv6
         {
         }
 
-
         public DHCPv6ScopeAddressProperties(IPv6Address start, IPv6Address end, IEnumerable<IPv6Address> excluded) :
             base(start, end, excluded)
         {
-
-
         }
 
         public DHCPv6ScopeAddressProperties(
@@ -75,14 +71,12 @@ namespace DaAPI.Core.Scopes.DHCPv6
 
         public static DHCPv6ScopeAddressProperties Empty => new DHCPv6ScopeAddressProperties();
 
-
         #endregion
 
         public bool IsRapitCommitEnabled() => RapitCommitEnabled.HasValue && RapitCommitEnabled.Value;
 
         protected override bool AreAllAdrressesExcluded(IPv6Address start, IPv6Address end, HashSet<IPv6Address> excludedElements)
             => (end - start) + 1 == excludedElements.Count;
-
 
         internal override void OverrideProperties(DHCPv6ScopeAddressProperties range)
         {
@@ -119,72 +113,8 @@ namespace DaAPI.Core.Scopes.DHCPv6
             }
         }
 
-        protected override IPv6Address GetNextRandomAddress(HashSet<IPv6Address> used)
-        {
-            HashSet<IPv6Address> notuseableAddresses = new HashSet<IPv6Address>(used.Union(ExcludedAddresses));
-
-            Random random = new Random();
-
-            Byte[] startAddressBytes = Start.GetBytes();
-            Byte[] endAddressBytes = End.GetBytes();
-
-            Byte[] addressBytes = new byte[16];
-
-            Int32 randomizationIndex = -1;
-
-            for (int i = 0; i < 16; i++)
-            {
-                if (startAddressBytes[i] != endAddressBytes[i])
-                {
-                    randomizationIndex = i;
-                    break;
-                }
-                else
-                {
-                    addressBytes[i] = startAddressBytes[i];
-                }
-            }
-
-            IPv6Address nextAddress;
-            Int32 trysLeft = _maxTriesForRandom;
-            do
-            {
-                if (randomizationIndex >= 0)
-                {
-                    Byte between = (Byte)random.Next(startAddressBytes[randomizationIndex], endAddressBytes[randomizationIndex] + 1);
-                    addressBytes[randomizationIndex] = between;
-
-                    Boolean isLowerBoundary = between == startAddressBytes[randomizationIndex];
-                    Boolean isUpperBoundary = between == endAddressBytes[randomizationIndex];
-
-                    for (int i = randomizationIndex + 1; i < 16; i++)
-                    {
-                        Int32 lowerBound = 0;
-                        Int32 upperBound = 256;
-                        if (isLowerBoundary == true)
-                        {
-                            lowerBound = startAddressBytes[i];
-                        }
-
-                        if (isUpperBoundary == true)
-                        {
-                            upperBound = endAddressBytes[i] + 1;
-                        }
-
-                        addressBytes[i] = (Byte)random.Next(lowerBound, upperBound);
-                    }
-                }
-
-                nextAddress = IPv6Address.FromByteArray(addressBytes);
-            } while (trysLeft-- > 0 && notuseableAddresses.Contains(nextAddress) == true);
-
-            if (trysLeft < 0)
-            {
-                return IPv6Address.Empty;
-            }
-
-            return nextAddress;
-        }
+        protected override IPv6Address GetNextRandomAddress(HashSet<IPv6Address> used) =>
+             GetNextRandomAddressInternal(used, (input) => IPv6Address.FromByteArray(input), () => IPv6Address.Empty);
 
         internal IPv6Address GetRandomPrefix(HashSet<IPv6Address> hashedUsedPrefixes)
         {

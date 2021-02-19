@@ -45,7 +45,7 @@
     <PackageReference Include="Blazored.Modal" Version="5.1.0" />
     <PackageReference Include="Blazored.Toast" Version="3.1.2" />
     <PackageReference Include="BlazorStrap" Version="1.3.3" />
-    <PackageReference Include="ChartJs.Blazor" Version="2.0.0-preview1" />
+    <PackageReference Include="ChartJs.Blazor.Fork" Version="2.0.2" />
     <PackageReference Include="Humanizer" Version="2.8.26" />
     <PackageReference Include="Microsoft.AspNetCore.Components.DataAnnotations.Validation" Version="3.2.0-rc1.20223.4" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.0" />
@@ -112,17 +112,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <TypeScriptCompile Include="FrontendAssets\ts\adjustModalClasses.ts" />
-    <TypeScriptCompile Include="FrontendAssets\ts\finishInitilize.ts">
-      <SubType>Code</SubType>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="FrontendAssets\ts\themeInterop.ts">
-      <SubType>Code</SubType>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="FrontendAssets\ts\initTheme.ts" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <Compile Update="Resources\Pages\DHCPv4Interfaces\CreateDHCPv4ListenerDisplay.Designer.cs">
+      <DependentUpon>CreateDHCPv4ListenerDisplay.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Resources\Pages\DHCPv4Scopes\DHCPv4ScopeDisplay.Designer.cs">
+      <DependentUpon>DHCPv4ScopeDisplay.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
     <Compile Update="Resources\Pages\DHCPv6Interfaces\CreateDHCPv6ListenerDisplay.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -161,6 +160,16 @@
   </ItemGroup>
 
   <ItemGroup>
+
+    <EmbeddedResource Update="Resources\Pages\DHCPv4Interfaces\CreateDHCPv4ListenerDisplay.resx">
+      <LastGenOutput>CreateDHCPv4ListenerDisplay.Designer.cs</LastGenOutput>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+
+    <EmbeddedResource Update="Resources\Pages\DHCPv4Scopes\DHCPv4ScopeDisplay.resx">
+      <LastGenOutput>DHCPv4ScopeDisplay.Designer.cs</LastGenOutput>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
 
     <EmbeddedResource Update="Resources\Pages\DHCPv6Interfaces\CreateDHCPv6ListenerDisplay.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>

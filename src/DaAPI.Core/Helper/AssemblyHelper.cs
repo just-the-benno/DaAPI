@@ -58,7 +58,7 @@ namespace DaAPI.Core.Helper
 
             foreach (Assembly assembly in rootAssemblies)
             {
-                if(assembly == null) { continue; }
+                if (assembly == null) { continue; }
 
                 String assemblyName = assembly.FullName.GetDisplayFriendlyAssemblyName();
 
@@ -122,7 +122,7 @@ namespace DaAPI.Core.Helper
                         _dependentAssemblyList.Add(childAssembly.FullName.GetDisplayFriendlyAssemblyName(), childAssembly);
                         GetDependentAssembliesRecursive(childAssembly);
                     }
-                    catch 
+                    catch
                     {
                         continue;
                         //_missingAssemblyList.Add(new MissingAssembly(r.FullName.Split(',')[0], assembly.FullName.MyToName()));

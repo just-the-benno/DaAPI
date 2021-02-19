@@ -28,5 +28,6 @@ namespace DaAPI.App.Pages.DHCPv6Scopes
         AddressAllocationStrategy,
         ScopeOptions,
         Resolver,
+        RenewalTime
     }
 }

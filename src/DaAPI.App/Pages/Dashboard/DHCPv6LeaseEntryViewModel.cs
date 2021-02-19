@@ -10,6 +10,6 @@ namespace DaAPI.App.Pages.Dashboard
 {
     public class DHCPv6LeaseEntryViewModel : DHCPv6LeaseEntry
     {
-        public ScopeItem Scope { get; set; }
+        public DHCPv6ScopeItem Scope { get; set; }
     }
 }

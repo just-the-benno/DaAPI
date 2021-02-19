@@ -1,7 +1,6 @@
 ﻿using Castle.Core.Logging;
 using DaAPI.Core.Packets.DHCPv6;
 using DaAPI.Infrastructure.FilterEngines.DHCPv6;
-using DaAPI.Infrastructure.Notifcations;
 using DaAPI.Infrastructure.ServiceBus;
 using DaAPI.Infrastructure.ServiceBus.MessageHandler;
 using DaAPI.Infrastructure.ServiceBus.Messages;
@@ -27,7 +26,7 @@ namespace DaAPI.UnitTests.Infrastructure.ServiceBus.MessageHandler
             filterEngineMock.Setup(x => x.ShouldPacketBeFilterd(packet)).ReturnsAsync((true, "Filter1")).Verifiable();
 
             Mock<IServiceBus> serviceBusMock = new Mock<IServiceBus>(MockBehavior.Strict);
-            serviceBusMock.Setup(x => x.Publish(It.Is<DHCPv6PacketFileteredMessage>(y => y.Packet == packet))).Returns(Task.CompletedTask).Verifiable();
+            serviceBusMock.Setup(x => x.Publish(It.Is<DHCPv6PacketFilteredMessage>(y => y.Packet == packet))).Returns(Task.CompletedTask).Verifiable();
 
             DHCPv6PacketArrivedMessageHandler handler = new DHCPv6PacketArrivedMessageHandler(
                 serviceBusMock.Object, filterEngineMock.Object,

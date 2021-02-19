@@ -209,7 +209,7 @@
     private Boolean _sendingRequestInProgress = false;
     private Boolean _serviceErrorOccured = false;
     private NotificationPipelineDescriptions _pipelineDescriptions;
-    private IEnumerable<ScopeItem> _scopes;
+    private IEnumerable<DHCPv6ScopeItem> _scopes;
 
     #endregion
 
@@ -262,7 +262,7 @@
             if (_scopes == null &&
                 Model.ConditionsProperties.Count(x => x.Type == NotificationCondititonDescription.ConditionsPropertyTypes.DHCPv6ScopeList) > 0)
             {
-                _scopes = await _service.GetScopesAsList();
+                _scopes = await _service.GetDHCPv6ScopesAsList();
                 base.StateHasChanged();
             }
         }

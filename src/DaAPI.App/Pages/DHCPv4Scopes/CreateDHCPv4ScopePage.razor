@@ -1,0 +1,927 @@
+﻿@using DaAPI.Core.Scopes.DHCPv4
+@inherits AdvancedFormComponent<CreateDHCPv4ScopeViewModel>
+@implements IDisposable
+
+@page "/scopes/dhcpv4/create"
+@page "/scopes/dhcpv4/update/{ScopeId}"
+
+@layout AdminLayout
+@attribute [Authorize]
+@inject DaAPIService _service
+@inject LayoutService _layoutService
+@inject IToastService _toastService
+@inject NavigationManager _navigator
+@inject IJSRuntime _jsRuntime
+@inject IStringLocalizer<CreateDHCPv4ScopePage> L
+
+<CascadingValue Name="DisableFormElements" Value="@_sendingRequestInProgress">
+    <CascadingValue Name="AddCssClassesOnlyWhenModified" Value="!_formHasBeenValidated">
+        <EditForm EditContext="@EditContext" OnValidSubmit="SendRequest" OnInvalidSubmit="InvalidSubmit">
+            <ObjectGraphDataAnnotationsValidator />
+            <FullWidthLayout>
+
+                @if (_serviceErrorOccured == true)
+                {
+                    <FullColumn>
+                        <Alert AlertType="danger">
+                            <h5><i class="icon fas fa-ban"></i> @L["ErrorCaption"]</h5>
+                            @L["ErrorText"]
+                        </Alert>
+                    </FullColumn>
+                }
+                @if (IsInEditMode == true && EditIsReady == false)
+                {
+                    <FullColumn>
+                        <Card Title="@L["LoadingDetailsCaption"]">
+                            <Body>
+                                <LoadingWhileContentNull Item="@_parents" />
+                            </Body>
+                        </Card>
+                    </FullColumn>
+                }
+                else
+                {
+                    <FullColumn>
+                        <Card Title="@L["GenerellPropertiesCaption"]">
+                            <Body>
+                                <DefaultInputRow For="@(() => Model.Name)">
+                                    <BootstrapInputText @bind-Value="Model.Name" type="text" class="form-control" placeholder="@L["InterfaceNamePlaceholder"]" />
+                                </DefaultInputRow>
+                                <DefaultInputRow For="@(() => Model.Description)">
+                                    <BootstrapInputTextArea @bind-Value="Model.Description" class="form-control" placeholder="@L["DescriptionPlaceholder"]" />
+                                </DefaultInputRow>
+                                <DefaultInputRowWithExplanation For="@(() => Model.HasParent)" Property="DHCPv6ScopePropertyExplanationValues.HasParent">
+                                    <BootstrapInputCheckbox @bind-Value="Model.HasParent" />
+                                </DefaultInputRowWithExplanation>
+                                @if (Model.HasParent == true)
+                                {
+                                    <DefaultInputRow For="@(() => Model.ParentId)">
+                                        <LoadingWhileContentNull Item="@_parents">
+                                            <BootstrapInputSelect @bind-Value="Model.ParentId" class="form-control">
+                                                <option value="null">@L["ParentNotSelectedValue"]</option>
+                                                @foreach (var item in _parents)
+                                                {
+                                                    <option value="@item.Id.ToString()">@item.Name</option>
+                                                }
+                                            </BootstrapInputSelect>
+                                        </LoadingWhileContentNull>
+                                    </DefaultInputRow>
+                                }
+                            </Body>
+                        </Card>
+                    </FullColumn>
+                    <FullColumn>
+                        <Card Title="@L["AddressRelatedPropertiesCaption"]">
+                            <AddtionalHeaderContent>
+                                <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.AddressRelated" />
+                            </AddtionalHeaderContent>
+                            <Body>
+                                @if (Model.HasParent == false)
+                                {
+                                    <div class="form-group row">
+                                        <div class="col-sm-2">
+                                            <CustomLabel For="@(() => Model.Start)" class="col-form-label" />
+                                            <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.Start" />
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <BootstrapInputText @bind-Value="Model.Start" class="form-control" placeholder="@L["StartAddressPlaceholder"]" />
+                                            <ValidationMessageContainer For="@(() => Model.Start)" />
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <CustomLabel For="@(() => Model.End)" class="col-form-label text-sm-right" />
+                                            <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.End" />
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <BootstrapInputText @bind-Value="Model.End" class="form-control" placeholder="@L["EndAddressPlaceholder"]" />
+                                            <ValidationMessageContainer For="@(() => Model.End)" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-sm-2">
+                                            <CustomLabel For="@(() => Model.ExcludedAddresses)" class="col-form-label text-right" />
+                                            <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.ExcludedAddresses" />
+                                            <button type="button" class="btn btn-default btn-sm btn-flat ml-2" @onclick="AddExcludedAddress"><i class="fas fa-plus"></i></button>
+                                        </div>
+                                        <div class="col-sm-10">
+                                            @for (int i = 0; i < Model.ExcludedAddresses.Count; i++)
+                                            {
+                                                var index = i;
+                                                <div class="input-group mb-3">
+                                                    <BootstrapInputText @bind-Value="Model.ExcludedAddresses[index].Value" class="form-control" placeholder="@L["ExcludedAddressPlaceholder"]" />
+                                                    <span class="input-group-append">
+                                                        <button type="button" class="btn btn-flat btn-outline-primary" @onclick="@(() => RemoveExcludedAddress(index))"><i class="fas fa-trash"></i></button>
+                                                    </span>
+                                                    <ValidationMessageContainer For="@(() => Model.ExcludedAddresses[index].Value)" />
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                    <DefaultInputRowWithExplanation For="@(() => Model.RootAddressProperties.Subnetmask)" Property="DHCPv6ScopePropertyExplanationValues.ValidLifetime" >
+                                        <BootstrapInputNumber @bind-Value="Model.RootAddressProperties.Subnetmask" class="form-control" minimum="1" maximum="32" />
+                                    </DefaultInputRowWithExplanation>
+
+                                    <DefaultInputRowWithExplanation For="@(() => Model.RootAddressProperties.RenewalTime)"
+                                                                    Property="DHCPv6ScopePropertyExplanationValues.RenewalTime"
+                                                                    ShowValidation="@(EditContext.IsModified(() => Model.RootAddressProperties.RenewalTime))">
+                                        <TimeSpanInput @bind-Value="Model.RootAddressProperties.RenewalTime" class="form-control" />
+                                    </DefaultInputRowWithExplanation>
+                                    <DefaultInputRowWithExplanation For="@(() => Model.RootAddressProperties.PreferredLifetime)"
+                                                                    Property="DHCPv6ScopePropertyExplanationValues.PreferredLifetime"
+                                                                    ShowValidation="@(EditContext.IsModified(() => Model.RootAddressProperties.PreferredLifetime))">
+                                        <TimeSpanInput @bind-Value="Model.RootAddressProperties.PreferredLifetime" class="form-control" />
+                                    </DefaultInputRowWithExplanation>
+                                    <DefaultInputRowWithExplanation For="@(() => Model.RootAddressProperties.LeaseTime)"
+                                                                    Property="DHCPv6ScopePropertyExplanationValues.ValidLifetime"
+                                                                    ShowValidation="@(EditContext.IsModified(() => Model.RootAddressProperties.LeaseTime))">
+                                        <TimeSpanInput @bind-Value="Model.RootAddressProperties.LeaseTime" class="form-control" />
+                                    </DefaultInputRowWithExplanation>
+
+                                    <div class="form-group row">
+                                        <label class="col-sm-2 col-form-label">@L["AddressOptionsLabel"]</label>
+                                        <div class="col-sm-8">
+                                            <div class="form-group mt-3">
+                                                <div class="icheck-primary">
+                                                    <BootstrapInputCheckbox @bind-Value="Model.RootAddressProperties.SupportDirectUnicast" />
+                                                    <CustomLabel For="@(() => Model.RootAddressProperties.SupportDirectUnicast)" />
+                                                    <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.SupportDirectUnicast" />
+                                                </div>
+                                                <div class="icheck-primary">
+                                                    <BootstrapInputCheckbox @bind-Value="Model.RootAddressProperties.AcceptDecline" />
+                                                    <CustomLabel For="@(() => Model.RootAddressProperties.AcceptDecline)" />
+                                                    <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.AccpetDeclines" />
+                                                </div>
+                                                <div class="icheck-primary">
+                                                    <BootstrapInputCheckbox @bind-Value="Model.RootAddressProperties.InformsAreAllowd" />
+                                                    <CustomLabel For="@(() => Model.RootAddressProperties.InformsAreAllowd)" />
+                                                    <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.AccpetInforms" />
+                                                </div>
+                                                <div class="icheck-primary">
+                                                    <BootstrapInputCheckbox @bind-Value="Model.RootAddressProperties.ReuseAddressIfPossible" />
+                                                    <CustomLabel For="@(() => Model.RootAddressProperties.ReuseAddressIfPossible)" />
+                                                    <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.ReuseAddress" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <DefaultInputRowWithExplanation For="@(() => Model.RootAddressProperties.AddressAllocationStrategy)" Property="DHCPv6ScopePropertyExplanationValues.AddressAllocationStrategy">
+                                        <BootstrapInputSelect @bind-Value=Model.RootAddressProperties.AddressAllocationStrategy class="form-control">
+                                            <option value="@DHCPv6ScopeAddressPropertyReqest.AddressAllocationStrategies.Next">@L["AddressAllocationStrategyNextCaption"]</option>
+                                            <option value="@DHCPv6ScopeAddressPropertyReqest.AddressAllocationStrategies.Random">@L["AddressAllocationStrategyRandomizeCaption"]</option>
+                                        </BootstrapInputSelect>
+                                    </DefaultInputRowWithExplanation>
+                                }
+                                else
+                                {
+                                    @if (String.IsNullOrEmpty(Model.ParentId) == true)
+                                    {
+                                        <p>@L["SelectParentFirstForAddressPropertiesText"]</p>
+                                    }
+                                    else
+                                    {
+                                        <LoadingWhileContentNull Item="Model.ChildAddressProperties?.Properties">
+                                            <div class="row">
+                                                <div class="col-sm-2">
+                                                    <strong>@L["ParentStartAddressLabel"]</strong>
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    @Model.ChildAddressProperties.Properties.Start
+                                                </div>
+                                                <div class="col-sm-2 col-form-label text-sm-right">
+                                                    <strong>@L["ParentEndAddressLabel"]</strong>
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    @Model.ChildAddressProperties.Properties.End
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <div class="col-sm-2">
+                                                    <CustomLabel For="@(() => Model.Start)" class="col-form-label" />
+                                                    <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.Start" />
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <BootstrapInputText @bind-Value="Model.Start" class="form-control" placeholder="@L["StartAddressPlaceholder"]" />
+                                                    <ValidationMessageContainer For="@(() => Model.Start)" />
+                                                </div>
+                                                <div class="col-sm-2">
+                                                    <CustomLabel For="@(() => Model.End)" class="col-form-label text-sm-right" />
+                                                    <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.End" />
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <BootstrapInputText @bind-Value="Model.End" class="form-control" placeholder="@L["EndAddressPlaceholder"]" />
+                                                    <ValidationMessageContainer For="@(() => Model.End)" />
+                                                </div>
+                                            </div>
+                                            @if (Model.ChildAddressProperties.Properties.ExcludedAddresses.Any())
+                                            {
+                                                <div class="form-group row">
+                                                    <div class="col-sm-2">
+                                                        <label class="col-form-label">@L["ParentExludedAddressLabel"]</label>
+                                                    </div>
+                                                    <div class="col-sm-10">
+                                                        <ul class="list-unstyled">
+                                                            @foreach (var item in Model.ChildAddressProperties.Properties.ExcludedAddresses)
+                                                            {
+                                                                <li>@item</li>
+                                                            }
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            }
+
+                                            <div class="form-group row">
+                                                <div class="col-sm-2">
+                                                    <CustomLabel For="@(() => Model.ExcludedAddresses)" class="col-form-label text-right" />
+                                                    <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.ExcludedAddresses" />
+                                                    <button type="button" class="btn btn-default btn-sm btn-flat ml-2" @onclick="AddExcludedAddress"><i class="fas fa-plus"></i></button>
+                                                </div>
+                                                <div class="col-sm-10">
+                                                    @for (int i = 0; i < Model.ExcludedAddresses.Count; i++)
+                                                    {
+                                                        var index = i;
+                                                        <div class="input-group mb-3">
+                                                            <BootstrapInputText @bind-Value="Model.ExcludedAddresses[index].Value" class="form-control" placeholder="@L["ExcludedAddressPlaceholder"]" />
+                                                            <span class="input-group-append">
+                                                                <button type="button" class="btn btn-flat btn-outline-primary" @onclick="@(() => RemoveExcludedAddress(index))"><i class="fas fa-trash"></i></button>
+                                                            </span>
+                                                            <ValidationMessageContainer For="@(() => Model.ExcludedAddresses[index].Value)" />
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+
+                                            <h3>@L["OverrideParentPropertiesIfNeededCaption"]</h3>
+
+                                            <table class="table table-striped table-valign-middle">
+                                                <thead>
+                                                    <tr>
+                                                        <th>@L["AddressPropertyColumnForProperty"]</th>
+                                                        <th>@L["AddressPropertyColumnForParentValue"]</th>
+                                                        <th>@L["AddressPropertyColumnForOverride"]</th>
+                                                        <th>@L["AddressPropertyColumnForNewValue"]</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>
+                                                            <CustomLabel For="@(() => Model.ChildAddressProperties.Subnetmask)" class="col-form-label" />
+                                                            <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.AddressAllocationStrategy" />
+                                                        </td>
+                                                        <td>
+                                                            @if (Model.ChildAddressProperties.Properties.Mask.HasValue == true)
+                                                            {
+                                                             <span>@Model.ChildAddressProperties.Properties.Mask</span>
+                                                            }
+                                                        </td>
+                                                        <BootstrapNullableInt64  @bind-Value="Model.ChildAddressProperties.Subnetmask"
+                                                                                 EnabledCaption="@String.Empty" TableMode="true" />
+                                                        <ValidationMessageContainer For="@(() => Model.ChildAddressProperties.Subnetmask)"  />
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                            <CustomLabel For="@(() => Model.ChildAddressProperties.RenewalTime)" class="col-form-label" />
+                                                            <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.RenewalTime" />
+                                                        </td>
+                                                        <td>
+                                                            <TimespanDisplay Value="@Model.ChildAddressProperties.Properties.RenewalTime" DaysCaption="@L["TimeSpanDaysCaption"]" HoursCaption="@L["TimeSpanHoursCaption"]" MinutesCaption="@L["TimeSpanMinutesCaption"]" SecondsCaption="@L["TimeSpanSecondsCaption"]" />
+                                                        </td>
+                                                        <BootstrapNullableTimeSpan @bind-Value="Model.ChildAddressProperties.RenewalTime"
+                                                                                   EnabledCaption="@String.Empty" TableMode="true" IsValid="EditContext.GetValidationMessages(() => Model.ChildAddressProperties.RenewalTime).Any() == false">
+                                                            <Validation>
+                                                                <ValidationMessageContainer For="@(() => Model.ChildAddressProperties.RenewalTime)"
+                                                                                            ShowValidation="@(EditContext.IsModified(() => Model.ChildAddressProperties.RenewalTime))" />
+                                                            </Validation>
+                                                        </BootstrapNullableTimeSpan>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                            <CustomLabel For="@(() => Model.ChildAddressProperties.PreferredLifetime)" class="col-form-label" />
+                                                            <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.PreferredLifetime" />
+                                                        </td>
+                                                        <td>
+                                                            <TimespanDisplay Value="@Model.ChildAddressProperties.Properties.PreferredLifetime" DaysCaption="@L["TimeSpanDaysCaption"]" HoursCaption="@L["TimeSpanHoursCaption"]" MinutesCaption="@L["TimeSpanMinutesCaption"]" SecondsCaption="@L["TimeSpanSecondsCaption"]" />
+                                                        </td>
+                                                        <BootstrapNullableTimeSpan @bind-Value="Model.ChildAddressProperties.PreferredLifetime"
+                                                                                   EnabledCaption="@String.Empty" TableMode="true" IsValid="EditContext.GetValidationMessages(() => Model.ChildAddressProperties.PreferredLifetime).Any() == false">
+                                                            <Validation>
+                                                                <ValidationMessageContainer For="@(() => Model.ChildAddressProperties.PreferredLifetime)"
+                                                                                            ShowValidation="@(EditContext.IsModified(() => Model.ChildAddressProperties.PreferredLifetime))" />
+                                                            </Validation>
+                                                        </BootstrapNullableTimeSpan>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                            <CustomLabel For="@(() => Model.ChildAddressProperties.LeaseTime)" class="col-form-label" />
+                                                            <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.ValidLifetime" />
+                                                        </td>
+                                                        <td>  <TimespanDisplay Value="@Model.ChildAddressProperties.Properties.LeaseTime" DaysCaption="@L["TimeSpanDaysCaption"]" HoursCaption="@L["TimeSpanHoursCaption"]" MinutesCaption="@L["TimeSpanMinutesCaption"]" SecondsCaption="@L["TimeSpanSecondsCaption"]" />  </td>
+                                                        <BootstrapNullableTimeSpan @bind-Value="Model.ChildAddressProperties.LeaseTime"
+                                                                                   EnabledCaption="@String.Empty" TableMode="true" IsValid="EditContext.GetValidationMessages(() => Model.ChildAddressProperties.LeaseTime).Any() == false">
+                                                            <Validation>
+                                                                <ValidationMessageContainer For="@(() => Model.ChildAddressProperties.LeaseTime)"
+                                                                                            ShowValidation="@(EditContext.IsModified(() => Model.ChildAddressProperties.LeaseTime))" />
+                                                            </Validation>
+                                                        </BootstrapNullableTimeSpan>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td>
+                                                            <CustomLabel For="@(() => Model.ChildAddressProperties.SupportDirectUnicast)" class="col-form-label" />
+                                                            <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.SupportDirectUnicast" />
+                                                        </td>
+                                                        <td>
+                                                            <PseudoCheckBox Input="@Model.ChildAddressProperties.Properties.SupportDirectUnicast" />
+                                                        </td>
+                                                        <BootstrapNullableBoolean @bind-Value="Model.ChildAddressProperties.SupportDirectUnicast"
+                                                                                  ValueCaption="@String.Empty" EnabledCaption="@String.Empty" TableMode="true" />
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                            <CustomLabel For="@(() => Model.ChildAddressProperties.AcceptDecline)" class="col-form-label" />
+                                                            <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.AccpetDeclines" />
+                                                        </td>
+                                                        <td>
+                                                            <PseudoCheckBox Input="@Model.ChildAddressProperties.Properties.AcceptDecline" />
+                                                        </td>
+                                                        <BootstrapNullableBoolean @bind-Value="Model.ChildAddressProperties.AcceptDecline"
+                                                                                  ValueCaption="@String.Empty" EnabledCaption="@String.Empty" TableMode="true" />
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                            <CustomLabel For="@(() => Model.ChildAddressProperties.InformsAreAllowd)" class="col-form-label" />
+                                                            <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.AccpetInforms" />
+                                                        </td>
+                                                        <td>
+                                                            <PseudoCheckBox Input="@Model.ChildAddressProperties.Properties.InformsAreAllowd" />
+                                                        </td>
+                                                        <BootstrapNullableBoolean @bind-Value="Model.ChildAddressProperties.InformsAreAllowd"
+                                                                                  ValueCaption="@String.Empty" EnabledCaption="@String.Empty" TableMode="true" />
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                            <CustomLabel For="@(() => Model.ChildAddressProperties.ReuseAddressIfPossible)" class="col-form-label" />
+                                                            <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.ReuseAddress" />
+                                                        </td>
+                                                        <td><PseudoCheckBox Input="@Model.ChildAddressProperties.Properties.ReuseAddressIfPossible" />  </td>
+                                                        <BootstrapNullableBoolean @bind-Value="Model.ChildAddressProperties.ReuseAddressIfPossible"
+                                                                                  ValueCaption="@String.Empty" EnabledCaption="@String.Empty" TableMode="true" />
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                            <CustomLabel For="@(() => Model.ChildAddressProperties.AddressAllocationStrategy)" class="col-form-label" />
+                                                            <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.AddressAllocationStrategy" />
+                                                        </td>
+                                                        <td>
+                                                            @if (Model.ChildAddressProperties.Properties.AddressAllocationStrategy.HasValue == true)
+                                                            {
+                                                                @switch (Model.ChildAddressProperties.Properties.AddressAllocationStrategy.Value)
+                                                                {
+                                                                    case DHCPv4ScopeAddressPropertyReqest.AddressAllocationStrategies.Next:
+                                                                        <span>@L["AddressAllocationStrategyNextCaption"]</span>
+                                                                        break;
+                                                                    case DHCPv4ScopeAddressPropertyReqest.AddressAllocationStrategies.Random:
+                                                                        <span>@L["AddressAllocationStrategyRandomizeCaption"]</span>
+                                                                        break;
+                                                                    default:
+                                                                        break;
+                                                                }
+                                                            }
+                                                        </td>
+                                                        <BootstrapNullableSelect TValue="DHCPv4ScopeAddressPropertyReqest.AddressAllocationStrategies" @bind-Value="Model.ChildAddressProperties.AddressAllocationStrategy"
+                                                                                 EnabledCaption="@String.Empty" TableMode="true">
+                                                            <Options>
+                                                                <option value="@DHCPv4ScopeAddressPropertyReqest.AddressAllocationStrategies.Next">@L["AddressAllocationStrategyNextCaption"]</option>
+                                                                <option value="@DHCPv4ScopeAddressPropertyReqest.AddressAllocationStrategies.Random">@L["AddressAllocationStrategyRandomizeCaption"]</option>
+                                                            </Options>
+                                                        </BootstrapNullableSelect>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </LoadingWhileContentNull>
+                                    }
+                                }
+                            </Body>
+                        </Card>
+                    </FullColumn>
+
+                    @*End of column*@
+                    <FullColumn>
+                        <Card Title="@L["PropertiesCaption"]">
+                            <AddtionalHeaderContent>
+                                <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.ScopeOptions" />
+                            </AddtionalHeaderContent>
+                            <Body>
+                                @if (Model.HasParent == true)
+                                {
+                                    @if (String.IsNullOrEmpty(Model.ParentId) == false)
+                                    {
+                                        <LoadingWhileContentNull Item="Model.ParentPropertyResponses">
+                                            <table class="table table-striped table-valign-middle">
+                                                <thead>
+                                                    <tr>
+                                                        <th>@L["OptionColumnHeaderForOption"]</th>
+                                                        <th>@L["OptionColumnHeaderForParentValue"]</th>
+                                                        <th>@L["OptionColumnHeaderForDelete"]</th>
+                                                        <th>@L["OptionColumnHeaderForOverride"]</th>
+                                                        <th>@L["OptionColumnHeaderForNewValue"]</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @for (int i = 0; i < Model.ParentPropertyResponses.Count; i++)
+                                                    {
+                                                        var index = i;
+                                                        <tr>
+                                                            <td>@Model.ParentScopeProperties[i].GetOptionCodeName()</td>
+                                                            <td>
+                                                                @switch (@Model.ParentPropertyResponses[i])
+                                                                {
+                                                                    case DHCPv4AddressListScopePropertyResponse property:
+                                                                        <ul class="list-unstyled">
+                                                                            @foreach (var item in property.Addresses)
+                                                                            {
+                                                                                <li>@item</li>
+                                                                            }
+                                                                        </ul>
+                                                                        break;
+                                                                    case DHCPv4AddressScopePropertyResponse property:
+                                                                        <span>@property.Value</span>
+                                                                        break;
+                                                                    case DHCPv4BooleanScopePropertyResponse property:
+                                                                        <PseudoCheckBox Input="property.Value" />
+                                                                        break;
+                                                                    case DHCPv4NumericScopePropertyResponse property:
+                                                                        <span>@property.Value</span>
+                                                                        break;
+                                                                    case DHCPv4TextScopePropertyResponse property:
+                                                                        <span>@property.Value</span>
+                                                                        break;
+                                                                    case DHCPv4TimeScopePropertyResponse property:
+                                                                        <TimespanDisplay Value="@property.Value" DaysCaption="@L["TimeSpanDaysCaption"]" HoursCaption="@L["TimeSpanHoursCaption"]" MinutesCaption="@L["TimeSpanMinutesCaption"]" SecondsCaption="@L["TimeSpanSecondsCaption"]" />
+                                                                        break;
+                                                                    default:
+                                                                        break;
+                                                                }
+
+                                                            </td>
+
+                                                            <td>
+                                                                @{String deleteInputId = $"Model_ParentScopeProperties__{index}_MarkAsRemovedInInheritance"; }
+                                                                <div class="icheck-danger">
+                                                                    <BootstrapInputCheckbox @bind-Value="@Model.ParentScopeProperties[index].MarkAsRemovedInInheritance" id="@deleteInputId" />
+                                                                    <label for="@deleteInputId"></label>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                @if (Model.ParentScopeProperties[index].MarkAsRemovedInInheritance == false)
+                                                                {
+                                                                    String overrideInputId = $"Model_ParentScopeProperties__{index}_IsActive";
+                                                                    <div class="icheck-primary">
+                                                                        <BootstrapInputCheckbox @bind-Value="@Model.ParentScopeProperties[index].IsActive" id="@overrideInputId" />
+                                                                        <label for="@overrideInputId"></label>
+                                                                    </div>
+                                                                }
+                                                            </td>
+                                                            <td>
+
+                                                                @if (Model.ParentScopeProperties[index].MarkAsRemovedInInheritance == false && Model.ParentScopeProperties[index].IsActive == true)
+                                                                {
+                                                                    @if (Model.ParentScopeProperties[index].Type == DHCPv4ScopePropertyType.AddressList)
+                                                                    {
+                                                                        <button type="button" class="btn btn-default btn-sm btn-flat ml-2" @onclick="@( () => Model.ParentScopeProperties[index].AddAddress())"><i class="fas fa-plus"></i></button>
+                                                                    }
+
+                                                                    @switch (Model.ParentScopeProperties[index].Type)
+                                                                    {
+                                                                        case DHCPv4ScopePropertyType.AddressList:
+                                                                            @for (int j = 0; j < Model.ParentScopeProperties[index].Addresses.Count; j++)
+                                                                            {
+                                                                                var addressIndex = j;
+                                                                                <div class="input-group mb-3">
+                                                                                    <BootstrapInputText @bind-Value="Model.ParentScopeProperties[index].Addresses[addressIndex].Value" class="form-control" placeholder="Enter an IPv6 Adddress here" />
+                                                                                    <span class="input-group-append">
+                                                                                        <button type="button" class="btn btn-flat btn-outline-primary" @onclick="@(() => Model.ParentScopeProperties[index].RemoveAddress(addressIndex))"><i class="fas fa-trash"></i></button>
+                                                                                    </span>
+                                                                                    <ValidationMessageContainer For="@(() => Model.ParentScopeProperties[index].Addresses[addressIndex].Value)" />
+                                                                                </div>
+                                                                            }
+                                                                            break;
+                                                                        case DHCPv4ScopePropertyType.Byte:
+                                                                        case DHCPv4ScopePropertyType.UInt16:
+                                                                        case DHCPv4ScopePropertyType.UInt32:
+                                                                            <BootstrapInputNumber @bind-Value="Model.ParentScopeProperties[index].NumericValue" class="form-control" minimum="0" placeholder="Enter a number here" />
+                                                                            <ValidationMessageContainer For="@(() => Model.ParentScopeProperties[index].NumericValue)" />
+                                                                            break;
+                                                                        case DHCPv4ScopePropertyType.Address:
+                                                                            <BootstrapInputNumber @bind-Value="Model.ParentScopeProperties[index].Address" class="form-control" placeholder="Enter an address here" />
+                                                                            <ValidationMessageContainer For="@(() => Model.ParentScopeProperties[index].Address)" />
+                                                                            break;
+                                                                        case DHCPv4ScopePropertyType.Text:
+                                                                            <BootstrapInputNumber @bind-Value="Model.ParentScopeProperties[index].TextValue" class="form-control" placeholder="Enter an IPv4 address here" />
+                                                                            <ValidationMessageContainer For="@(() => Model.ParentScopeProperties[index].TextValue)" />
+                                                                            break;
+                                                                        case DHCPv4ScopePropertyType.Boolean:
+                                                                            <BootstrapInputCheckbox @bind-Value="Model.ParentScopeProperties[index].BooleanValue" class="form-control" />
+                                                                            <ValidationMessageContainer For="@(() => Model.ParentScopeProperties[index].BooleanValue)" />
+                                                                            break;
+                                                                        case DHCPv4ScopePropertyType.Time:
+                                                                            <TimeSpanInput @bind-Value="Model.ParentScopeProperties[index].TimeValue" class="form-control" />
+                                                                            <ValidationMessageContainer For="@(() => Model.ParentScopeProperties[index].TimeValue)"
+                                                                                                        ShowValidation="@(EditContext.IsModified(() => Model.ParentScopeProperties[index].TimeValue))" />
+                                                                            break;
+                                                                        default:
+                                                                            break;
+                                                                    }
+                                                                }
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+
+                                        </LoadingWhileContentNull>
+                                    }
+                                    else
+                                    {
+                                        <p>@L["SelectParentFirstForAddressPropertiesText"]</p>
+                                    }
+                                }
+
+                                <div class="d-flex flex-row mb-4">
+                                    <div class="flex-fill"></div>
+                                    <button type="button" class="btn btn-default" @onclick="@(() => Model.AddScopeProperty())"> @L["AddANewPropertyButtonCaption"]</button>
+                                </div>
+                                @for (int i = 0; i < Model.ScopeProperties.Count; i++)
+                                {
+                                    var index = i;
+                                    <div class="form-group row">
+                                        <CustomLabel For="@(() => Model.ScopeProperties[index].OptionCode)" class="col-sm-2 col-form-label" />
+                                        <div class="col-sm-5">
+                                            <BootstrapInputSelect @bind-Value=Model.ScopeProperties[index].OptionCode class="form-control">
+                                                <option value="0">@L["CustomOptionName"]</option>
+                                                @foreach (var item in DHCPv6ScopePropertyViewModel.WellknowOptions)
+                                                        {
+                                                    <option value="@item.Key">@item.Value.DisplayName</option>
+                                                        }
+                                            </BootstrapInputSelect>
+                                            <ValidationMessageContainer For="@(() => Model.ScopeProperties[index].OptionCode)" />
+                                        </div>
+                                        @if (Model.ScopeProperties[index].IsWellknownType == false)
+                                        {
+                                            <CustomLabel For="@(() => Model.ScopeProperties[index].CustomOptionCode)" class="col-sm-2 col-form-label" />
+                                            <div class="col-sm-3">
+                                                <BootstrapInputNumber @bind-Value="Model.ScopeProperties[index].CustomOptionCode" max="@UInt16.MaxValue" class="form-control" minimum="0" placeholder="@L["OptionNumberValuePlaceholder"]" />
+                                                <ValidationMessageContainer For="@(() => Model.ScopeProperties[index].CustomOptionCode)" />
+                                            </div>
+                                        }
+                                    </div>
+                                    @if (Model.ScopeProperties[index].IsWellknownType == false)
+                                    {
+                                        <DefaultInputRow InputClass="col-sm-3" For="@(() => Model.ScopeProperties[index].Type)">
+                                            <BootstrapInputSelect @bind-Value=Model.ScopeProperties[index].Type class="form-control">
+                                                <option value="0">Selected the type</option>
+                                                @foreach (var item in DHCPv6ScopePropertyViewModel.Properties)
+                                                {
+                                                    <option value="@item">@item</option>
+                                                }
+
+                                            </BootstrapInputSelect>
+                                        </DefaultInputRow>
+                                    }
+                                    <div class="form-group row">
+                                        <div class="col-sm-2">
+                                            <label class="col-form-label">@L["OptionValueCaption"]</label>
+                                            @if (Model.ScopeProperties[index].Type == DHCPv4ScopePropertyType.AddressList)
+                                            {
+                                                <button type="button" class="btn btn-default btn-sm btn-flat ml-2" @onclick="@( () => Model.ScopeProperties[index].AddAddress())"><i class="fas fa-plus"></i></button>
+                                            }
+                                        </div>
+
+                                        <div class="col-sm-10">
+                                            @switch (Model.ScopeProperties[index].Type)
+                                            {
+                                                case DHCPv4ScopePropertyType.AddressList:
+                                                    @for (int j = 0; j < Model.ScopeProperties[index].Addresses.Count; j++)
+                                                    {
+                                                        var addressIndex = j;
+                                                        <div class="input-group mb-3">
+                                                            <BootstrapInputText @bind-Value="Model.ScopeProperties[index].Addresses[addressIndex].Value" class="form-control" placeholder="@L["OptionAddressInputPlaceHolder"]" />
+                                                            <span class="input-group-append">
+                                                                <button type="button" class="btn btn-flat btn-outline-primary" @onclick="@(() => Model.ScopeProperties[index].RemoveAddress(addressIndex))"><i class="fas fa-trash"></i></button>
+                                                            </span>
+                                                            <ValidationMessageContainer For="@(() => Model.ScopeProperties[index].Addresses[addressIndex].Value)" />
+                                                        </div>
+                                                    }
+                                                    break;
+                                                case DHCPv4ScopePropertyType.Byte:
+                                                case DHCPv4ScopePropertyType.UInt16:
+                                                case DHCPv4ScopePropertyType.UInt32:
+                                                    <BootstrapInputNumber @bind-Value="Model.ScopeProperties[index].NumericValue" class="form-control" minimum="0" placeholder="@L["OptionNumberValuePlaceholder"]" />
+                                                    <ValidationMessageContainer For="@(() => Model.ScopeProperties[index].NumericValue)" />
+                                                    break;
+                                                case DHCPv4ScopePropertyType.Address:
+                                                    <BootstrapInputNumber @bind-Value="Model.ScopeProperties[index].Address" class="form-control" placeholder="Enter an address here" />
+                                                    <ValidationMessageContainer For="@(() => Model.ScopeProperties[index].Address)" />
+                                                    break;
+                                                case DHCPv4ScopePropertyType.Text:
+                                                    <BootstrapInputNumber @bind-Value="Model.ScopeProperties[index].TextValue" class="form-control" placeholder="Enter an IPv4 address here" />
+                                                    <ValidationMessageContainer For="@(() => Model.ScopeProperties[index].TextValue)" />
+                                                    break;
+                                                case DHCPv4ScopePropertyType.Boolean:
+                                                    <BootstrapInputCheckbox @bind-Value="Model.ScopeProperties[index].BooleanValue" class="form-control" />
+                                                    <ValidationMessageContainer For="@(() => Model.ScopeProperties[index].BooleanValue)" />
+                                                    break;
+                                                case DHCPv4ScopePropertyType.Time:
+                                                    <TimeSpanInput @bind-Value="Model.ScopeProperties[index].TimeValue" class="form-control" />
+                                                    <ValidationMessageContainer For="@(() => Model.ScopeProperties[index].TimeValue)"
+                                                                                ShowValidation="@(EditContext.IsModified(() => Model.ScopeProperties[index].TimeValue))" />
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="row" style="">
+                                        <div class="flex-fill"></div>
+                                        <button type="button" class="btn btn-outline-danger mr-2" @onclick="( () => Model.RemoveScopeProperty(index))"><span>@L["RemovePropertyButtonCaption"]</span></button>
+                                    </div>
+                                    <hr>
+                                }
+                            </Body>
+                        </Card>
+                    </FullColumn>
+                    <FullColumn>
+                        <Card Title="@L["ResolverCaption"]">
+                            <Body>
+                                <div class="form-group row">
+                                    <div class="col-sm-2">
+                                        <CustomLabel For="@(() => Model.ResolverTypeName)" class="col-form-label" />
+                                        <DHCPv6ScopePropertyExplanation Property="DHCPv6ScopePropertyExplanationValues.Resolver" />
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <LoadingWhileContentNull Item="@_scopeResolverDescriptions">
+                                            <BootstrapInputSelect @bind-Value=Model.ResolverTypeName class="form-control">
+                                                <option value="">@L["ResolverNotSelectedCaption"]</option>
+                                                @foreach (var item in _scopeResolverDescriptions.Where(x => x.Properties.Count(y => y.PropertyValueType == Core.Scopes.ScopeResolverPropertyDescription.ScopeResolverPropertyValueTypes.Resolvers) == 0))
+                                                    {
+                                                    <option value="@item.TypeName">
+                                                        <DHCPv6ScopeResolverExplanation ResolverTypeName="@item.TypeName" ResolverPropertyName="@item.TypeName" OnlyTitle="true" />
+                                                    </option>
+                                                    }
+                                            </BootstrapInputSelect>
+                                            <div class="invalid-feedback mb-3" style="display:block">
+                                                @if (EditContext.IsModified(() => Model.ResolverTypeName) == true)
+                                                {
+                                                    <ValidationMessage For="@(() => Model.ResolverTypeName)" />
+                                                }
+                                            </div>
+
+                                        </LoadingWhileContentNull>
+                                    </div>
+                                    <div class="col-sm-1">
+                                        @if (String.IsNullOrEmpty(Model.ResolverTypeName) == false)
+                                        {
+                                            <DHCPv4ScopeResolverExplanation ResolverTypeName="@Model.ResolverTypeName" ResolverPropertyName="@Model.ResolverTypeName" />
+                                        }
+                                    </div>
+                                </div>
+                                @for (int i = 0; i < Model.ResolverProperties.Count; i++)
+                                {
+                                    var index = i;
+                                    <div class="form-group row">
+                                        <div class="col-sm-2">
+                                            <label class="col-form-label" for="@Model.ResolverProperties[index].Name">
+                                                <DHCPv4ScopeResolverExplanation ResolverTypeName="@Model.ResolverTypeName" ResolverPropertyName="@Model.ResolverProperties[index].Name" OnlyTitle="true" />
+                                            </label>
+                                            <DHCPv4ScopeResolverExplanation ResolverTypeName="@Model.ResolverTypeName" ResolverPropertyName="@Model.ResolverProperties[index].Name" />
+                                        </div>
+
+                                        <div class="col-sm-6">
+                                            @switch (Model.ResolverProperties[index].ValueType)
+                                            {
+                                                case Core.Scopes.ScopeResolverPropertyDescription.ScopeResolverPropertyValueTypes.UInt32:
+                                                    <BootstrapInputNumber @bind-Value="Model.ResolverProperties[index].NumericValue" class="form-control" minimum="0" placeholder="Enter a positive number here" id="@Model.ResolverProperties[index].Name" />
+                                                    break;
+                                                case Core.Scopes.ScopeResolverPropertyDescription.ScopeResolverPropertyValueTypes.Boolean:
+                                                    <div class="icheck-primary">
+                                                        <BootstrapInputCheckbox @bind-Value="Model.ResolverProperties[index].BooleanValue" id="@Model.ResolverProperties[index].Name" />
+                                                        <label for="@Model.ResolverProperties[index].Name"></label>
+                                                    </div>
+                                                    break;
+
+                                                case Core.Scopes.ScopeResolverPropertyDescription.ScopeResolverPropertyValueTypes.NullableUInt32:
+                                                    <BootstrapNullableInt64 @bind-Value="Model.ResolverProperties[index].NullableNumericValue" id="@Model.ResolverProperties[index].Name" />
+                                                    break;
+                                                case Core.Scopes.ScopeResolverPropertyDescription.ScopeResolverPropertyValueTypes.IPv6Address:
+                                                case Core.Scopes.ScopeResolverPropertyDescription.ScopeResolverPropertyValueTypes.IPv6NetworkAddress:
+                                                case Core.Scopes.ScopeResolverPropertyDescription.ScopeResolverPropertyValueTypes.IPv6Subnet:
+                                                case Core.Scopes.ScopeResolverPropertyDescription.ScopeResolverPropertyValueTypes.String:
+                                                case Core.Scopes.ScopeResolverPropertyDescription.ScopeResolverPropertyValueTypes.ByteArray:
+                                                case Core.Scopes.ScopeResolverPropertyDescription.ScopeResolverPropertyValueTypes.IPv4Address:
+                                                case Core.Scopes.ScopeResolverPropertyDescription.ScopeResolverPropertyValueTypes.IPv4Subnetmask:
+                                                    <BootstrapInputText @bind-Value="Model.ResolverProperties[index].SingleValue" class="form-control" id="@Model.ResolverProperties[index].Name" />
+                                                    break;
+                                                default:
+                                                    throw new NotImplementedException();
+                                            }
+                                            <div class="invalid-feedback mb-3">
+                                                <ValidationMessage For="@(() => Model.ResolverProperties[index].SingleValue)" />
+                                                <ValidationMessage For="@(() => Model.ResolverProperties[index].MultipleValues)" />
+                                                <ValidationMessage For="@(() => Model.ResolverProperties[index].NullableNumericValue)" />
+                                                <ValidationMessage For="@(() => Model.ResolverProperties[index].NumericValue)" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                                <div class="d-flex flex-row">
+                                    <div class="d-flex flex-fill"> </div>
+                                    <SendingAwareSubmitFormButton ValidateOnSubmit="true" Caption="@(IsInEditMode == true ? L["EditModeSendButtonCaption"].Value : L["CreateModeSendButtonCaption"].Value)" ExecutingCaption="@L["SubmitButtionSendingCaption"]" FormIsSending="_sendingRequestInProgress" FormIsValid="FormIsValid" />
+                                </div>
+                            </Body>
+                        </Card>
+                    </FullColumn>
+                }
+            </FullWidthLayout>
+        </EditForm>
+    </CascadingValue>
+</CascadingValue>
+
+@code {
+    #region Fields
+
+    private Boolean _sendingRequestInProgress = false;
+    private Boolean _serviceErrorOccured = false;
+    private IEnumerable<DHCPv4ScopeResolverDescription> _scopeResolverDescriptions;
+    private IEnumerable<DHCPv4ScopeItem> _parents;
+    private Boolean _formHasBeenValidated = false;
+
+    #endregion
+
+    #region Properties
+
+    [Parameter]
+    public string ScopeId { get; set; }
+    public Boolean IsInEditMode => String.IsNullOrEmpty(ScopeId) == false;
+    public Boolean EditIsReady { get; private set; } = false;
+
+    #endregion
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        _layoutService.UpdatePageTitle(IsInEditMode == false ? L["CreatePageTitle"] : L["UpdatePageTitle"]);
+        _layoutService.UpdateBreadcrumbs(new BreadcrumbViewModel[]
+        {
+            new BreadcrumbViewModel { Caption = @L["BreadcrumbHomeCaption"], Link = "dashboard" },
+            new BreadcrumbViewModel { Caption = @L["BreadcrumbHomeScopes"], Link = "scopes/dhcpv4" },
+            IsInEditMode == false ? new BreadcrumbViewModel { Caption = @L["BreadcrumbHomeSelfInCreateMode"], Link = "scopes/dhcpv4/create" } : new BreadcrumbViewModel { Caption = @L["BreadcrumbHomeSelfInEditMode"], Link = $"scopes/dhcpv6/upadte/{ScopeId}" }
+                                                                });
+
+        base.EditContext.OnFieldChanged += OnFieldChanged;
+    }
+
+    private async void OnFieldChanged(object sender, FieldChangedEventArgs args)
+    {
+        String fieldName = args.FieldIdentifier.FieldName;
+        if (fieldName == nameof(CreateDHCPv4ScopeViewModel.ResolverTypeName))
+        {
+            Model.ClearScopeResolverProperties();
+            var properties = GetScopeResolverProperties();
+            foreach (var item in properties)
+            {
+                Model.AddScopeResolverProperty(item.PropertyName, item.PropertyValueType);
+            }
+        }
+        else if (fieldName == nameof(CreateDHCPv4ScopeViewModel.HasParent))
+        {
+            if (Model.HasParent == true)
+            {
+                await SetPossibleParents();
+                base.StateHasChanged();
+            }
+        }
+        else if (fieldName == nameof(CreateDHCPv4ScopeViewModel.ParentId))
+        {
+            await UpdatePropertiesBasedOnParent();
+            base.StateHasChanged();
+        }
+    }
+
+    private async Task SetPossibleParents()
+    {
+        _parents = await _service.GetDHCPv4ScopesAsList();
+    }
+
+    private async Task UpdatePropertiesBasedOnParent()
+    {
+        var addressPropertiesResponse = await _service.GetDHCPv4ScopeProperties(Model.ParentId);
+        Model.ChildAddressProperties.AddParentProperties(addressPropertiesResponse.AddressRelated);
+        Model.SetParentProperties(addressPropertiesResponse.Properties);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        _scopeResolverDescriptions = await _service.GetDHCPv4ScopeResolverDescription();
+        if (String.IsNullOrEmpty(ScopeId) == false)
+        {
+            var response = await _service.GetDHCPv4ScopeProperties(ScopeId, false);
+            Model = new CreateDHCPv4ScopeViewModel(response, _scopeResolverDescriptions);
+            EditContext.OnFieldChanged -= OnFieldChanged;
+            ResetEditContext();
+            EditContext.OnFieldChanged += OnFieldChanged;
+
+            if (Model.HasParent == true)
+            {
+                await SetPossibleParents();
+                await UpdatePropertiesBasedOnParent();
+            }
+
+            EditIsReady = true;
+            _layoutService.UpdatePageTitle(String.Format(L["UpdatePageTitleWhenLoadingFinished"], Model.Name));
+
+            base.StateHasChanged();
+        }
+    }
+
+    public override void Dispose()
+    {
+        base.Dispose();
+        EditContext.OnFieldChanged -= OnFieldChanged;
+    }
+
+    #region Methods
+
+    private IEnumerable<DHCPv4ScopeResolverPropertyDescription> GetScopeResolverProperties()
+    {
+        if (_scopeResolverDescriptions == null)
+        {
+            return Array.Empty<DHCPv4ScopeResolverPropertyDescription>();
+        }
+
+        var resolverDescription = _scopeResolverDescriptions.FirstOrDefault(x => x.TypeName == Model.ResolverTypeName);
+        if (resolverDescription == null)
+        {
+            return Array.Empty<DHCPv4ScopeResolverPropertyDescription>();
+        }
+        else
+        {
+            if (resolverDescription.Properties == null)
+            {
+                return Array.Empty<DHCPv4ScopeResolverPropertyDescription>();
+            }
+
+            return resolverDescription.Properties;
+        }
+    }
+
+    public void AddExcludedAddress()
+    {
+        Model.AddEmptyExcludedAddress();
+    }
+
+    public void RemoveExcludedAddress(Int32 index)
+    {
+        Model.ExcludedAddresses.RemoveAt(index);
+    }
+
+    public async Task SendRequest()
+    {
+        var request = Model.GetRequest();
+        _serviceErrorOccured = false;
+        _sendingRequestInProgress = true;
+
+        Boolean serviceResult = false;
+        String toastMsg = String.Empty;
+
+        if (IsInEditMode == true)
+        {
+            toastMsg = String.Format(L["EditModeSuccessContent"], Model.Name);
+            serviceResult = await _service.UpdateDHCPv4Scope(request, ScopeId);
+        }
+        else
+        {
+            toastMsg = String.Format(L["CreateModeSuccessContent"], Model.Name);
+            serviceResult = await _service.CreateDHCPv4Scope(request);
+        }
+
+        _serviceErrorOccured = !serviceResult;
+        _sendingRequestInProgress = false;
+        if (serviceResult == true)
+        {
+            _toastService.ShowSuccess(toastMsg, L["EditSuccessCaption"]);
+            _navigator.NavigateTo("/scopes/dhcpv4");
+        }
+    }
+
+    private void InvalidSubmit()
+    {
+        _formHasBeenValidated = true;
+        EditContext.Validate();
+        StateHasChanged();
+    }
+
+    #endregion
+
+}

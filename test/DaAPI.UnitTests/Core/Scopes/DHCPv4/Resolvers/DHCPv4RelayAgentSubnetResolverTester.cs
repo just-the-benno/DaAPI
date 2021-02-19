@@ -26,7 +26,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4.Resolvers
                 new ScopeResolverPropertyDescription("NetworkAddress", ScopeResolverPropertyValueTypes.IPv4Address),
             };
 
-            DHCPv4RelayAgentSubnetResolver resolver = new DHCPv4RelayAgentSubnetResolver(Mock.Of<ILogger<DHCPv4RelayAgentSubnetResolver>>(), Mock.Of<ISerializer>());
+            DHCPv4RelayAgentSubnetResolver resolver = new DHCPv4RelayAgentSubnetResolver();
 
             ScopeResolverDescription description = resolver.GetDescription();
             Assert.NotNull(description);
@@ -60,12 +60,12 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4.Resolvers
 
             IPv4SubnetMask subnetMask = random.GetSubnetmask();
             IPv4Address address = (random.GetIPv4NetworkAddress(subnetMask)) - 1;
-           
+
             var mock = new Mock<ISerializer>(MockBehavior.Strict);
             mock.Setup(x => x.Deserialze<IPv4SubnetMask>(validMaskValue)).Returns(subnetMask);
             mock.Setup(x => x.Deserialze<IPv4Address>(validNetworkAddressValue)).Returns(address);
 
-            DHCPv4RelayAgentSubnetResolver resolver = new DHCPv4RelayAgentSubnetResolver(Mock.Of<ILogger<DHCPv4RelayAgentSubnetResolver>>(), mock.Object);
+            DHCPv4RelayAgentSubnetResolver resolver = new DHCPv4RelayAgentSubnetResolver();
 
             List<Dictionary<String, String>> invalidInputs = new List<Dictionary<string, string>>
             {
@@ -103,7 +103,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4.Resolvers
 
             foreach (var item in invalidInputs)
             {
-                Boolean result = resolver.ArePropertiesAndValuesValid(item);
+                Boolean result = resolver.ArePropertiesAndValuesValid(item, mock.Object);
                 Assert.False(result);
             }
         }
@@ -112,25 +112,25 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4.Resolvers
         public void DHCPv4RelayAgentSubnetResolver_AreValuesValid_Valid()
         {
             Random random = new Random();
-            String validMaskValue = random.GetAlphanumericString(30);
-            String validNetworkAddressValue = random.GetAlphanumericString(30);
 
-            IPv4SubnetMask subnetMask = random.GetSubnetmask();
+            String validMaskValue = ((Byte)random.Next(10, 20)).ToString();
+
+            IPv4SubnetMask subnetMask = new IPv4SubnetMask(new IPv4SubnetMaskIdentifier(Convert.ToInt32(validMaskValue)));
             IPv4Address address = random.GetIPv4NetworkAddress(subnetMask);
 
             var mock = new Mock<ISerializer>(MockBehavior.Strict);
-            mock.Setup(x => x.Deserialze<IPv4SubnetMask>(validMaskValue)).Returns(subnetMask);
-            mock.Setup(x => x.Deserialze<IPv4Address>(validNetworkAddressValue)).Returns(address);
+            mock.Setup(x => x.Deserialze<String>(validMaskValue)).Returns(subnetMask.GetSlashNotation().ToString());
+            mock.Setup(x => x.Deserialze<String>(address.ToString())).Returns(address.ToString());
 
-            DHCPv4RelayAgentSubnetResolver resolver = new DHCPv4RelayAgentSubnetResolver(Mock.Of<ILogger<DHCPv4RelayAgentSubnetResolver>>(), mock.Object);
+            DHCPv4RelayAgentSubnetResolver resolver = new DHCPv4RelayAgentSubnetResolver();
 
             var input = new Dictionary<string, string>()
                 {
                     { nameof(DHCPv4RelayAgentSubnetResolver.Mask), validMaskValue  },
-                    { nameof(DHCPv4RelayAgentSubnetResolver.NetworkAddress), validNetworkAddressValue  },
+                    { nameof(DHCPv4RelayAgentSubnetResolver.NetworkAddress), address.ToString()  },
                 };
 
-            Boolean result = resolver.ArePropertiesAndValuesValid(input);
+            Boolean result = resolver.ArePropertiesAndValuesValid(input, mock.Object);
             Assert.True(result);
         }
 
@@ -138,17 +138,17 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4.Resolvers
         public void DHCPv4RelayAgentSubnetResolver_ApplyValues()
         {
             Random random = new Random();
-            String validMaskValue = random.GetAlphanumericString(30);
-            String validNetworkAddressValue = random.GetAlphanumericString(30);
+            String validMaskValue = ((Byte)random.Next(1,32)).ToString();
+            String validNetworkAddressValue = random.GetIPv4Address().ToString();
 
-            IPv4SubnetMask subnetMask = random.GetSubnetmask();
-            IPv4Address address = random.GetIPv4NetworkAddress(subnetMask);
+            IPv4SubnetMask subnetMask = new IPv4SubnetMask(new IPv4SubnetMaskIdentifier(Convert.ToInt32(validMaskValue)));
+            IPv4Address address = IPv4Address.FromString(validNetworkAddressValue);
 
             var mock = new Mock<ISerializer>(MockBehavior.Strict);
-            mock.Setup(x => x.Deserialze<IPv4SubnetMask>(validMaskValue)).Returns(subnetMask);
-            mock.Setup(x => x.Deserialze<IPv4Address>(validNetworkAddressValue)).Returns(address);
+            mock.Setup(x => x.Deserialze<String>(validMaskValue)).Returns(subnetMask.GetSlashNotation().ToString());
+            mock.Setup(x => x.Deserialze<String>(validNetworkAddressValue)).Returns(address.ToString());
 
-            DHCPv4RelayAgentSubnetResolver resolver = new DHCPv4RelayAgentSubnetResolver(Mock.Of<ILogger<DHCPv4RelayAgentSubnetResolver>>(), mock.Object);
+            DHCPv4RelayAgentSubnetResolver resolver = new DHCPv4RelayAgentSubnetResolver();
 
             var input = new Dictionary<string, string>()
                 {
@@ -156,7 +156,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4.Resolvers
                     { nameof(DHCPv4RelayAgentSubnetResolver.NetworkAddress), validNetworkAddressValue  },
                 };
 
-            resolver.ApplyValues(input);
+            resolver.ApplyValues(input, mock.Object);
 
             Assert.Equal(subnetMask, resolver.Mask);
             Assert.Equal(address, resolver.NetworkAddress);
@@ -172,20 +172,17 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4.Resolvers
             IPv4SubnetMask mask = new IPv4SubnetMask(new IPv4SubnetMaskIdentifier(maskIdentifier));
             IPv4Address addresses = random.GetIPv4NetworkAddress(mask);
 
-            String inputAddressValue = random.GetAlphanumericString(10);
-            String inputMaskValue = random.GetAlphanumericString(10);
-
             Mock<ISerializer> serializer = new Mock<ISerializer>(MockBehavior.Strict);
-            serializer.Setup(x => x.Deserialze<IPv4SubnetMask>(inputMaskValue)).Returns(mask);
-            serializer.Setup(x => x.Deserialze<IPv4Address>(inputAddressValue)).Returns(addresses);
+            serializer.Setup(x => x.Deserialze<String>(mask.GetSlashNotation().ToString())).Returns(mask.GetSlashNotation().ToString());
+            serializer.Setup(x => x.Deserialze<String>(addresses.ToString())).Returns(addresses.ToString());
 
-            DHCPv4RelayAgentSubnetResolver resolver = new DHCPv4RelayAgentSubnetResolver(Mock.Of<ILogger<DHCPv4RelayAgentSubnetResolver>>(), serializer.Object);
+            DHCPv4RelayAgentSubnetResolver resolver = new DHCPv4RelayAgentSubnetResolver();
             Dictionary<String, String> values = new Dictionary<String, String>() {
-                { nameof(DHCPv4RelayAgentSubnetResolver.NetworkAddress), inputAddressValue },
-                { nameof(DHCPv4RelayAgentSubnetResolver.Mask), inputMaskValue },
+                { nameof(DHCPv4RelayAgentSubnetResolver.NetworkAddress), addresses.ToString() },
+                { nameof(DHCPv4RelayAgentSubnetResolver.Mask), mask.GetSlashNotation().ToString() },
             };
 
-            resolver.ApplyValues(values);
+            resolver.ApplyValues(values, serializer.Object);
 
             Int32 trys = random.Next(20, 30);
 
@@ -253,16 +250,16 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4.Resolvers
             String inputMaskValue = random.GetAlphanumericString(10);
 
             Mock<ISerializer> serializer = new Mock<ISerializer>(MockBehavior.Strict);
-            serializer.Setup(x => x.Deserialze<IPv4SubnetMask>(inputMaskValue)).Returns(mask);
-            serializer.Setup(x => x.Deserialze<IPv4Address>(inputAddressValue)).Returns(networkAddress);
+            serializer.Setup(x => x.Deserialze<String>(mask.GetSlashNotation().ToString())).Returns(mask.GetSlashNotation().ToString());
+            serializer.Setup(x => x.Deserialze<String>(networkAddress.ToString())).Returns(networkAddress.ToString());
 
-            DHCPv4RelayAgentSubnetResolver resolver = new DHCPv4RelayAgentSubnetResolver(Mock.Of<ILogger<DHCPv4RelayAgentSubnetResolver>>(), serializer.Object);
+            DHCPv4RelayAgentSubnetResolver resolver = new DHCPv4RelayAgentSubnetResolver();
             Dictionary<String, String> values = new Dictionary<String, String>() {
-                { nameof(DHCPv4RelayAgentSubnetResolver.NetworkAddress), inputAddressValue },
-                { nameof(DHCPv4RelayAgentSubnetResolver.Mask), inputMaskValue },
+                { nameof(DHCPv4RelayAgentSubnetResolver.NetworkAddress), networkAddress.ToString() },
+                { nameof(DHCPv4RelayAgentSubnetResolver.Mask), mask.GetSlashNotation().ToString() },
             };
 
-            resolver.ApplyValues(values);
+            resolver.ApplyValues(values, serializer.Object);
 
             IPv4Address gwAddress = IPv4Address.FromString(relayAgentAddressInput);
             DHCPv4Packet packet = new DHCPv4Packet(

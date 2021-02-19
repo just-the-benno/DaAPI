@@ -165,6 +165,28 @@
                 },
                 new NavItemGroupViewModel
                 {
+                    Caption = L["DHCPv4MenuMainCaption"],
+                    DisplayCaption = true,
+                    NavItems = new List<NavItemViewModel>
+                    {
+                        new NavItemViewModel
+                        {
+                            Link = "interfaces/dhcpv4",
+                            IconClass = "fas fa-network-wired",
+                            Caption = L["DHCPv4MenuInterfacesCaption"],
+                            NotifictionAmount = 0,
+                        },
+                        new NavItemViewModel
+                        {
+                            Link = "scopes/dhcpv4",
+                            IconClass = "fas fa-project-diagram",
+                            Caption = L["DHCPv4MenuScopesCaption"],
+                            NotifictionAmount = 0,
+                        },
+                    }
+                },
+                new NavItemGroupViewModel
+                {
                     Caption = L["DHCPv6MenuMainCaption"],
                     DisplayCaption = true,
                     NavItems = new List<NavItemViewModel>

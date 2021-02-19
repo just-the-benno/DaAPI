@@ -1,0 +1,18 @@
+﻿@inject DHCPv4PacketOptionCodeToNameConverter _codeToNameConverter
+
+<dl class="row">
+    <dt class="col-sm-2">Type</dt>
+    <dd class="col-sm-10">@Packet.MessageType</dd>
+    <dt class="col-sm-2">Transaction</dt>
+    <dd class="col-sm-10">@Packet.TransactionId</dd>
+    <dt class="col-sm-2">Your Address</dt>
+    <dd class="col-sm-10">@Packet.YourIPAdress</dd>
+    <dt class="col-sm-2">GW Address</dt>
+    <dd class="col-sm-10">@Packet.GatewayIPAdress</dd>
+</dl>
+
+
+@code {
+    [Parameter] public DaAPI.Core.Packets.DHCPv4.DHCPv4Packet Packet { get; set; }
+
+}

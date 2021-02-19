@@ -20,7 +20,6 @@ namespace DaAPI.Core.Scopes.DHCPv6
     public class DHCPv6Scope : Scope<DHCPv6Scope, DHCPv6Packet, IPv6Address, DHCPv6Leases, DHCPv6Lease, DHCPv6ScopeAddressProperties, DHCPv6ScopeProperties, DHCPv6ScopeProperty, UInt16, DHCPv6ScopePropertyType>
     {
         private static readonly TimeSpan _leaseReboundTime = TimeSpan.FromSeconds(60);
-
         private ILogger<DHCPv6Scope> _logger;
 
         #region constructor and factories

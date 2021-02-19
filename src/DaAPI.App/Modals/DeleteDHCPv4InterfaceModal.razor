@@ -1,0 +1,57 @@
+﻿@inherits AdvancedFormComponent<Object>
+@inject DaAPIService _service
+@inject IStringLocalizer<DeleteDHCPv6InterfaceModal> L
+
+<CascadingValue Name="DisableFormElements" Value="@_sendingRequestInProgress">
+    <EditForm EditContext="@EditContext" OnValidSubmit="SendDeleteDHCPv6InterfaceRequest">
+        <ModelBody>
+
+            <p>@L["DeleteQuestion"] @Entry.Name?</p>
+
+            @if (_serviceErrorOccured)
+            {
+                <Alert Content="@L["DeleteErrorMessage"]" />
+            }
+        </ModelBody>
+
+        <ModalFooter SendCaption="@L["DeleteButtonCaption"]" SendingCaption="@L["DeleteButtonExecutingCaption"]" CancelCaption="@L["CancelButtonCaption"]"
+                     FormIsValid="FormIsValid" SendingInProgress="_sendingRequestInProgress" Cancelor="Cancel" />
+    </EditForm>
+</CascadingValue>
+@code {
+
+    #region Fields
+
+    private Boolean _sendingRequestInProgress = false;
+    private Boolean _serviceErrorOccured = false;
+
+    #endregion
+
+    #region Properties
+
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+    [Parameter] public ActiveDHCPv4InterfaceEntry Entry { get; set; }
+
+    #endregion
+
+    #region Methods
+
+    public void Cancel() => BlazoredModal.Cancel();
+
+    public async Task SendDeleteDHCPv6InterfaceRequest()
+    {
+        _serviceErrorOccured = false;
+        _sendingRequestInProgress = true;
+
+        Boolean serviceResult = await _service.SendDeleteDHCPv4InterfaceRequest(Entry.SystemId);
+        _serviceErrorOccured = !serviceResult;
+        _sendingRequestInProgress = false;
+        if (serviceResult == true)
+        {
+            await BlazoredModal.Close(ModalResult.Ok<Boolean>(true));
+        }
+    }
+
+    #endregion
+
+}

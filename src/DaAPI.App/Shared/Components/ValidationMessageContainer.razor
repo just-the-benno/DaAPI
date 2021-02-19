@@ -1,0 +1,16 @@
+﻿@using System.Linq.Expressions;
+@typeparam TValue
+
+@if (ShowValidation == true)
+{
+    <div class="invalid-feedback mb-3">
+        <ValidationMessage For="For" />
+    </div>
+}
+
+@code {
+
+    [Parameter] public Expression<Func<TValue>> For { get; set; }
+
+    [Parameter] public Boolean ShowValidation { get; set; } = true;
+}

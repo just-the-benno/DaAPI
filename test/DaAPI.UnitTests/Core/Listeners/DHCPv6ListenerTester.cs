@@ -9,7 +9,7 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text;
 using Xunit;
-using static DaAPI.Core.Listeners.DHCPv6ListenerEvents;
+using static DaAPI.Core.Listeners.DHCPListenerEvents;
 
 namespace DaAPI.UnitTests.Core.Listeners
 {
@@ -31,8 +31,8 @@ namespace DaAPI.UnitTests.Core.Listeners
             Assert.Equal(interfaceName, listener.Name);
             Assert.Equal(interfaceId, listener.PhysicalInterfaceId);
 
-            var @event = GetFirstEvent<DHCPv6ListenerCreatedEvent>(listener);
-            Assert.Equal(address.ToString(), @event.IPv6Address);
+            var @event = GetFirstEvent<DHCPListenerCreatedEvent>(listener);
+            Assert.Equal(address.ToString(), @event.Address);
             Assert.Equal(listener.Id, @event.Id);
             Assert.Equal(interfaceId, @event.InterfaceId);
             Assert.Equal(interfaceName, @event.Name);
@@ -49,7 +49,7 @@ namespace DaAPI.UnitTests.Core.Listeners
                 new DHCPv6ListenerCreatedEvent
                 {
                     Id = id,
-                    IPv6Address = random.GetIPv6Address().ToString(),
+                    Address = random.GetIPv6Address().ToString(),
                 }
             });
 
@@ -59,7 +59,7 @@ namespace DaAPI.UnitTests.Core.Listeners
             
             Assert.True(listener.IsDeleted);
 
-            var @event = GetFirstEvent<DHCPv6ListenerDeletedEvent>(listener);
+            var @event = GetFirstEvent<DHCPListenerDeletedEvent>(listener);
             Assert.Equal(id, @event.Id);
         }
 

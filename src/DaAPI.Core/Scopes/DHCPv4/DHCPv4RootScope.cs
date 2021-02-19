@@ -1,7 +1,9 @@
 ﻿using DaAPI.Core.Common;
 using DaAPI.Core.Exceptions;
+using DaAPI.Core.Notifications;
 using DaAPI.Core.Packets.DHCPv4;
 using DaAPI.Core.Services;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,111 +15,23 @@ using static DaAPI.Core.Scopes.DHCPv4.DHCPv4ScopeEvents;
 
 namespace DaAPI.Core.Scopes.DHCPv4
 {
-    public class DHCPv4RootScope : AggregateRootWithEvents
+    public class DHCPv4RootScope : RootScope<DHCPv4Scope, DHCPv4Packet, IPv4Address, DHCPv4Leases, DHCPv4Lease, DHCPv4ScopeAddressProperties, DHCPv4ScopeProperties, DHCPv4ScopeProperty, Byte, DHCPv4ScopePropertyType>
     {
-        #region Fields
-
-        private readonly List<DHCPv4Scope> _rootScopes = new List<DHCPv4Scope>();
-        private readonly Dictionary<Guid, DHCPv4Scope> _scopes = new Dictionary<Guid, DHCPv4Scope>();
-        private readonly IDHCPv4ScopeResolverManager _resolverManager;
-
-        #endregion
-
-        #region Properties
-
-        #endregion
-
-        #region Constructor
+        private readonly ILoggerFactory _loggerFactory;
 
         public DHCPv4RootScope(
             Guid id,
-            IDHCPv4ScopeResolverManager resolverManager) : base(id)
+            IScopeResolverManager<DHCPv4Packet, IPv4Address> resolverManager,
+            ILoggerFactory factory
+            )
+            : base(id, resolverManager, factory.CreateLogger<DHCPv4RootScope>())
         {
-            this._resolverManager = resolverManager ?? throw new ArgumentNullException(nameof(resolverManager));
+            this._loggerFactory = factory;
         }
-
-        
-        #endregion
 
         #region packet handling
 
-        protected DHCPv4Scope GetScopeByMacthingCondition(DHCPv4Packet packet, DHCPv4Scope scope, Func<DHCPv4Packet, DHCPv4Scope, Boolean> matchingCondtions, ref Int32 depth)
-        {
-            Boolean scopeResolverResult = matchingCondtions.Invoke(packet, scope);
-
-            if (scopeResolverResult == true && scope.IsSuspendend == false)
-            {
-                depth += 1;
-
-                if (scope.Subscopes.Count > 0)
-                {
-                    DHCPv4Scope innerScopeResult = null;
-                    Int32 maxDepth = 0;
-                    foreach (DHCPv4Scope subScope in scope.Subscopes)
-                    {
-                        Int32 subDepth = depth;
-                        DHCPv4Scope innerScopeBranchResult = GetScopeByMacthingCondition(packet, subScope, matchingCondtions, ref subDepth);
-                        if (innerScopeBranchResult != null)
-                        {
-                            if (subDepth > maxDepth)
-                            {
-                                innerScopeResult = innerScopeBranchResult;
-                                maxDepth = subDepth;
-                            }
-                        }
-                    }
-
-                    if (innerScopeResult == null)
-                    {
-                        return scope;
-                    }
-                    else
-                    {
-                        depth = maxDepth;
-                        return innerScopeResult;
-                    }
-                }
-                else
-                {
-                    return scope;
-                }
-            }
-            else
-            {
-                return DHCPv4Scope.NotFound;
-            }
-        }
-
-
-        private DHCPv4Scope GetMachtingScope(DHCPv4Packet packet, Func<DHCPv4Packet, DHCPv4Scope, Boolean> matchingCondtions)
-        {
-            DHCPv4Scope resultScope = DHCPv4Scope.NotFound;
-            Int32 maxDepth = 0;
-
-            foreach (DHCPv4Scope scope in _rootScopes)
-            {
-                Int32 branchDepth = 0;
-                DHCPv4Scope result = GetScopeByMacthingCondition(
-                    packet,
-                    scope,
-                    matchingCondtions,
-                    ref branchDepth);
-
-
-                if (result != DHCPv4Scope.NotFound)
-                {
-                    if (branchDepth > maxDepth)
-                    {
-                        resultScope = result;
-                        maxDepth = branchDepth;
-                    }
-                }
-            }
-
-            return resultScope;
-        }
-
-        private void CheckPacket(DHCPv4Packet packet, DHCPv4Packet.DHCPv4MessagesTypes expectedType)
+        private void CheckPacket(DHCPv4Packet packet, DHCPv4MessagesTypes expectedType)
         {
             if (packet == null || packet.IsValid == false || packet.MessageType != expectedType)
             {
@@ -125,68 +39,9 @@ namespace DaAPI.Core.Scopes.DHCPv4
             }
         }
 
-        private DHCPv4Packet HandlePacketByResolver(
-            DHCPv4Packet packet,
-            Func<DHCPv4Scope, DHCPv4Packet> handler,
-            Func<DHCPv4PacketHandledEvent> notFoundApplier)
-        {
-            return HandlePacketByMatchingCondtion(packet,
-                (inputPacket, inputScope) => inputScope.Resolver.PacketMeetsCondition(inputPacket),
-                handler,
-                notFoundApplier
-                );
-        }
-
-        private DHCPv4Packet HandlePacketBySourceAddress(
-            DHCPv4Packet packet,
-            Func<DHCPv4Scope, DHCPv4Packet> handler,
-            Func<DHCPv4PacketHandledEvent> notFoundApplier
-            )
-        {
-            return HandlePacketByIPAddress(
-                packet,
-                packet.IPHeader.Source,
-                handler,
-                notFoundApplier);
-        }
-
-        private DHCPv4Packet HandlePacketByIPAddress(
-            DHCPv4Packet packet,
-            IPv4Address address,
-            Func<DHCPv4Scope, DHCPv4Packet> handler,
-            Func<DHCPv4PacketHandledEvent> notFoundApplier
-        )
-        {
-            return HandlePacketByMatchingCondtion(
-                packet,
-                (inputPacket, inputScope) => inputScope.AddressRelatedProperties.IsAddressInRange(address),
-                handler,
-                notFoundApplier
-            );
-        }
-
-        private DHCPv4Packet HandlePacketByMatchingCondtion(
-            DHCPv4Packet packet,
-            Func<DHCPv4Packet, DHCPv4Scope, Boolean> matchingCondtions,
-            Func<DHCPv4Scope, DHCPv4Packet> handler,
-            Func<DHCPv4PacketHandledEvent> notFoundApplier
-            )
-        {
-            DHCPv4Scope matchingScope = GetMachtingScope(packet, matchingCondtions);
-            if (matchingScope == DHCPv4Scope.NotFound)
-            {
-                base.Apply(notFoundApplier());
-                return DHCPv4Packet.Empty;
-            }
-
-            DHCPv4Packet result = handler(matchingScope);
-            return result;
-        }
-
-
         public DHCPv4Packet HandleDiscover(DHCPv4Packet packet)
         {
-            CheckPacket(packet, DHCPv4Packet.DHCPv4MessagesTypes.DHCPDISCOVER);
+            CheckPacket(packet, DHCPv4MessagesTypes.Discover);
 
             DHCPv4Packet result = HandlePacketByResolver(
                 packet,
@@ -198,7 +53,7 @@ namespace DaAPI.Core.Scopes.DHCPv4
 
         public DHCPv4Packet HandleRequest(DHCPv4Packet packet)
         {
-            CheckPacket(packet, DHCPv4Packet.DHCPv4MessagesTypes.Request);
+            CheckPacket(packet, DHCPv4MessagesTypes.Request);
 
             DHCPv4Packet result = DHCPv4Packet.Empty;
 
@@ -224,11 +79,11 @@ namespace DaAPI.Core.Scopes.DHCPv4
 
         public DHCPv4Packet HandleDecline(DHCPv4Packet packet)
         {
-            CheckPacket(packet, DHCPv4Packet.DHCPv4MessagesTypes.Decline);
+            CheckPacket(packet, DHCPv4MessagesTypes.Decline);
 
             IPv4Address address = packet.GetRequestedAddressFromRequestedOption();
 
-            DHCPv4Packet result = HandlePacketByIPAddress(
+            DHCPv4Packet result = HandlePacketByAddress(
                 packet,
                 address,
                 (scope) => scope.HandleDecline(packet),
@@ -239,7 +94,7 @@ namespace DaAPI.Core.Scopes.DHCPv4
 
         public DHCPv4Packet HandleRelease(DHCPv4Packet packet)
         {
-            CheckPacket(packet, DHCPv4Packet.DHCPv4MessagesTypes.DHCPRELEASE);
+            CheckPacket(packet, DHCPv4MessagesTypes.Release);
 
             DHCPv4Packet result = HandlePacketBySourceAddress(
                 packet,
@@ -252,7 +107,7 @@ namespace DaAPI.Core.Scopes.DHCPv4
 
         public DHCPv4Packet HandleInform(DHCPv4Packet packet)
         {
-            CheckPacket(packet, DHCPv4Packet.DHCPv4MessagesTypes.DHCPINFORM);
+            CheckPacket(packet, DHCPv4MessagesTypes.Inform);
 
             DHCPv4Packet result = HandlePacketBySourceAddress(
                 packet,
@@ -264,82 +119,18 @@ namespace DaAPI.Core.Scopes.DHCPv4
 
         #endregion
 
-        #region applies and when
-
-        private void CheckAddressProperties(DHCPv4Scope parent, DHCPv4ScopeAddressProperties addressProperties)
-        {
-            if (parent == DHCPv4Scope.NotFound)
-            {
-                if (addressProperties.ValueAreValidForRoot() == false)
-                {
-                    throw new ScopeException(DHCPv4ScopeExceptionReasons.AddressPropertiesInvalidForParents);
-                }
-            }
-            else
-            {
-                if (parent.AddressRelatedProperties.IsAddressRangeBetween(addressProperties) == false)
-                {
-                    throw new ScopeException(DHCPv4ScopeExceptionReasons.NotInParentRange);
-                }
-
-                var resultingAddressProperties = parent.GetAddressProperties();
-                resultingAddressProperties.OverrideProperties(addressProperties);
-
-                if (resultingAddressProperties.AreTimeValueValid() == false)
-                {
-                    throw new ScopeException(DHCPv4ScopeExceptionReasons.InvalidTimeRanges);
-                }
-            }
-        }
+        #region Applies and when
 
         public Boolean AddScope(
-            DHCPv4ScopeCreateInstruction instructions)
+          DHCPv4ScopeCreateInstruction instructions)
         {
-            if (instructions == null ||
-                instructions.AddressProperties == null ||
-                instructions.ResolverInformations == null ||
-                instructions.Properties == null)
-            {
-                throw new ScopeException(DHCPv4ScopeExceptionReasons.NoInput);
-            }
-
-            if (_scopes.ContainsKey(instructions.Id) == true)
-            {
-                throw new ScopeException(DHCPv4ScopeExceptionReasons.IdExists);
-            }
-
-            DHCPv4Scope parent = DHCPv4Scope.NotFound;
-            if (instructions.ParentId.HasValue == true)
-            {
-                if (_scopes.ContainsKey(instructions.ParentId.Value) == false)
-                {
-                    throw new ScopeException(DHCPv4ScopeExceptionReasons.ScopeParentNotFound);
-                }
-
-                parent = _scopes[instructions.ParentId.Value];
-            }
-
-            CheckAddressProperties(parent, instructions.AddressProperties);
-
-            if (_resolverManager.ValidateDHCPv4Resolver(instructions.ResolverInformations) == false)
-            {
-                throw new ScopeException(DHCPv4ScopeExceptionReasons.InvalidResolver);
-            }
-
+            CheckScopeCreationInstruction(instructions);
             base.Apply(new DHCPv4ScopeAddedEvent(instructions));
 
             return true;
         }
 
-        private void CheckIfScopeExistsById(Guid id)
-        {
-            if (_scopes.ContainsKey(id) == false)
-            {
-                throw new ScopeException(DHCPv4ScopeExceptionReasons.ScopeNotFound);
-            }
-        }
-
-        public Boolean UpdateScopeName(Guid id, ScopeName name)
+        public override Boolean UpdateScopeName(Guid id, ScopeName name)
         {
             CheckIfScopeExistsById(id);
             base.Apply(new DHCPv4ScopeNameUpdatedEvent(id, name));
@@ -347,87 +138,57 @@ namespace DaAPI.Core.Scopes.DHCPv4
             return true;
         }
 
-        public Boolean UpdateScopeDescription(Guid id, ScopeDescription name)
+        public override Boolean UpdateScopeDescription(Guid id, ScopeDescription name)
         {
             CheckIfScopeExistsById(id);
             base.Apply(new DHCPv4ScopeDescriptionUpdatedEvent(id, name));
             return true;
         }
 
-        public Boolean UpdateScopeResolver(Guid id, DHCPv4CreateScopeResolverInformation resolverInformation)
+        public override Boolean UpdateScopeResolver(Guid scopeId, CreateScopeResolverInformation resolverInformation)
         {
-            CheckIfScopeExistsById(id);
+            CheckIfScopeResolverIsValid(scopeId, resolverInformation);
 
-            if (resolverInformation == null)
-            {
-                throw new ScopeException(DHCPv4ScopeExceptionReasons.NoInput);
-            }
+            base.Apply(new DHCPv4ScopeResolverUpdatedEvent(scopeId, resolverInformation));
 
-            if (_resolverManager.ValidateDHCPv4Resolver(resolverInformation) == false)
-            {
-                throw new ScopeException(DHCPv4ScopeExceptionReasons.InvalidResolver);
-            }
-
-            base.Apply(new DHCPv4ScopeResolverUpdatedEvent(id, resolverInformation));
-
-            DHCPv4Scope scope = GetScopeById(id);
-            scope.Leases.CancelAllLeases(DHCPv4Lease.DHCPv4LeaseCancelReasons.ResolverChanged);
-
+            CancelAllLeasesBecauseOfChangeOfResolver(scopeId);
             return true;
         }
 
-        public Boolean UpdateAddressProperties(Guid id, DHCPv4ScopeAddressProperties addressProperties)
+        public override Boolean UpdateAddressProperties(Guid id, DHCPv4ScopeAddressProperties addressProperties)
         {
-            CheckIfScopeExistsById(id);
-            DHCPv4Scope scope = GetScopeById(id);
-
-            CheckAddressProperties(scope.ParentScope, addressProperties);
+            CheckUpdateAddressProperties(id, addressProperties);
+            var leases = GetScopeById(id).Leases.GetAllLeasesNotInRange(addressProperties.Start, addressProperties.End);
 
             base.Apply(new DHCPv4ScopeAddressPropertiesUpdatedEvent(id, addressProperties));
+            foreach (var item in leases)
+            {
+                base.Apply(new DHCPv4LeaseCanceledEvent(item.Id, id, LeaseCancelReasons.AddressRangeChanged));
+            }
+
             return true;
         }
 
-        public Boolean UpdateScopeProperties(Guid id, DHCPv4ScopeProperties properties)
+        public override Boolean UpdateScopeProperties(Guid id, DHCPv4ScopeProperties properties)
         {
-            if (properties == null)
-            {
-                throw new ScopeException(DHCPv4ScopeExceptionReasons.NoInput);
-            }
+            CheckUpdateScopeProperties(id, properties);
 
-            CheckIfScopeExistsById(id);
             base.Apply(new DHCPv4ScopePropertiesUpdatedEvent(id, properties));
 
             return true;
         }
 
-        public Boolean UpdateParent(Guid scopeId, Guid? parentId)
+        public override Boolean UpdateParent(Guid scopeId, Guid? parentId)
         {
-            CheckIfScopeExistsById(scopeId);
-            if (parentId.HasValue == true)
-            {
-                CheckIfScopeExistsById(parentId.Value);
-            }
-
-            DHCPv4Scope scope = GetScopeById(scopeId);
-            if (parentId.HasValue == false && scope.HasParentScope() == false)
-            {
-                //nothing to change
-                return false;
-            }
-            else if (
-                parentId.HasValue == true && scope.HasParentScope() == true &&
-                scope.ParentScope.Id == parentId.Value
-                )
-            {
-                //nothing to change
-                return false;
-            }
+            Boolean needToChange = ParentNeedsToBeUpdated(scopeId, parentId);
+            if (needToChange == false) { return false; }
 
             base.Apply(new DHCPv4ScopeParentUpdatedEvent(scopeId, parentId));
             return true;
+
         }
 
-        public Boolean DeleteScope(Guid scopeId, Boolean includeChildren)
+        public override Boolean DeleteScope(Guid scopeId, Boolean includeChildren)
         {
             CheckIfScopeExistsById(scopeId);
 
@@ -441,7 +202,8 @@ namespace DaAPI.Core.Scopes.DHCPv4
             switch (domainEvent)
             {
                 case DHCPv4ScopeAddedEvent e:
-                    HandleScopeAdded(e.Instructions);
+                    DHCPv4Scope scopeToAdd = DHCPv4Scope.FromInstructions(e.Instructions, Apply, AddTrigger, _loggerFactory.CreateLogger<DHCPv4Scope>());
+                    HandleScopeAdded(scopeToAdd, e.Instructions);
                     break;
                 case DHCPv4ScopeParentUpdatedEvent e:
                     HandleParentChanged(e.EntityId, e.ParentId);
@@ -455,8 +217,7 @@ namespace DaAPI.Core.Scopes.DHCPv4
                     break;
                 case DHCPv4ScopeResolverUpdatedEvent e:
                     scope = GetScopeById(e.EntityId);
-                    IDHCPv4ScopeResolver resolver = _resolverManager.InitializeResolver(e.ResolverInformationen);
-                    scope.SetResolver(resolver);
+                    HandleResolverChanged(e.EntityId, e.ResolverInformationen);
                     break;
                 case DHCPv4ScopeRelatedEvent e:
                     scope = GetScopeByLeaseId(e.EntityId);
@@ -469,101 +230,6 @@ namespace DaAPI.Core.Scopes.DHCPv4
                 default:
                     break;
             }
-        }
-
-        private DHCPv4Scope GetScopeByLeaseId(Guid leaseId)
-        {
-            DHCPv4Scope scope = _scopes.Values.FirstOrDefault(x => x.Leases.Contains(leaseId) == true);
-            return scope;
-        }
-
-        private void HandleScopeAdded(DHCPv4ScopeCreateInstruction instruction)
-        {
-            DHCPv4Scope scope = DHCPv4Scope.FromInstructions(instruction, _resolverManager, Apply);
-
-            if (instruction.ParentId.HasValue == true)
-            {
-                DHCPv4Scope parent = _scopes[instruction.ParentId.Value];
-                scope.SetParent(parent);
-            }
-            else
-            {
-                _rootScopes.Add(scope);
-            }
-
-            _scopes.Add(scope.Id, scope);
-        }
-
-        private void HandleParentChanged(Guid scopeId, Guid? parentId)
-        {
-            DHCPv4Scope scope = GetScopeById(scopeId);
-
-            if (scope.HasParentScope() == true)
-            {
-                scope.DetachFromParent(false);
-            }
-
-            if (parentId.HasValue == false)
-            {
-                _rootScopes.Add(scope);
-            }
-            else
-            {
-                DHCPv4Scope parentScope = GetScopeById(parentId.Value);
-                scope.SetParent(parentScope);
-            }
-
-            scope.SetSuspendedState(true);
-        }
-
-        private void HandleScopeDeleted(Guid scopeId, Boolean includeChildren)
-        {
-            DHCPv4Scope scope = GetScopeById(scopeId);
-            IEnumerable<DHCPv4Scope> childScopes = scope.GetChildScopes();
-
-            if (includeChildren == false)
-            {
-                Guid? parentId = null;
-                if (scope.HasParentScope() == true)
-                {
-                    parentId = scope.ParentScope.Id;
-                }
-
-                foreach (DHCPv4Scope child in childScopes)
-                {
-                    UpdateParent(child.Id, parentId);
-                }
-
-                _scopes.Remove(scope.Id);
-            }
-            else
-            {
-                List<Guid> idsToRemove = new List<Guid>(scope.GetChildIds(false));
-                idsToRemove.Insert(0, scope.Id);
-
-                scope.DetachFromParent(true);
-
-                foreach (Guid item in idsToRemove)
-                {
-                    _scopes.Remove(item);
-                }
-            }
-        }
-
-        #endregion
-
-        #region queries
-
-        public IEnumerable<DHCPv4Scope> GetRootScopes() => _rootScopes.AsEnumerable();
-
-        public DHCPv4Scope GetScopeById(Guid childId)
-        {
-            if (_scopes.ContainsKey(childId) == false)
-            {
-                return DHCPv4Scope.NotFound;
-            }
-
-            return _scopes[childId];
         }
 
         #endregion

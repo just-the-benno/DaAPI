@@ -10,13 +10,16 @@ using static DaAPI.Core.Scopes.DHCPv4.DHCPv4ScopeEvents;
 using static DaAPI.Core.Scopes.DHCPv4.DHCPv4LeaseEvents;
 using DaAPI.TestHelper;
 using System.Linq;
+using DaAPI.Core.Packets.DHCPv4;
+using DaAPI.Core.Scopes;
+using Microsoft.Extensions.Logging;
 
 namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 {
     public class DHCPv4LeasesTester
     {
         public DHCPv4RootScope GetRootScope() =>
-            new DHCPv4RootScope(Guid.NewGuid(), Mock.Of<IDHCPv4ScopeResolverManager>());
+            new DHCPv4RootScope(Guid.NewGuid(), Mock.Of<IScopeResolverManager<DHCPv4Packet, IPv4Address>>(), Mock.Of<ILoggerFactory>());
 
         [Fact]
         public void DHCPv4Leases_Contains()
@@ -44,6 +47,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                     ScopeId = scopeId,
                     EntityId = leaseId,
                     Address = random.GetIPv4Address(),
+                    HardwareAddress = random.NextBytes(6),
                 });
 
                 existingIds.Add(leaseId);
@@ -95,6 +99,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                     ScopeId = scopeId,
                     EntityId = leaseId,
                     Address = random.GetIPv4Address(),
+                    HardwareAddress = random.NextBytes(6),
                 });
 
                 existingIds.Add(leaseId);
@@ -148,6 +153,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                     ScopeId = scopeId,
                     EntityId = leaseId,
                     Address = address,
+                    HardwareAddress = random.NextBytes(6),
                 });
 
                 DomainEvent eventToAdd = null;
@@ -218,6 +224,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                     ScopeId = scopeId,
                     EntityId = leaseId,
                     Address = address,
+                    HardwareAddress = random.NextBytes(6),
                 });
 
                 Boolean shouldBeSuspended = random.NextDouble() > 0.5;
@@ -268,6 +275,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                     ScopeId = scopeId,
                     EntityId = leaseId,
                     Address = address,
+                    HardwareAddress = random.NextBytes(6),
                 });
 
                 Boolean shouldBeSuspended = random.NextDouble() > 0.5;
@@ -331,6 +339,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                     ScopeId = scopeId,
                     EntityId = leaseId,
                     Address = address,
+                    HardwareAddress = random.NextBytes(6),
                 });
 
                 Boolean addressIsInUse = random.NextDouble() > 0.5;

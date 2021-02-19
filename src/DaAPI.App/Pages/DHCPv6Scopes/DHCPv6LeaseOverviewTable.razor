@@ -17,10 +17,10 @@
             </div>
         </div>
         <div class="card-body table-responsive p-3">
-            <DataTable TModel="LeaseOverview" PageSize="20" Items="_leases" UsePaging="true" SearchOnApplyHeaderFilter="true" IncludeHeaderFilters="true" IncludeAdvancedFilters="false">
-                <DataTableColumn TModel="LeaseOverview" IsSortable="true" IsFilterable="true" Property="(e) => e.State" CustomTitle="@L["ColumnHeaderForState"]" />
-                <DataTableColumn TModel="LeaseOverview" IsSortable="true" IsFilterable="true" Property="(e) => e.Address" CustomTitle="@L["ColumnHeaderForAddress"]" />
-                <DataTableColumn TModel="LeaseOverview" IsSortable="true" IsFilterable="true" Property="(e) => e.Prefix.Address" CustomTitle="@L["CustomerHeaderForPrefix"]">
+            <DataTable TModel="DHCPv6LeaseOverview" PageSize="20" Items="_leases" UsePaging="true" SearchOnApplyHeaderFilter="true" IncludeHeaderFilters="true" IncludeAdvancedFilters="false">
+                <DataTableColumn TModel="DHCPv6LeaseOverview" IsSortable="true" IsFilterable="true" Property="(e) => e.State" CustomTitle="@L["ColumnHeaderForState"]" />
+                <DataTableColumn TModel="DHCPv6LeaseOverview" IsSortable="true" IsFilterable="true" Property="(e) => e.Address" CustomTitle="@L["ColumnHeaderForAddress"]" />
+                <DataTableColumn TModel="DHCPv6LeaseOverview" IsSortable="true" IsFilterable="true" Property="(e) => e.Prefix.Address" CustomTitle="@L["CustomerHeaderForPrefix"]">
                     <RowTemplate Context="lease">
                         @if (lease.Prefix != null)
                         {
@@ -32,16 +32,16 @@
                         }
                     </RowTemplate>
                 </DataTableColumn>
-                <DataTableColumn TModel="LeaseOverview" IsSortable="false" IsFilterable="false" Property="(e) => e.Address" CustomTitle="@L["CustomerHeaderForClientId"]">
+                <DataTableColumn TModel="DHCPv6LeaseOverview" IsSortable="false" IsFilterable="false" Property="(e) => e.Address" CustomTitle="@L["CustomerHeaderForClientId"]">
                     <RowTemplate Context="lease">
                         <DUIDView Item="lease.ClientIdentifier" />
                     </RowTemplate>
                 </DataTableColumn>
-                <DataTableColumn TModel="LeaseOverview" IsSortable="true" IsFilterable="true" Property="(e) => e.Started" CustomTitle="@L["CustomerHeaderForStart"]" />
-                <DataTableColumn TModel="LeaseOverview" IsSortable="true" IsFilterable="true" Property="(e) => e.ExpectedEnd" CustomTitle="@L["CustomerHeaderForEnd"]" />
+                <DataTableColumn TModel="DHCPv6LeaseOverview" IsSortable="true" IsFilterable="true" Property="(e) => e.Started" CustomTitle="@L["CustomerHeaderForStart"]" />
+                <DataTableColumn TModel="DHCPv6LeaseOverview" IsSortable="true" IsFilterable="true" Property="(e) => e.ExpectedEnd" CustomTitle="@L["CustomerHeaderForEnd"]" />
                 @if (IncludeChildren == true)
                 {
-                    <DataTableColumn TModel="LeaseOverview" IsSortable="true" IsFilterable="true" Property="(e) => e.Scope.Name" CustomTitle="@L["CustomerHeaderForScope"]" />
+                    <DataTableColumn TModel="DHCPv6LeaseOverview" IsSortable="true" IsFilterable="true" Property="(e) => e.Scope.Name" CustomTitle="@L["CustomerHeaderForScope"]" />
                 }
             </DataTable>
         </div>
@@ -50,7 +50,7 @@
 
 @code {
 
-    private IList<LeaseOverview> _leases;
+    private IList<DHCPv6LeaseOverview> _leases;
     private EditContext _editContext;
 
     [Parameter]
@@ -70,7 +70,7 @@
         _leases = null;
         StateHasChanged();
 
-        _leases = (await service.GetLeasesByScope(ScopeId, IncludeChildren)).ToList();
+        _leases = (await service.GetDHCPv6LeasesByScope(ScopeId, IncludeChildren)).ToList();
         StateHasChanged();
     }
 
@@ -83,7 +83,7 @@
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        _leases = (await service.GetLeasesByScope(ScopeId, IncludeChildren)).ToList();
+        _leases = (await service.GetDHCPv6LeasesByScope(ScopeId, IncludeChildren)).ToList();
     }
 
     void IDisposable.Dispose()

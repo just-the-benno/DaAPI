@@ -9,7 +9,7 @@ namespace DaAPI.Core.Packets.DHCPv4
     {
         #region constructor and factories
 
-        private DHCPv4PacketRawByteOption(Byte type, Byte[] data) : base(type, data)
+        public DHCPv4PacketRawByteOption(Byte type, Byte[] data) : base(type, data)
         {
 
         }

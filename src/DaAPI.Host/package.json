@@ -3,11 +3,11 @@
   "name": "asp.net",
   "private": true,
   "dependencies": {
-    "admin-lte": "^3.0.5",
     "@fortawesome/fontawesome-free": "5.15.1",
+    "admin-lte": "^3.0.5",
+    "bootstrap": "4.5.3",
     "icheck-bootstrap": "3.0.1",
-    "jquery": "3.5.1",
-    "bootstrap": "4.5.3"
+    "jquery": "3.5.1"
   },
   "scripts": {
     "build": "grunt build",

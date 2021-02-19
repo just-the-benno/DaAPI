@@ -1,0 +1,12 @@
+﻿<div class="alert alert-@AlertType">
+    @ChildContent
+</div>
+@code {
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public String AlertType { get; set; } = "danger";
+
+}

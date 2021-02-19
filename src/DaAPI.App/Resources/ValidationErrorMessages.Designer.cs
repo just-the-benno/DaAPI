@@ -63,6 +63,24 @@ namespace DaAPI.App.Resources {
         /// <summary>
         ///   Looks up a localized string similar to value is invalid.
         /// </summary>
+        public static string DHCPv4ScopePropertyValidation {
+            get {
+                return ResourceManager.GetString("DHCPv4ScopePropertyValidation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to value is invalid.
+        /// </summary>
+        public static string DHCPv4ScopeResolverValuesViewModelValidation {
+            get {
+                return ResourceManager.GetString("DHCPv4ScopeResolverValuesViewModelValidation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to value is invalid.
+        /// </summary>
         public static string DHCPv6ScopePropertyValidation {
             get {
                 return ResourceManager.GetString("DHCPv6ScopePropertyValidation", resourceCulture);
@@ -84,6 +102,15 @@ namespace DaAPI.App.Resources {
         public static string GreaterThan {
             get {
                 return ResourceManager.GetString("GreaterThan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to is not a valid ipv4 address.
+        /// </summary>
+        public static string IPv4Address {
+            get {
+                return ResourceManager.GetString("IPv4Address", resourceCulture);
             }
         }
         

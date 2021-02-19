@@ -7,7 +7,6 @@ namespace DaAPI.Core.Scopes.DHCPv6.Resolvers
 {
     public class DHCPv6AndResolver : DHCPv6ScopeResolverContainingOtherResolvers
     {
-
         public DHCPv6AndResolver()
         {
 

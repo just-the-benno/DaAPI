@@ -153,7 +153,7 @@
     protected override async Task OnInitializedAsync()
     {
         _vm.Response = await _service.GetDashboard<DashboardViewModelResponse>();
-        var scopes = await _service.GetScopesAsList();
+        var scopes = await _service.GetDHCPv6ScopesAsList();
         _vm.SetScopes(scopes);
 
         await base.OnInitializedAsync();

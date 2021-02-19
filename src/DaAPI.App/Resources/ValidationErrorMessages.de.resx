@@ -120,11 +120,20 @@
   <data name="DHCPv6ScopePropertyValidation" xml:space="preserve">
     <value>Wert ist ungültig</value>
   </data>
+  <data name="DHCPv6ScopePropertyValidation1" xml:space="preserve">
+    <value>Wert ist ungültig</value>
+  </data>
   <data name="DHCPv6ScopeResolverValuesViewModelValidation" xml:space="preserve">
+    <value>Wert ist ungültig</value>
+  </data>
+  <data name="DHCPv6ScopeResolverValuesViewModelValidation1" xml:space="preserve">
     <value>Wert ist ungültig</value>
   </data>
   <data name="GreaterThan" xml:space="preserve">
     <value>Muss größer sein als {1}</value>
+  </data>
+  <data name="IPv4Address" xml:space="preserve">
+    <value>Keine gültige IPv4 Adresse</value>
   </data>
   <data name="IPv6Address" xml:space="preserve">
     <value>Keine gültige IPv6 Adresse</value>

@@ -118,39 +118,40 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CreateAdminAccountContext" xml:space="preserve">
-    <value>Create your admin account</value>
+    <value>Erstelle einen Admin Account</value>
   </data>
   <data name="ErrorCaption" xml:space="preserve">
-    <value>Error</value>
+    <value>Fehler</value>
   </data>
   <data name="ErrorText" xml:space="preserve">
-    <value>Unable to initilze the server. Examine the server logs for more details.</value>
+    <value>Fehler beim initialisieren des Server. Im Log sollte mehr stehen</value>
   </data>
   <data name="FirstStartDialogCaption" xml:space="preserve">
-    <value>First start?</value>
+    <value>Erster Start?</value>
   </data>
   <data name="FirstStartFirstLineText" xml:space="preserve">
-    <value>Hi, it seems that DaAPI is starting for the first time</value>
+    <value>Es sieht so aus als würde DaAPI zum ersten Mal starten</value>
   </data>
   <data name="Headline" xml:space="preserve">
-    <value>Initialize DaAPI</value>
+    <value>DaAPI initialisieren</value>
+    <comment> </comment>
   </data>
   <data name="InitilizeButtonCaption" xml:space="preserve">
-    <value>Initilize</value>
+    <value>Initialisieren</value>
   </data>
   <data name="InitilizingButtonCaption" xml:space="preserve">
-    <value>Sending...</value>
+    <value>Wird verarbeitet...</value>
   </data>
   <data name="PasswordConfirmationPlaceholder" xml:space="preserve">
-    <value>Password confirmation</value>
+    <value>Passwort bestätigen</value>
   </data>
   <data name="PasswordPlaceholder" xml:space="preserve">
-    <value>Password</value>
+    <value>Passwort</value>
   </data>
   <data name="SecondStartFirstLineText" xml:space="preserve">
-    <value>If this is not true, check your database</value>
+    <value>Wenn das nicht stimm, prüfe die Datenbank verbindung</value>
   </data>
   <data name="UsernamePlaceholder" xml:space="preserve">
-    <value>Username</value>
+    <value>Benutzername</value>
   </data>
 </root>

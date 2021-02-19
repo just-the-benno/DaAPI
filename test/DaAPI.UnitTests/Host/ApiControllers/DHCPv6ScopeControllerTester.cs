@@ -105,7 +105,7 @@ namespace DaAPI.UnitTests.Host.ApiControllers
                 Mock.Of<IScopeResolverManager<DHCPv6Packet, IPv6Address>>(MockBehavior.Strict),
                 rootScope);
             var actionResult = controller.GetScopesAsList();
-            var result = actionResult.EnsureOkObjectResult<IEnumerable<ScopeItem>>(true);
+            var result = actionResult.EnsureOkObjectResult<IEnumerable<DHCPv6ScopeItem>>(true);
 
             Assert.Equal(events.Count, result.Count());
             for (int i = 0; i < events.Count; i++)
@@ -119,7 +119,7 @@ namespace DaAPI.UnitTests.Host.ApiControllers
             }
         }
 
-        private void CheckTreeItem(DHCPv6Scope item, ScopeTreeViewItem viewItem)
+        private void CheckTreeItem(DHCPv6Scope item, DHCPv6ScopeTreeViewItem viewItem)
         {
             Assert.Equal(item.Name, viewItem.Name);
             Assert.Equal(item.Id, viewItem.Id);
@@ -186,7 +186,7 @@ namespace DaAPI.UnitTests.Host.ApiControllers
                 Mock.Of<IScopeResolverManager<DHCPv6Packet, IPv6Address>>(MockBehavior.Strict),
                 rootScope);
             var actionResult = controller.GetScopesAsTreeView();
-            var result = actionResult.EnsureOkObjectResult<IEnumerable<ScopeTreeViewItem>>(true);
+            var result = actionResult.EnsureOkObjectResult<IEnumerable<DHCPv6ScopeTreeViewItem>>(true);
 
             Assert.Equal(rootScopeAmount, result.Count());
             Int32 index = 0;

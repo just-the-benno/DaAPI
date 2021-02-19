@@ -1,5 +1,6 @@
 ﻿using DaAPI.Core.Common;
 using DaAPI.Core.Packets.DHCPv4;
+using DaAPI.Core.Scopes;
 using DaAPI.Core.Scopes.DHCPv4;
 using DaAPI.Core.Services;
 using DaAPI.TestHelper;
@@ -15,7 +16,7 @@ using static DaAPI.Core.Scopes.DHCPv4.DHCPv4PacketHandledEvents.DHCPv4DeclineHan
 
 namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 {
-    public class DHCPv4RootScopeTesterHandleDelineTester : DHCPv4RootSCopeTesterBase
+    public class DHCPv4RootScopeTesterHandleDelineTester : DHCPv4RootScopeTesterBase
     {
         private DHCPv4Packet GetDeclinePacket(Random random, IPv4Address address)
         {
@@ -27,7 +28,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
             DHCPv4Packet declinePacket = new DHCPv4Packet(
                 headerInformation, clientMacAdress, (UInt32)random.Next(),
                 IPv4Address.Empty, IPv4Address.Empty, IPv4Address.Empty,
-                new DHCPv4PacketMessageTypeOption(DHCPv4Packet.DHCPv4MessagesTypes.Decline),
+                new DHCPv4PacketMessageTypeOption(DHCPv4MessagesTypes.Decline),
                 new DHCPv4PacketAddressOption(DHCPv4OptionTypes.RequestedIPAddress, address)
             );
 
@@ -82,15 +83,15 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 
             DHCPv4Packet requestPacket = GetDeclinePacket(random, leasedAddress);
 
-            Mock<IDHCPv4ScopeResolverManager> scopeResolverMock =
-                new Mock<IDHCPv4ScopeResolverManager>(MockBehavior.Strict);
+            Mock<IScopeResolverManager<DHCPv4Packet, IPv4Address>> scopeResolverMock =
+                new Mock<IScopeResolverManager<DHCPv4Packet, IPv4Address>>(MockBehavior.Strict);
 
-            var resolverInformations = new DHCPv4CreateScopeResolverInformation
+            var resolverInformations = new CreateScopeResolverInformation
             {
                 Typename = nameof(DHCPv4RelayAgentSubnetResolver),
             };
 
-            Mock<IDHCPv4ScopeResolver> resolverMock = new Mock<IDHCPv4ScopeResolver>(MockBehavior.Strict);
+            Mock<IScopeResolver<DHCPv4Packet, IPv4Address>> resolverMock = new Mock<IScopeResolver<DHCPv4Packet, IPv4Address>>(MockBehavior.Strict);
             scopeResolverMock.Setup(x => x.InitializeResolver(resolverInformations)).Returns(resolverMock.Object);
 
             Guid scopeId = random.NextGuid();
@@ -106,9 +107,9 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         IPv4Address.FromString("192.168.178.100"),
                         new List<IPv4Address>{
                             IPv4Address.FromString("192.168.178.0") },
-                        validLifetime: TimeSpan.FromDays(1),
+                        leaseTime: TimeSpan.FromDays(1),
                         acceptDecline : true),
-                    ResolverInformations = resolverInformations,
+                    ResolverInformation = resolverInformations,
                     Name = "Testscope",
                     Id = scopeId,
                 }),
@@ -116,9 +117,9 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                 {
                     EntityId = leaseId,
                     Address = leasedAddress,
-                    ClientIdentifier = DHCPv4ClientIdentifier.FromHwAddress(requestPacket.ClientHardwareAddress),
+                    HardwareAddress = requestPacket.ClientHardwareAddress,
                     ScopeId = scopeId,
-                    UniqueIdentiifer = null,
+                    UniqueIdentifier = null,
                     StartedAt = leaseCreatedAt,
                     ValidUntil = DateTime.UtcNow.AddDays(1),
                  },
@@ -128,7 +129,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
             Assert.Equal(DHCPv4Packet.Empty, result);
 
             DHCPv4Lease lease = rootScope.GetScopeById(scopeId).Leases.GetLeaseById(leaseId);
-            Assert.Equal(DHCPv4Lease.DHCPv4LeaseStates.Suspended, lease.State);
+            Assert.Equal(LeaseStates.Suspended, lease.State);
 
             CheckEventAmount(2, rootScope);
             CheckDeclineEvent(0, leaseId, leasedAddress, scopeId, rootScope);
@@ -144,15 +145,15 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 
             DHCPv4Packet requestPacket = GetDeclinePacket(random, leasedAddress);
 
-            Mock<IDHCPv4ScopeResolverManager> scopeResolverMock =
-                new Mock<IDHCPv4ScopeResolverManager>(MockBehavior.Strict);
+            Mock<IScopeResolverManager<DHCPv4Packet, IPv4Address>> scopeResolverMock =
+                new Mock<IScopeResolverManager<DHCPv4Packet, IPv4Address>>(MockBehavior.Strict);
 
-            var resolverInformations = new DHCPv4CreateScopeResolverInformation
+            var resolverInformations = new CreateScopeResolverInformation
             {
                 Typename = nameof(DHCPv4RelayAgentSubnetResolver),
             };
 
-            Mock<IDHCPv4ScopeResolver> resolverMock = new Mock<IDHCPv4ScopeResolver>(MockBehavior.Strict);
+            Mock<IScopeResolver<DHCPv4Packet, IPv4Address>> resolverMock = new Mock<IScopeResolver<DHCPv4Packet, IPv4Address>>(MockBehavior.Strict);
             scopeResolverMock.Setup(x => x.InitializeResolver(resolverInformations)).Returns(resolverMock.Object);
 
             Guid scopeId = random.NextGuid();
@@ -168,9 +169,9 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         IPv4Address.FromString("192.168.178.100"),
                         new List<IPv4Address>{
                             IPv4Address.FromString("192.168.178.0") },
-                        validLifetime: TimeSpan.FromDays(1),
+                        leaseTime: TimeSpan.FromDays(1),
                         acceptDecline : true),
-                    ResolverInformations = resolverInformations,
+                    ResolverInformation = resolverInformations,
                     Name = "Testscope",
                     Id = scopeId,
                 }),
@@ -178,9 +179,9 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                 {
                     EntityId = leaseId,
                     Address = leasedAddress,
-                    ClientIdentifier = DHCPv4ClientIdentifier.FromHwAddress(requestPacket.ClientHardwareAddress),
+                    HardwareAddress = requestPacket.ClientHardwareAddress,
                     ScopeId = scopeId,
-                    UniqueIdentiifer = null,
+                    UniqueIdentifier = null,
                     StartedAt = leaseCreatedAt,
                     ValidUntil = DateTime.UtcNow.AddDays(1),
                  },
@@ -195,7 +196,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
             Assert.Equal(DHCPv4Packet.Empty, result);
 
             DHCPv4Lease lease = rootScope.GetScopeById(scopeId).Leases.GetLeaseById(leaseId);
-            Assert.Equal(DHCPv4Lease.DHCPv4LeaseStates.Suspended, lease.State);
+            Assert.Equal(LeaseStates.Suspended, lease.State);
 
             CheckEventAmount(2, rootScope);
             CheckDeclineEvent(0, leaseId, leasedAddress, scopeId, rootScope);
@@ -211,15 +212,15 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 
             DHCPv4Packet requestPacket = GetDeclinePacket(random, leasedAddress);
 
-            Mock<IDHCPv4ScopeResolverManager> scopeResolverMock =
-                new Mock<IDHCPv4ScopeResolverManager>(MockBehavior.Strict);
+            Mock<IScopeResolverManager<DHCPv4Packet, IPv4Address>> scopeResolverMock =
+                new Mock<IScopeResolverManager<DHCPv4Packet, IPv4Address>>(MockBehavior.Strict);
 
-            var resolverInformations = new DHCPv4CreateScopeResolverInformation
+            var resolverInformations = new CreateScopeResolverInformation
             {
                 Typename = nameof(DHCPv4RelayAgentSubnetResolver),
             };
 
-            Mock<IDHCPv4ScopeResolver> resolverMock = new Mock<IDHCPv4ScopeResolver>(MockBehavior.Strict);
+            Mock<IScopeResolver<DHCPv4Packet, IPv4Address>> resolverMock = new Mock<IScopeResolver<DHCPv4Packet, IPv4Address>>(MockBehavior.Strict);
             scopeResolverMock.Setup(x => x.InitializeResolver(resolverInformations)).Returns(resolverMock.Object);
 
             Guid scopeId = random.NextGuid();
@@ -236,9 +237,9 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         IPv4Address.FromString("192.168.178.100"),
                         new List<IPv4Address>{
                             IPv4Address.FromString("192.168.178.0") },
-                        validLifetime: TimeSpan.FromDays(1),
+                        leaseTime: TimeSpan.FromDays(1),
                         acceptDecline : true),
-                    ResolverInformations = resolverInformations,
+                    ResolverInformation = resolverInformations,
                     Name = "Testscope",
                     Id = scopeId,
                 }),
@@ -246,9 +247,9 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                 {
                     EntityId = leaseId,
                     Address = leasedAddress,
-                    ClientIdentifier = DHCPv4ClientIdentifier.FromHwAddress(requestPacket.ClientHardwareAddress),
+                    HardwareAddress = requestPacket.ClientHardwareAddress,
                     ScopeId = scopeId,
-                    UniqueIdentiifer = null,
+                    UniqueIdentifier = null,
                     StartedAt = leaseCreatedAt,
                     ValidUntil = DateTime.UtcNow.AddDays(1),
                  },
@@ -256,9 +257,9 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                 {
                     EntityId = secondLeaseId,
                     Address = leasedAddress,
-                    ClientIdentifier = DHCPv4ClientIdentifier.FromHwAddress(requestPacket.ClientHardwareAddress),
+                    HardwareAddress = requestPacket.ClientHardwareAddress,
                     ScopeId = scopeId,
-                    UniqueIdentiifer = null,
+                    UniqueIdentifier = null,
                     StartedAt = leaseCreatedAt,
                     ValidUntil = DateTime.UtcNow.AddDays(1),
                  },
@@ -275,7 +276,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
             Assert.Equal(DHCPv4Packet.Empty, result);
 
             DHCPv4Lease lease = rootScope.GetScopeById(scopeId).Leases.GetLeaseById(leaseId);
-            Assert.Equal(DHCPv4Lease.DHCPv4LeaseStates.Pending, lease.State);
+            Assert.Equal(LeaseStates.Pending, lease.State);
 
             CheckEventAmount(1, rootScope);
             CheckDeclinedEvent(0, DeclineErros.AddressAlreadySuspended, requestPacket, rootScope, scopeId);
@@ -290,15 +291,15 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 
             DHCPv4Packet requestPacket = GetDeclinePacket(random, leasedAddress);
 
-            Mock<IDHCPv4ScopeResolverManager> scopeResolverMock =
-                new Mock<IDHCPv4ScopeResolverManager>(MockBehavior.Strict);
+            Mock<IScopeResolverManager<DHCPv4Packet, IPv4Address>> scopeResolverMock =
+                new Mock<IScopeResolverManager<DHCPv4Packet, IPv4Address>>(MockBehavior.Strict);
 
-            var resolverInformations = new DHCPv4CreateScopeResolverInformation
+            var resolverInformations = new CreateScopeResolverInformation
             {
                 Typename = nameof(DHCPv4RelayAgentSubnetResolver),
             };
 
-            Mock<IDHCPv4ScopeResolver> resolverMock = new Mock<IDHCPv4ScopeResolver>(MockBehavior.Strict);
+            Mock<IScopeResolver<DHCPv4Packet, IPv4Address>> resolverMock = new Mock<IScopeResolver<DHCPv4Packet, IPv4Address>>(MockBehavior.Strict);
             scopeResolverMock.Setup(x => x.InitializeResolver(resolverInformations)).Returns(resolverMock.Object);
 
             Guid scopeId = random.NextGuid();
@@ -314,9 +315,9 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         IPv4Address.FromString("192.168.178.100"),
                         new List<IPv4Address>{
                             IPv4Address.FromString("192.168.178.0") },
-                        validLifetime: TimeSpan.FromDays(1),
+                        leaseTime: TimeSpan.FromDays(1),
                         acceptDecline : true),
-                    ResolverInformations = resolverInformations,
+                    ResolverInformation = resolverInformations,
                     Name = "Testscope",
                     Id = scopeId,
                 }),
@@ -324,9 +325,9 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                 {
                     EntityId = leaseId,
                     Address = leasedAddress,
-                    ClientIdentifier = DHCPv4ClientIdentifier.FromHwAddress(requestPacket.ClientHardwareAddress),
+                    HardwareAddress = requestPacket.ClientHardwareAddress,
                     ScopeId = scopeId,
-                    UniqueIdentiifer = null,
+                    UniqueIdentifier = null,
                     StartedAt = leaseCreatedAt,
                     ValidUntil = DateTime.UtcNow.AddDays(1),
                  },
@@ -346,7 +347,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
             Assert.Equal(DHCPv4Packet.Empty, result);
 
             DHCPv4Lease lease = rootScope.GetScopeById(scopeId).Leases.GetLeaseById(leaseId);
-            Assert.Equal(DHCPv4Lease.DHCPv4LeaseStates.Canceled, lease.State);
+            Assert.Equal(LeaseStates.Canceled, lease.State);
 
             CheckEventAmount(1, rootScope);
             CheckDeclinedEvent(0, DeclineErros.LeaseInInvalidState, requestPacket, rootScope, scopeId);
@@ -363,15 +364,15 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 
             DHCPv4Packet requestPacket = GetDeclinePacket(random, requestedAddress);
 
-            Mock<IDHCPv4ScopeResolverManager> scopeResolverMock =
-                new Mock<IDHCPv4ScopeResolverManager>(MockBehavior.Strict);
+            Mock<IScopeResolverManager<DHCPv4Packet, IPv4Address>> scopeResolverMock =
+                new Mock<IScopeResolverManager<DHCPv4Packet, IPv4Address>>(MockBehavior.Strict);
 
-            var resolverInformations = new DHCPv4CreateScopeResolverInformation
+            var resolverInformations = new CreateScopeResolverInformation
             {
                 Typename = nameof(DHCPv4RelayAgentSubnetResolver),
             };
 
-            Mock<IDHCPv4ScopeResolver> resolverMock = new Mock<IDHCPv4ScopeResolver>(MockBehavior.Strict);
+            Mock<IScopeResolver<DHCPv4Packet, IPv4Address>> resolverMock = new Mock<IScopeResolver<DHCPv4Packet, IPv4Address>>(MockBehavior.Strict);
             scopeResolverMock.Setup(x => x.InitializeResolver(resolverInformations)).Returns(resolverMock.Object);
 
             Guid scopeId = random.NextGuid();
@@ -387,9 +388,9 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         IPv4Address.FromString("192.168.178.100"),
                         new List<IPv4Address>{
                             IPv4Address.FromString("192.168.178.0") },
-                        validLifetime: TimeSpan.FromDays(1),
+                        leaseTime: TimeSpan.FromDays(1),
                         acceptDecline : true),
-                    ResolverInformations = resolverInformations,
+                    ResolverInformation = resolverInformations,
                     Name = "Testscope",
                     Id = scopeId,
                 }),
@@ -397,9 +398,9 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                 {
                     EntityId = leaseId,
                     Address = leasedAddress,
-                    ClientIdentifier = DHCPv4ClientIdentifier.FromHwAddress(requestPacket.ClientHardwareAddress),
+                    HardwareAddress = requestPacket.ClientHardwareAddress,
                     ScopeId = scopeId,
-                    UniqueIdentiifer = null,
+                    UniqueIdentifier = null,
                     StartedAt = leaseCreatedAt,
                     ValidUntil = DateTime.UtcNow.AddDays(1),
                  },
@@ -414,12 +415,11 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
             Assert.Equal(DHCPv4Packet.Empty, result);
 
             DHCPv4Lease lease = rootScope.GetScopeById(scopeId).Leases.GetLeaseById(leaseId);
-            Assert.Equal(DHCPv4Lease.DHCPv4LeaseStates.Active, lease.State);
+            Assert.Equal(LeaseStates.Active, lease.State);
 
             CheckEventAmount(1, rootScope);
             CheckDeclinedEvent(0, DeclineErros.LeaseNotFound, requestPacket, rootScope, scopeId);
         }
-
 
         [Fact]
         public void HandleDecline_NpAcceptDecline()
@@ -430,15 +430,15 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 
             DHCPv4Packet requestPacket = GetDeclinePacket(random, leasedAddress);
 
-            Mock<IDHCPv4ScopeResolverManager> scopeResolverMock =
-                new Mock<IDHCPv4ScopeResolverManager>(MockBehavior.Strict);
+            Mock<IScopeResolverManager<DHCPv4Packet, IPv4Address>> scopeResolverMock =
+                new Mock<IScopeResolverManager<DHCPv4Packet, IPv4Address>>(MockBehavior.Strict);
 
-            var resolverInformations = new DHCPv4CreateScopeResolverInformation
+            var resolverInformations = new CreateScopeResolverInformation
             {
                 Typename = nameof(DHCPv4RelayAgentSubnetResolver),
             };
 
-            Mock<IDHCPv4ScopeResolver> resolverMock = new Mock<IDHCPv4ScopeResolver>(MockBehavior.Strict);
+            Mock<IScopeResolver<DHCPv4Packet, IPv4Address>> resolverMock = new Mock<IScopeResolver<DHCPv4Packet, IPv4Address>>(MockBehavior.Strict);
             scopeResolverMock.Setup(x => x.InitializeResolver(resolverInformations)).Returns(resolverMock.Object);
 
             Guid scopeId = random.NextGuid();
@@ -454,9 +454,9 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                         IPv4Address.FromString("192.168.178.100"),
                         new List<IPv4Address>{
                             IPv4Address.FromString("192.168.178.0") },
-                        validLifetime: TimeSpan.FromDays(1),
+                        leaseTime: TimeSpan.FromDays(1),
                         acceptDecline : false),
-                    ResolverInformations = resolverInformations,
+                    ResolverInformation = resolverInformations,
                     Name = "Testscope",
                     Id = scopeId,
                 }),
@@ -464,9 +464,9 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                 {
                     EntityId = leaseId,
                     Address = leasedAddress,
-                    ClientIdentifier = DHCPv4ClientIdentifier.FromHwAddress(requestPacket.ClientHardwareAddress),
+                    HardwareAddress = requestPacket.ClientHardwareAddress,
                     ScopeId = scopeId,
-                    UniqueIdentiifer = null,
+                    UniqueIdentifier = null,
                     StartedAt = leaseCreatedAt,
                     ValidUntil = DateTime.UtcNow.AddDays(1),
                  },
@@ -481,12 +481,10 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
             Assert.Equal(DHCPv4Packet.Empty, result);
 
             DHCPv4Lease lease = rootScope.GetScopeById(scopeId).Leases.GetLeaseById(leaseId);
-            Assert.Equal(DHCPv4Lease.DHCPv4LeaseStates.Active, lease.State);
+            Assert.Equal(LeaseStates.Active, lease.State);
 
             CheckEventAmount(1, rootScope);
             CheckDeclinedEvent(0, DeclineErros.DeclineNotAllowed, requestPacket, rootScope, scopeId);
         }
-
-
     }
 }

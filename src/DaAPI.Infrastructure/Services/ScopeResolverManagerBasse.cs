@@ -41,7 +41,7 @@ namespace DaAPI.Infrastructure.Services
 
         #region Methods
 
-        private String GetNormalizedMapperName(String input) => input.Trim().ToLower();
+        private static String GetNormalizedMapperName(String input) => input.Trim().ToLower();
 
         public void AddOrUpdateScopeResolver(string name, Func<IScopeResolver<TPacket, TAddress>> activator)
         {

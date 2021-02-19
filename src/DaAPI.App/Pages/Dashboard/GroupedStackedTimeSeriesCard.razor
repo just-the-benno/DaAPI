@@ -24,7 +24,6 @@
             <LoadingWhileContentNull Item="_loadingDummy" OnlyHide="true">
                 <Chart @ref="_barChartJs"
                        Config="@_barConfig"
-                       TConfig="BarConfig"
                        Width="600"
                        Height="300" />
 
@@ -48,7 +47,7 @@
 
     private BarConfig _barConfig;
 
-    private Chart<BarConfig> _barChartJs;
+    private Chart _barChartJs;
 
     [Parameter]
     public GroupStatisticsResultBy GroupedBy { get; set; }

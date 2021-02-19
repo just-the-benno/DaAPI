@@ -13,7 +13,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using static DaAPI.Core.Listeners.DHCPv6ListenerEvents;
+using static DaAPI.Core.Listeners.DHCPListenerEvents;
 
 namespace DaAPI.UnitTests.Host.Commands.DHCPv6Interfaces
 {
@@ -30,7 +30,7 @@ namespace DaAPI.UnitTests.Host.Commands.DHCPv6Interfaces
                 new DHCPv6ListenerCreatedEvent
                 {
                     Id = id,
-                    IPv6Address = random.GetIPv6Address().ToString(),
+                    Address = random.GetIPv6Address().ToString(),
                 }
             });
 
@@ -67,7 +67,7 @@ namespace DaAPI.UnitTests.Host.Commands.DHCPv6Interfaces
                 new DHCPv6ListenerCreatedEvent
                 {
                     Id = id,
-                    IPv6Address = random.GetIPv6Address().ToString(),
+                    Address = random.GetIPv6Address().ToString(),
                 }
             });
 
@@ -97,7 +97,7 @@ namespace DaAPI.UnitTests.Host.Commands.DHCPv6Interfaces
                 new DHCPv6ListenerCreatedEvent
                 {
                     Id = id,
-                    IPv6Address = random.GetIPv6Address().ToString(),
+                    Address = random.GetIPv6Address().ToString(),
                 }
             });
 

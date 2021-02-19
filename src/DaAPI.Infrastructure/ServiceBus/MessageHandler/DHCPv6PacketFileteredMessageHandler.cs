@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace DaAPI.Infrastructure.ServiceBus.MessageHandler
 {
-    public class DHCPv6PacketFileteredMessageHandler : INotificationHandler<DHCPv6PacketFileteredMessage>
+    public class DHCPv6PacketFileteredMessageHandler : INotificationHandler<DHCPv6PacketFilteredMessage>
     {
         private readonly ILogger<DHCPv6PacketFileteredMessageHandler> _logger;
         private readonly IDHCPv6StorageEngine _storeEngine;
@@ -26,7 +26,7 @@ namespace DaAPI.Infrastructure.ServiceBus.MessageHandler
             this._logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task Handle(DHCPv6PacketFileteredMessage notification, CancellationToken cancellationToken)
+        public async Task Handle(DHCPv6PacketFilteredMessage notification, CancellationToken cancellationToken)
         {
             _logger.LogDebug("Invalid packet arrvied. Logging it into the store");
             await _storeEngine.LogFilteredDHCPv6Packet(notification.Packet, notification.FilterName);

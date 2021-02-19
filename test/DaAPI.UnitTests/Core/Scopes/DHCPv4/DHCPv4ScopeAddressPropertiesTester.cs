@@ -100,9 +100,9 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
         {
             Random random = new Random();
 
-            List<DHCPv4AddressAllocationStrategies> strategies = new List<DHCPv4AddressAllocationStrategies> {
-                DHCPv4AddressAllocationStrategies.Next,
-                DHCPv4AddressAllocationStrategies.Random,
+            List<DHCPv4ScopeAddressProperties.AddressAllocationStrategies> strategies = new List<DHCPv4ScopeAddressProperties.AddressAllocationStrategies> {
+                DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next,
+                DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Random,
             };
 
             IPv4Address start = random.GetIPv4Address();
@@ -124,9 +124,9 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
         {
             Random random = new Random();
 
-            List<DHCPv4AddressAllocationStrategies> strategies = new List<DHCPv4AddressAllocationStrategies> {
-                DHCPv4AddressAllocationStrategies.Next,
-                DHCPv4AddressAllocationStrategies.Random,
+            List<DHCPv4ScopeAddressProperties.AddressAllocationStrategies> strategies = new List<DHCPv4ScopeAddressProperties.AddressAllocationStrategies> {
+                DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next,
+                DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Random,
             };
 
             foreach (var item in strategies)
@@ -172,7 +172,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
             }
 
             DHCPv4ScopeAddressProperties properties = new DHCPv4ScopeAddressProperties(start, end, excludedAddresses,
-                addressAllocationStrategy: DHCPv4ScopeAddressProperties.DHCPv4AddressAllocationStrategies.Next);
+                addressAllocationStrategy: DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next);
 
             IPv4Address next = properties.GetValidAddresses(usedAddress);
             IPv4Address expectedAddress = start + usedAddreessAmount;
@@ -206,7 +206,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
             }
 
             DHCPv4ScopeAddressProperties properties = new DHCPv4ScopeAddressProperties(start, end, excludedAddresses,
-                addressAllocationStrategy: DHCPv4ScopeAddressProperties.DHCPv4AddressAllocationStrategies.Random);
+                addressAllocationStrategy: DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Random);
 
             Int32 checkAmount = random.Next(100, 200);
 
@@ -248,9 +248,9 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                 }
             }
 
-            List<DHCPv4AddressAllocationStrategies> strategies = new List<DHCPv4AddressAllocationStrategies> {
-                DHCPv4AddressAllocationStrategies.Next,
-                DHCPv4AddressAllocationStrategies.Random,
+            List<DHCPv4ScopeAddressProperties.AddressAllocationStrategies> strategies = new List<DHCPv4ScopeAddressProperties.AddressAllocationStrategies> {
+                DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next,
+                DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Random,
             };
 
             foreach (var item in strategies)
@@ -278,8 +278,9 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
             DHCPv4ScopeAddressProperties validProperties = new DHCPv4ScopeAddressProperties(
                 start, end, Array.Empty<IPv4Address>(),
                 renewalTime, preferredLifetime, validLifetime,
+                24,
                 random.NextBoolean(),
-                DHCPv4AddressAllocationStrategies.Next,
+                DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next,
                 random.NextBoolean(), random.NextBoolean(), random.NextBoolean()
                 );
 
@@ -291,34 +292,47 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                  new DHCPv4ScopeAddressProperties(
                 start, end, Array.Empty<IPv4Address>(),
                 null, preferredLifetime, validLifetime,
+                24,
                 random.NextBoolean(),
-                DHCPv4AddressAllocationStrategies.Next,
+                DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next,
                 random.NextBoolean(), random.NextBoolean(), random.NextBoolean()
                 ),
                  new DHCPv4ScopeAddressProperties(
                 start, end, Array.Empty<IPv4Address>(),
                 renewalTime, null, validLifetime,
+                24,
                 random.NextBoolean(),
-                DHCPv4AddressAllocationStrategies.Next,
+                DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next,
                 random.NextBoolean(), random.NextBoolean(), random.NextBoolean()
                 ),
                 new DHCPv4ScopeAddressProperties(
                 start, end, Array.Empty<IPv4Address>(),
                 renewalTime, preferredLifetime, null,
+                24,
                 random.NextBoolean(),
-                DHCPv4AddressAllocationStrategies.Next,
+                DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next,
                 random.NextBoolean(), random.NextBoolean(), random.NextBoolean()
                 ),
                 new DHCPv4ScopeAddressProperties(
                 start, end, Array.Empty<IPv4Address>(),
                 renewalTime, preferredLifetime, validLifetime,
+                0,
+                random.NextBoolean(),
+                DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next,
+                random.NextBoolean(), random.NextBoolean(), random.NextBoolean()
+                ),
+                new DHCPv4ScopeAddressProperties(
+                start, end, Array.Empty<IPv4Address>(),
+                renewalTime, preferredLifetime, validLifetime,
+                24,
                 null,
-                DHCPv4AddressAllocationStrategies.Next,
+                DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next,
                 random.NextBoolean(), random.NextBoolean(), random.NextBoolean()
                 ),
                 new DHCPv4ScopeAddressProperties(
                 start, end, Array.Empty<IPv4Address>(),
                 renewalTime, preferredLifetime, validLifetime,
+                24,
                 random.NextBoolean(),
                 null,
                 random.NextBoolean(), random.NextBoolean(), random.NextBoolean()
@@ -326,22 +340,25 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                 new DHCPv4ScopeAddressProperties(
                 start, end, Array.Empty<IPv4Address>(),
                 renewalTime, preferredLifetime, validLifetime,
+                24,
                 random.NextBoolean(),
-                DHCPv4AddressAllocationStrategies.Next,
+                DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next,
                 null, random.NextBoolean(), random.NextBoolean()
                 ),
                 new DHCPv4ScopeAddressProperties(
                 start, end, Array.Empty<IPv4Address>(),
                 renewalTime, preferredLifetime, validLifetime,
+                24,
                 random.NextBoolean(),
-                DHCPv4AddressAllocationStrategies.Next,
+                DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next,
                 random.NextBoolean(), null, random.NextBoolean()
                 ),
                  new DHCPv4ScopeAddressProperties(
                 start, end, Array.Empty<IPv4Address>(),
                 renewalTime, preferredLifetime, validLifetime,
+                24,
                 random.NextBoolean(),
-                DHCPv4AddressAllocationStrategies.Next,
+                DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next,
                 random.NextBoolean(), random.NextBoolean(), null
                 ),
             };
@@ -366,24 +383,24 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
             TimeSpan validLifetime = preferredLifetime + TimeSpan.FromMinutes(random.Next(10, 100));
 
             DHCPv4ScopeAddressProperties validInput =
-                new DHCPv4ScopeAddressProperties(start, end, Array.Empty<IPv4Address>(), renewalTime: renewalTime, preferredLifetime: preferredLifetime, validLifetime: validLifetime);
+                new DHCPv4ScopeAddressProperties(start, end, Array.Empty<IPv4Address>(), renewalTime: renewalTime, preferredLifetime: preferredLifetime, leaseTime: validLifetime);
 
             Boolean shouldBeTrue = validInput.AreTimeValueValid();
             Assert.True(shouldBeTrue);
 
             List<DHCPv4ScopeAddressProperties> invalidInputs = new List<DHCPv4ScopeAddressProperties>
             {
-                new DHCPv4ScopeAddressProperties(start,end,Array.Empty<IPv4Address>(),renewalTime: null,preferredLifetime:null,validLifetime: null),
-                new DHCPv4ScopeAddressProperties(start,end,Array.Empty<IPv4Address>(),renewalTime: renewalTime,preferredLifetime:null,validLifetime: null),
-                new DHCPv4ScopeAddressProperties(start,end,Array.Empty<IPv4Address>(),renewalTime: null,preferredLifetime:preferredLifetime,validLifetime: null),
-                new DHCPv4ScopeAddressProperties(start,end,Array.Empty<IPv4Address>(),renewalTime: null,preferredLifetime:null,validLifetime: validLifetime),
-                new DHCPv4ScopeAddressProperties(start,end,Array.Empty<IPv4Address>(),renewalTime: renewalTime,preferredLifetime:preferredLifetime,validLifetime: null),
-                new DHCPv4ScopeAddressProperties(start,end,Array.Empty<IPv4Address>(),renewalTime: renewalTime,preferredLifetime:null,validLifetime: validLifetime),
-                new DHCPv4ScopeAddressProperties(start,end,Array.Empty<IPv4Address>(),renewalTime: null,preferredLifetime:preferredLifetime,validLifetime: validLifetime),
+                new DHCPv4ScopeAddressProperties(start,end,Array.Empty<IPv4Address>(),renewalTime: null,preferredLifetime:null,leaseTime: null),
+                new DHCPv4ScopeAddressProperties(start,end,Array.Empty<IPv4Address>(),renewalTime: renewalTime,preferredLifetime:null,leaseTime: null),
+                new DHCPv4ScopeAddressProperties(start,end,Array.Empty<IPv4Address>(),renewalTime: null,preferredLifetime:preferredLifetime,leaseTime: null),
+                new DHCPv4ScopeAddressProperties(start,end,Array.Empty<IPv4Address>(),renewalTime: null,preferredLifetime:null,leaseTime: validLifetime),
+                new DHCPv4ScopeAddressProperties(start,end,Array.Empty<IPv4Address>(),renewalTime: renewalTime,preferredLifetime:preferredLifetime,leaseTime: null),
+                new DHCPv4ScopeAddressProperties(start,end,Array.Empty<IPv4Address>(),renewalTime: renewalTime,preferredLifetime:null,leaseTime: validLifetime),
+                new DHCPv4ScopeAddressProperties(start,end,Array.Empty<IPv4Address>(),renewalTime: null,preferredLifetime:preferredLifetime,leaseTime: validLifetime),
 
-                new DHCPv4ScopeAddressProperties(start,end,Array.Empty<IPv4Address>(),renewalTime: renewalTime,preferredLifetime:validLifetime,validLifetime: preferredLifetime),
-                new DHCPv4ScopeAddressProperties(start,end,Array.Empty<IPv4Address>(),renewalTime: preferredLifetime,preferredLifetime:renewalTime,validLifetime: validLifetime),
-                new DHCPv4ScopeAddressProperties(start,end,Array.Empty<IPv4Address>(),renewalTime: validLifetime,preferredLifetime:preferredLifetime,validLifetime:renewalTime ),
+                new DHCPv4ScopeAddressProperties(start,end,Array.Empty<IPv4Address>(),renewalTime: renewalTime,preferredLifetime:validLifetime,leaseTime: preferredLifetime),
+                new DHCPv4ScopeAddressProperties(start,end,Array.Empty<IPv4Address>(),renewalTime: preferredLifetime,preferredLifetime:renewalTime,leaseTime: validLifetime),
+                new DHCPv4ScopeAddressProperties(start,end,Array.Empty<IPv4Address>(),renewalTime: validLifetime,preferredLifetime:preferredLifetime,leaseTime:renewalTime ),
             };
 
             foreach (var item in invalidInputs)

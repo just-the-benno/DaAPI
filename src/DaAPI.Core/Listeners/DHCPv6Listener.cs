@@ -5,27 +5,19 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Text;
-using static DaAPI.Core.Listeners.DHCPv6ListenerEvents;
+using static DaAPI.Core.Listeners.DHCPListenerEvents;
 
 namespace DaAPI.Core.Listeners
 {
-    public class DHCPv6Listener : AggregateRootWithEvents
+    public class DHCPv6Listener : DHCPListener<IPv6Address>
     {
         #region Properties
-
-        public DHCPListenerName Name { get; private set; }
-        public IPv6Address Address { get; private set; }
-        public String PhysicalInterfaceId { get; private set; }
-        public Byte[] PhysicalAddress { get; private set; }
-        public NICInterfaceName Interfacename { get; private set; }
-
-        public Boolean IsDeleted { get; private set; }
 
         #endregion
 
         #region Constructor
 
-        public DHCPv6Listener() : base(Guid.Empty)
+        public DHCPv6Listener() : base()
         {
 
         }
@@ -38,7 +30,7 @@ namespace DaAPI.Core.Listeners
             {
                 InterfaceId = physicalInterfaceId,
                 Name = name,
-                IPv6Address = ipv6Address.ToString(),
+                Address = ipv6Address.ToString(),
                 Id = Guid.NewGuid(),
             });
 
@@ -47,28 +39,9 @@ namespace DaAPI.Core.Listeners
 
         #endregion
 
-        public void Delete()
-        {
-            base.Apply(new DHCPv6ListenerDeletedEvent { Id = base.Id });
-        }
+        public override void Delete() => base.Apply(new DHCPv6ListenerDeletedEvent { Id = base.Id });
 
-        protected override void When(DomainEvent domainEvent)
-        {
-            switch (domainEvent)
-            {
-                case DHCPv6ListenerCreatedEvent e:
-                    Id = e.Id;
-                    Name = new DHCPListenerName(e.Name);
-                    PhysicalInterfaceId = e.InterfaceId;
-                    Address = IPv6Address.FromString(e.IPv6Address);
-                    break;
-                case DHCPv6ListenerDeletedEvent _:
-                    IsDeleted = true;
-                    break;
-                default:
-                    break;
-            }
-        }
+        protected override IPv6Address GetAddressFromString(string address) => IPv6Address.FromString(address);
 
         public static DHCPv6Listener FromNIC(NetworkInterface nic, IPAddress address) =>
          new DHCPv6Listener()

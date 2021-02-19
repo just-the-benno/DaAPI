@@ -1,7 +1,10 @@
 ﻿using DaAPI.Core.Common;
+using DaAPI.Core.Packets.DHCPv4;
+using DaAPI.Core.Scopes;
 using DaAPI.Core.Scopes.DHCPv4;
 using DaAPI.Core.Services;
 using DaAPI.TestHelper;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -16,7 +19,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
     public class DHCPv4ScopeTester
     {
         private DHCPv4RootScope GetRootScope() =>
-        new DHCPv4RootScope(Guid.NewGuid(), Mock.Of<IDHCPv4ScopeResolverManager>());
+        new DHCPv4RootScope(Guid.NewGuid(), Mock.Of<IScopeResolverManager<DHCPv4Packet, IPv4Address>>(), Mock.Of<ILoggerFactory>());
 
         [Fact]
         public void DHCPv4Scope_ScopePropertiesInherientce()
@@ -71,19 +74,19 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                  new DHCPv4ScopeAddedEvent(new DHCPv4ScopeCreateInstruction
                  {
                      Id = grantParentId,
-                     Properties = grantParentProperties,
+                     ScopeProperties = grantParentProperties,
                  }),
                  new DHCPv4ScopeAddedEvent(new DHCPv4ScopeCreateInstruction
                  {
                      Id = parentId,
                      ParentId = grantParentId,
-                     Properties = parentProperties,
+                     ScopeProperties = parentProperties,
                  }),
                  new DHCPv4ScopeAddedEvent(new DHCPv4ScopeCreateInstruction
                  {
                      Id = childId,
                      ParentId = parentId,
-                     Properties = childProperties,
+                     ScopeProperties = childProperties,
                  }),
             };
 
@@ -104,7 +107,6 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 
             for (int i = 0; i < 100; i++)
             {
-
                 IPv4Address grantParentStart = random.GetIPv4Address();
                 IPv4Address grantParentEnd = random.GetIPv4AddressGreaterThan(grantParentStart);
                 List<IPv4Address> grantParentExcludedAddresses = random.GetIPv4AddressesBetween(grantParentStart, grantParentEnd);
@@ -114,15 +116,18 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                 TimeSpan grantParentRenewalTimePrefferedValidLifeTime = TimeSpan.FromMinutes(random.Next());
 
                 Boolean grantParentReuseAddressIfPossible = random.NextBoolean();
-                DHCPv4AddressAllocationStrategies grantParentAllocationStrategy = DHCPv4AddressAllocationStrategies.Next;
+                DHCPv4ScopeAddressProperties.AddressAllocationStrategies grantParentAllocationStrategy = DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Next;
 
                 Boolean grantParentSupportDirectUnicast = random.NextBoolean();
                 Boolean grantParentAcceptDecline = random.NextBoolean();
                 Boolean grantParentInformsAreAllowd = random.NextBoolean();
 
+                Byte grantParentSubnetMask = (Byte)random.Next(18, 25);
+
                 DHCPv4ScopeAddressProperties grantParentProperties = new DHCPv4ScopeAddressProperties(
                 grantParentStart, grantParentEnd, grantParentExcludedAddresses,
                 grantParentRenewalTimePrefferedValidLifeTime, grantParentPrefferedValidLifeTime, grantParentValidLifeTime,
+                grantParentSubnetMask,
                 grantParentReuseAddressIfPossible, grantParentAllocationStrategy,
                 grantParentInformsAreAllowd, grantParentAcceptDecline, grantParentInformsAreAllowd);
 
@@ -134,8 +139,10 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                 TimeSpan? parentPrefferedValidLifeTime = null;
                 TimeSpan? parentRenewalTimePrefferedValidLifeTime = null;
 
+                Byte? parentSubnetMask = null;
+
                 Boolean? parentReuseAddressIfPossible = null;
-                DHCPv4AddressAllocationStrategies? parentAllocationStrategy = null;
+                DHCPv4ScopeAddressProperties.AddressAllocationStrategies? parentAllocationStrategy = null;
 
                 Boolean? parentSupportDirectUnicast = null;
                 Boolean? parentAcceptDecline = null;
@@ -155,11 +162,15 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                 }
                 if (random.NextBoolean() == true)
                 {
+                    parentSubnetMask = (Byte)random.Next(18, 25); 
+                }
+                if (random.NextBoolean() == true)
+                {
                     parentReuseAddressIfPossible = random.NextBoolean();
                 }
                 if (random.NextBoolean() == true)
                 {
-                    parentAllocationStrategy = DHCPv4AddressAllocationStrategies.Random;
+                    parentAllocationStrategy = DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Random;
                 }
                 if (random.NextBoolean() == true)
                 {
@@ -177,6 +188,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                 DHCPv4ScopeAddressProperties parentProperties = new DHCPv4ScopeAddressProperties(
                parentStart, parentEnd, parentExcludedAddresses,
                parentRenewalTimePrefferedValidLifeTime, parentPrefferedValidLifeTime, parentValidLifeTime,
+               parentSubnetMask,
                parentReuseAddressIfPossible, parentAllocationStrategy,
                parentInformsAreAllowd, parentAcceptDecline, parentInformsAreAllowd);
 
@@ -188,8 +200,11 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                 TimeSpan? childPrefferedValidLifeTime = null;
                 TimeSpan? childRenewalTimePrefferedValidLifeTime = null;
 
+                Byte? childSubnetMask = null;
+
+
                 Boolean? childReuseAddressIfPossible = null;
-                DHCPv4AddressAllocationStrategies? childAllocationStrategy = null;
+                DHCPv4ScopeAddressProperties.AddressAllocationStrategies? childAllocationStrategy = null;
 
                 Boolean? childSupportDirectUnicast = random.NextDouble() > 0.5;
                 Boolean? childAcceptDecline = random.NextDouble() > 0.5;
@@ -209,11 +224,15 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                 }
                 if (random.NextBoolean() == true)
                 {
+                    childSubnetMask = (Byte)random.Next(18, 25);
+                }
+                if (random.NextBoolean() == true)
+                {
                     childReuseAddressIfPossible = random.NextBoolean();
                 }
                 if (random.NextBoolean() == true)
                 {
-                    childAllocationStrategy = DHCPv4AddressAllocationStrategies.Random;
+                    childAllocationStrategy = DHCPv4ScopeAddressProperties.AddressAllocationStrategies.Random;
                 }
                 if (random.NextBoolean() == true)
                 {
@@ -231,6 +250,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                 DHCPv4ScopeAddressProperties childProperties = new DHCPv4ScopeAddressProperties(
                childStart, childEnd, childExcludedAddresses,
                childRenewalTimePrefferedValidLifeTime, childPrefferedValidLifeTime, childValidLifeTime,
+               childSubnetMask,
                childReuseAddressIfPossible, childAllocationStrategy,
                childSupportDirectUnicast, childAcceptDecline, childInformsAreAllowd);
 
@@ -266,10 +286,11 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                 DHCPv4ScopeAddressProperties actualProperties = scope.GetAddressProperties();
 
                 DHCPv4ScopeAddressProperties expectedProperties = new DHCPv4ScopeAddressProperties(
-                    childStart, childEnd, grantParentExcludedAddresses.Union(parentExcludedAddresses).Union(childExcludedAddresses).Where(x => x.IsInBetween(childStart, childEnd)),
+                    childStart, childEnd, grantParentExcludedAddresses.Union(parentExcludedAddresses).Union(childExcludedAddresses).Where(x => x.IsBetween(childStart, childEnd)),
                     childRenewalTimePrefferedValidLifeTime.HasValue == true ? childRenewalTimePrefferedValidLifeTime.Value : (parentRenewalTimePrefferedValidLifeTime.HasValue == true ? parentRenewalTimePrefferedValidLifeTime.Value : grantParentRenewalTimePrefferedValidLifeTime),
                     childPrefferedValidLifeTime.HasValue == true ? childPrefferedValidLifeTime.Value : (parentPrefferedValidLifeTime.HasValue == true ? parentPrefferedValidLifeTime.Value : grantParentPrefferedValidLifeTime),
                     childValidLifeTime.HasValue == true ? childValidLifeTime.Value : (parentValidLifeTime.HasValue == true ? parentValidLifeTime.Value : grantParentValidLifeTime),
+                    childSubnetMask.HasValue == true ? childSubnetMask.Value : (parentSubnetMask.HasValue == true ? parentSubnetMask.Value : grantParentSubnetMask),
                     childReuseAddressIfPossible.HasValue == true ? childReuseAddressIfPossible.Value : (parentReuseAddressIfPossible.HasValue == true ? parentReuseAddressIfPossible.Value : grantParentReuseAddressIfPossible),
                     childAllocationStrategy.HasValue == true ? childAllocationStrategy.Value : (parentAllocationStrategy.HasValue == true ? parentAllocationStrategy.Value : grantParentAllocationStrategy),
                     childSupportDirectUnicast.HasValue == true ? childSupportDirectUnicast.Value : (parentSupportDirectUnicast.HasValue == true ? parentSupportDirectUnicast.Value : grantParentSupportDirectUnicast),
@@ -377,7 +398,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
         public void DHCPv4Scope_GetChildScopes()
         {
             Random random = new Random();
-            
+
             GenerateScopeTree(random, out Dictionary<Guid, List<Guid>> directChildRelations, out Dictionary<Guid, List<Guid>> allChildRelations, out List<DomainEvent> events);
 
             DHCPv4RootScope rootScope = GetRootScope();

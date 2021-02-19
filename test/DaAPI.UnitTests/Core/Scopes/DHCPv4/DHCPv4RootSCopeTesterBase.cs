@@ -1,6 +1,9 @@
 ﻿using DaAPI.Core.Common;
+using DaAPI.Core.Packets.DHCPv4;
+using DaAPI.Core.Scopes;
 using DaAPI.Core.Scopes.DHCPv4;
 using DaAPI.Core.Services;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -12,16 +15,23 @@ using static DaAPI.Core.Scopes.DHCPv4.DHCPv4ScopeEvents;
 
 namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 {
-    public abstract class DHCPv4RootSCopeTesterBase
+    public abstract class DHCPv4RootScopeTesterBase
     {
-        protected DHCPv4RootScope GetRootScope(Mock<IDHCPv4ScopeResolverManager> scopeResolverMock) =>
-               new DHCPv4RootScope(Guid.NewGuid(), scopeResolverMock.Object);
+        protected DHCPv4RootScope GetRootScope(Mock<IScopeResolverManager<DHCPv4Packet, IPv4Address>> scopeResolverMock)
+        {
+            Mock<ILoggerFactory> factoryMock = new Mock<ILoggerFactory>(MockBehavior.Strict);
+            factoryMock.Setup(x => x.CreateLogger(It.IsAny<String>())).Returns(Mock.Of<ILogger<DHCPv4RootScope>>());
+
+            var result = new DHCPv4RootScope(Guid.NewGuid(), scopeResolverMock.Object, factoryMock.Object);
+            return result;
+        }
 
         protected void CheckEventAmount(int expectedAmount, DHCPv4RootScope rootScope)
         {
             var changes = rootScope.GetChanges();
             Assert.Equal(expectedAmount, changes.Count());
         }
+
         protected static void CheckRevokedEvent(Int32 index, Guid scopeId, Guid leaseId, DHCPv4RootScope rootScope)
         {
             IEnumerable<DomainEvent> changes = rootScope.GetChanges();
@@ -79,15 +89,15 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 
             Assert.Equal(scopeId, createdEvent.ScopeId);
             Assert.Equal(expectedAdress, createdEvent.Address);
-            Assert.Equal(DHCPv4ClientIdentifier.FromHwAddress(clientMacAdress), createdEvent.ClientIdentifier);
+            Assert.Equal(clientMacAdress, createdEvent.HardwareAddress);
             Assert.Equal(lease.Id, createdEvent.EntityId);
             if (uniqueIdentifier == null)
             {
-                Assert.Null(createdEvent.UniqueIdentiifer);
+                Assert.Null(createdEvent.UniqueIdentifier);
             }
             else
             {
-                Assert.Equal(uniqueIdentifier, createdEvent.UniqueIdentiifer);
+                Assert.Equal(uniqueIdentifier, createdEvent.UniqueIdentifier);
             }
             Assert.Equal(lease.Start, createdEvent.StartedAt);
             Assert.Equal(lease.End, createdEvent.ValidUntil);
@@ -101,6 +111,30 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
             DHCPv4ScopeAddressesAreExhaustedEvent castedEvent = (DHCPv4ScopeAddressesAreExhaustedEvent)changes.ElementAt(index);
 
             Assert.Equal(castedEvent.EntityId, scopeId);
+        }
+
+        protected void CheckPacketOptions(Guid scopeId, DHCPv4RootScope rootScope, DHCPv4Packet result)
+        {
+            var scope = rootScope.GetScopeById(scopeId);
+
+            if(scope.Properties != null)
+            {     
+                foreach (var item in scope.Properties.Properties)
+                {
+
+                }
+            }
+
+            var subnetOption = result.GetOptionByIdentifier((Byte)DHCPv4OptionTypes.SubnetMask) as DHCPv4PacketAddressOption;
+            if(result.YourIPAdress == IPv4Address.Empty)
+            {
+                Assert.Null(subnetOption);
+            }
+            else
+            {
+                Assert.NotNull(subnetOption);
+                Assert.True(ByteHelper.AreEqual(subnetOption.Address.GetBytes(), scope.AddressRelatedProperties.Mask.GetBytes()));
+            }
         }
     }
 }

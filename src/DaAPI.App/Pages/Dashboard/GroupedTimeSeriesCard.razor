@@ -42,7 +42,6 @@
                     <div style="@(UseBarChart == true ? "display: none" : "display: block")">
                         <Chart @ref="_lineChartJs"
                                Config="@_lineConfig"
-                               TConfig="LineConfig"
                                Width="600"
                                Height="300" />
                     </div>
@@ -52,7 +51,6 @@
                     <div style="@(UseBarChart == false && ChartDisplayType != ChartDisplayTypes.OnlyBar ? "display: none" : "display: block")">
                         <Chart @ref="_barChartJs"
                                Config="@_barConfig"
-                               TConfig="BarConfig"
                                Width="600"
                                Height="300" />
                     </div>
@@ -84,13 +82,12 @@
 
     private Object _loadingDummy;
 
-    private Chart<LineConfig> _lineChartJs;
-
+    private Chart _lineChartJs;
 
     private LineConfig _lineConfig;
     private BarConfig _barConfig;
 
-    private Chart<BarConfig> _barChartJs;
+    private Chart _barChartJs;
 
     [Parameter]
     public GroupStatisticsResultBy? GroupedBy { get; set; }

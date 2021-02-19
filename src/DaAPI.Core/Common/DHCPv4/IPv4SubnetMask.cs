@@ -134,7 +134,7 @@ namespace DaAPI.Core.Common
 
         #region Methods
 
-        internal Int32 GetSlashNotation()
+        public Int32 GetSlashNotation()
         {
             foreach (var item in _possibleSubnetMasks)
             {

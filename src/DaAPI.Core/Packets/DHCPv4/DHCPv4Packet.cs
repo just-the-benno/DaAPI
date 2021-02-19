@@ -8,7 +8,7 @@ using static DaAPI.Core.Scopes.DHCPv4.DHCPv4ScopeProperty;
 
 namespace DaAPI.Core.Packets.DHCPv4
 {
-    public class DHCPv4Packet : Value
+    public class DHCPv4Packet : DHCPPacket<DHCPv4Packet, IPv4Address>
     {
         public enum DHCPv4PacketOperationCodes : byte
         {
@@ -30,19 +30,6 @@ namespace DaAPI.Core.Packets.DHCPv4
             Ethernet = 1,
         }
 
-        public enum DHCPv4MessagesTypes
-        {
-            Unkown = 0,
-            DHCPDISCOVER = 1,
-            DHCPOFFER = 2,
-            Request = 3,
-            Decline = 4,
-            Acknowledge = 5,
-            NotAcknowledge = 6,
-            DHCPRELEASE = 7,
-            DHCPINFORM = 8,
-        }
-
         public enum DHCPv4PacketRequestType
         {
             AnswerToOffer = 2,
@@ -60,6 +47,8 @@ namespace DaAPI.Core.Packets.DHCPv4
             Initializing = 5,
         }
 
+        public static DHCPv4Packet FromByteArray(byte[] stream, IPv4HeaderInformation header) => FromByteArray(stream, header.Source, header.Destionation);
+
         #region Fields
 
         private static readonly Byte[] _magicCookie = new byte[] { 99, 130, 83, 99 };
@@ -73,7 +62,9 @@ namespace DaAPI.Core.Packets.DHCPv4
 
         #region Properties
 
-        public Boolean IsValid { get; private set; }
+        private Boolean _isValid = false;
+
+        public override Boolean IsValid => _isValid;
 
         public DHCPv4PacketOperationCodes OpCode { get; private set; }
         public DHCPv4PacketHardwareAddressTypes HardwareType { get; private set; }
@@ -112,8 +103,6 @@ namespace DaAPI.Core.Packets.DHCPv4
 
         public DHCPv4MessagesTypes MessageType { get; private set; }
 
-        public IPv4HeaderInformation IPHeader { get; set; }
-
         #endregion
 
         #region Constructor
@@ -136,9 +125,9 @@ namespace DaAPI.Core.Packets.DHCPv4
             ServerHostname = String.Empty;
             FileName = String.Empty;
 
-            IPHeader = IPv4HeaderInformation.Default;
+            Header = IPv4HeaderInformation.Default;
 
-            IsValid = false;
+            _isValid = false;
         }
 
         public DHCPv4Packet(
@@ -170,7 +159,7 @@ namespace DaAPI.Core.Packets.DHCPv4
             YourIPAdress = IPv4Address.FromByteArray(yourIPAddress.GetBytes());
             ClientIPAdress = IPv4Address.FromByteArray(clientIPAddress.GetBytes());
             GatewayIPAdress = IPv4Address.FromByteArray(gwIPAddress.GetBytes());
-            IPHeader = ipv4Header;
+            Header = ipv4Header;
 
             _options = new List<DHCPv4PacketOption>();
 
@@ -180,11 +169,10 @@ namespace DaAPI.Core.Packets.DHCPv4
             }
 
             SetClientIdentifier();
-            IsValid = true;
+            _isValid = true;
         }
 
-        private static DHCPv4Packet Invalid => new DHCPv4Packet() { IsValid = false };
-        public static DHCPv4Packet Empty => null;
+        private static DHCPv4Packet Invalid => new DHCPv4Packet() { _isValid = false };
 
         public static DHCPv4Packet FromByteArray(Byte[] rawData, IPv4Address source, IPv4Address destionation)
         {
@@ -205,7 +193,7 @@ namespace DaAPI.Core.Packets.DHCPv4
                     GatewayIPAdress = IPv4Address.FromByteArray(rawData, 24)
                 };
 
-                packet.IPHeader = new IPv4HeaderInformation(source, destionation);
+                packet.Header = new IPv4HeaderInformation(source, destionation);
 
                 packet.ClientHardwareAddress = ByteHelper.CopyData(rawData, 28, packet.HardwareAddressLength);
                 Boolean serverhostnameFound = false;
@@ -266,9 +254,11 @@ namespace DaAPI.Core.Packets.DHCPv4
                     index += 2 + length;
                 }
 
-                packet.IsValid = true;
+                packet._isValid = true;
 
                 packet.SetClientIdentifier();
+
+                packet._byteRepresentation = rawData;
 
                 return packet;
             }
@@ -282,7 +272,7 @@ namespace DaAPI.Core.Packets.DHCPv4
         {
             IPv4Address source = IPv4Address.Empty;
             IPv4Address destionation;
-            if (request.IPHeader.Source == IPv4Address.Empty)
+            if (request.Header.Source == IPv4Address.Empty)
             {
                 if ((request.Flags & DHCPv4PacketFlags.Broadcast) == DHCPv4PacketFlags.Broadcast)
                 {
@@ -295,8 +285,8 @@ namespace DaAPI.Core.Packets.DHCPv4
             }
             else
             {
-                destionation = IPv4Address.FromAddress(request.IPHeader.Source);
-                source = IPv4Address.FromAddress(request.IPHeader.Destionation);
+                destionation = IPv4Address.FromAddress(request.Header.Source);
+                source = IPv4Address.FromAddress(request.Header.Destionation);
                 Flags = DHCPv4PacketFlags.Unicast;
             }
 
@@ -306,7 +296,7 @@ namespace DaAPI.Core.Packets.DHCPv4
                 destionation = IPv4Address.Broadcast;
             }
 
-            IPHeader = new IPv4HeaderInformation(source, destionation);
+            Header = new IPv4HeaderInformation(source, destionation);
         }
 
         private void SetServerIdentifier(IPv4Address serverAddress)
@@ -324,15 +314,21 @@ namespace DaAPI.Core.Packets.DHCPv4
         DHCPv4ScopeAddressProperties addressProperties,
         IEnumerable<DHCPv4ScopeProperty> scopeProperties)
         {
+            List<DHCPv4ScopeProperty> propertiesToInsert = new List<DHCPv4ScopeProperty>(scopeProperties);
+            
+            if(addressProperties != null)
+            {
+                propertiesToInsert.Add(new DHCPv4AddressScopeProperty(DHCPv4OptionTypes.SubnetMask, IPv4Address.FromByteArray(addressProperties.Mask.GetBytes())));
+            }
+
             Dictionary<DHCPv4OptionTypes, TimeSpan?> timeRelatedOptions = new Dictionary<DHCPv4OptionTypes, TimeSpan?>();
             if (addressProperties != null)
             {
-                timeRelatedOptions.Add(DHCPv4OptionTypes.IPAddressLeaseTime, addressProperties.ValidLifetime);
+                timeRelatedOptions.Add(DHCPv4OptionTypes.IPAddressLeaseTime, addressProperties.LeaseTime);
                 timeRelatedOptions.Add(DHCPv4OptionTypes.RenewalTimeValue, addressProperties.RenewalTime);
                 timeRelatedOptions.Add(DHCPv4OptionTypes.RebindingTimeValue, addressProperties.PreferredLifetime);
             }
 
-            List<DHCPv4ScopeProperty> propertiesToInsert = new List<DHCPv4ScopeProperty>(scopeProperties);
             foreach (var item in timeRelatedOptions)
             {
                 if (item.Value.HasValue == false) { continue; }
@@ -411,8 +407,6 @@ namespace DaAPI.Core.Packets.DHCPv4
             return result;
         }
 
-
-
         internal IPv4Address GetRequestedAddressFromRequestedOption()
         {
             return GetIPAddressFromOption(DHCPv4OptionTypes.RequestedIPAddress);
@@ -447,15 +441,14 @@ namespace DaAPI.Core.Packets.DHCPv4
             DHCPv4ScopeAddressProperties addressProperties,
             IEnumerable<DHCPv4ScopeProperty> scopeProperties)
         {
-
-            DHCPv4Packet packet = new DHCPv4Packet(DHCPv4MessagesTypes.DHCPOFFER, request)
+            DHCPv4Packet packet = new DHCPv4Packet(DHCPv4MessagesTypes.Offer, request)
             {
                 YourIPAdress = leaseAddress,
-                IsValid = true,
+                _isValid = true,
             };
 
             packet.SetIPHeader(request);
-            packet.AddOption(new DHCPv4PacketAddressOption(DHCPv4OptionTypes.ServerIdentifier, packet.IPHeader.Source));
+            packet.AddOption(new DHCPv4PacketAddressOption(DHCPv4OptionTypes.ServerIdentifier, packet.Header.Source));
             packet.AddOptions(addressProperties, scopeProperties);
 
             return packet;
@@ -467,11 +460,10 @@ namespace DaAPI.Core.Packets.DHCPv4
             DHCPv4ScopeAddressProperties addressProperties,
             IEnumerable<DHCPv4ScopeProperty> scopeProperties)
         {
-
             DHCPv4Packet packet = new DHCPv4Packet(DHCPv4MessagesTypes.Acknowledge, request)
             {
                 YourIPAdress = leaseAddress,
-                IsValid = true,
+                _isValid = true,
             };
 
             packet.SetIPHeader(request);
@@ -484,7 +476,7 @@ namespace DaAPI.Core.Packets.DHCPv4
         {
             DHCPv4Packet packet = new DHCPv4Packet(DHCPv4MessagesTypes.NotAcknowledge, request)
             {
-                IsValid = true
+                _isValid = true
             };
 
             packet.AddOption(new DHCPv4PacketTextOption(DHCPv4OptionTypes.Message, message));
@@ -498,18 +490,16 @@ namespace DaAPI.Core.Packets.DHCPv4
         {
             DHCPv4Packet packet = new DHCPv4Packet(DHCPv4MessagesTypes.Acknowledge, request)
             {
-                IsValid = true,
+                _isValid = true,
                 ClientIPAdress = request.ClientIPAdress
             };
 
             packet.SetIPHeader(request);
             packet.AddOptions(scopeProperties);
-            packet.SetServerIdentifier(request.IPHeader.Destionation);
+            packet.SetServerIdentifier(request.Header.Destionation);
 
             return packet;
         }
-
-
 
         //public static DHCPv4Packet FromRequest(DHCPv4Packet request, 
         //    DHCPv4MessagesTypes responseType,
@@ -578,7 +568,10 @@ namespace DaAPI.Core.Packets.DHCPv4
             DHCPv4PacketClientIdentifierOption clientIdentifierOption = _options.OfType<DHCPv4PacketClientIdentifierOption>().FirstOrDefault();
             if (clientIdentifierOption != null)
             {
-                _clientIdenfier = clientIdentifierOption.Identifier.AddHardwareAddress(ClientHardwareAddress);
+                if(clientIdentifierOption.Identifier.HasHardwareAddress() == false)
+                {
+                    _clientIdenfier = clientIdentifierOption.Identifier.AddHardwareAddress(ClientHardwareAddress);
+                }
             }
             else
             {
@@ -598,13 +591,25 @@ namespace DaAPI.Core.Packets.DHCPv4
 
         public DHCPv4ClientIdentifier GetClientIdentifier() => _clientIdenfier;
 
-        public Byte[] GetAsStream()
-        {
-            Byte[] packetAsByteStream = new byte[1500];
-            Int32 written = GetAsStream(packetAsByteStream);
+        private Byte[] _byteRepresentation = null;
 
-            Byte[] result = ByteHelper.CopyData(packetAsByteStream, 0, written);
-            return result;
+        public override Byte[] GetAsStream()
+        {
+            PrepareStream();
+            return _byteRepresentation;
+        }
+
+        private void PrepareStream()
+        {
+            if(_byteRepresentation == null)
+            {
+                Byte[] packetAsByteStream = new byte[1500];
+                Int32 written = GetAsStream(packetAsByteStream);
+
+                Byte[] result = ByteHelper.CopyData(packetAsByteStream, 0, written);
+
+                _byteRepresentation = result;
+            }
         }
 
         public Int32 GetAsStream(Byte[] stream)
@@ -703,7 +708,7 @@ namespace DaAPI.Core.Packets.DHCPv4
                 requestedIPAddress == IPv4Address.Empty &&
                 ClientIPAdress != IPv4Address.Empty)
             {
-                if (IPHeader.Source != IPv4Address.Broadcast)
+                if (Header.Source != IPv4Address.Broadcast)
                 {
                     return DHCPv4PacketRequestType.Renewing;
                 }
@@ -711,7 +716,6 @@ namespace DaAPI.Core.Packets.DHCPv4
                 {
                     return DHCPv4PacketRequestType.Rebinding;
                 }
-
             }
 
             if (requestedIPAddress != IPv4Address.Empty &&
@@ -733,12 +737,29 @@ namespace DaAPI.Core.Packets.DHCPv4
             throw new InvalidOperationException("unable to determinate the request type");
         }
 
+        public DHCPv4PacketOption GetOptionByIdentifier(DHCPv4OptionTypes optionIdentifier) =>
+            GetOptionByIdentifier((Byte)optionIdentifier);
+
         public DHCPv4PacketOption GetOptionByIdentifier(byte optionIdentifier)
         {
             DHCPv4PacketOption option = _options.FirstOrDefault(x => x.OptionType == optionIdentifier);
             if (option == null) { return DHCPv4PacketOption.NotPresented; }
 
             return option;
+        }
+
+        public UInt16 GetSize()
+        {
+            if (_byteRepresentation == null)
+            {
+                Byte[] stream = new byte[1800];
+                Int32 length = GetAsStream(stream);
+                Byte[] result = ByteHelper.CopyData(stream, 0, length);
+
+                _byteRepresentation = result;
+            }
+
+            return (UInt16)_byteRepresentation.Length;
         }
 
         #endregion

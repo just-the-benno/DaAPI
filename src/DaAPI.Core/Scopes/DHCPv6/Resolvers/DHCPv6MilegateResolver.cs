@@ -28,7 +28,6 @@ namespace DaAPI.Core.Scopes.DHCPv6.Resolvers
 
         public bool HasUniqueIdentifier => true;
 
-
         public byte[] GetUniqueIdentifier(DHCPv6Packet packet)
         {
             var chain = ((DHCPv6RelayPacket)packet).GetRelayPacketChain();

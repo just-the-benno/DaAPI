@@ -9,6 +9,6 @@ namespace DaAPI.App.Pages.Dashboard
 {
     public class DHCPv6PacketHandledEntryViewModel : DHCPv6PacketHandledEntry
     {
-        public ScopeItem Scope { get; set; }
+        public DHCPv6ScopeItem Scope { get; set; }
     }
 }

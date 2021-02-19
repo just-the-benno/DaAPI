@@ -7,7 +7,10 @@ using System.Text;
 
 namespace DaAPI.Infrastructure.StorageEngine.DHCPv6
 {
-    public class DHCPv6PacketHandledEntryDataModel
+
+
+
+    public class DHCPv6PacketHandledEntryDataModel : IPacketHandledEntry<DHCPv6PacketTypes>
     {
         [Key]
         public Guid Id { get; set; }

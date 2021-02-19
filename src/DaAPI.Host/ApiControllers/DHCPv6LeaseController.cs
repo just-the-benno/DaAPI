@@ -23,7 +23,7 @@ namespace DaAPI.Host.ApiControllers
             this._logger = logger;
         }
 
-        private LeaseOverview GetLeaseOverview(DHCPv6Lease lease, DHCPv6Scope scope) => new LeaseOverview
+        private DHCPv6LeaseOverview GetLeaseOverview(DHCPv6Lease lease, DHCPv6Scope scope) => new DHCPv6LeaseOverview
         {
             Address = lease.Address.ToString(),
             ClientIdentifier = lease.ClientDUID,
@@ -40,7 +40,7 @@ namespace DaAPI.Host.ApiControllers
             }
         };
 
-        private void GetAllLesesRecursivly(ICollection<LeaseOverview> collection, DHCPv6Scope scope)
+        private void GetAllLesesRecursivly(ICollection<DHCPv6LeaseOverview> collection, DHCPv6Scope scope)
         {
             var items = scope.Leases.GetAllLeases().Select(x => GetLeaseOverview(x, scope)).ToList();
             foreach (var item in items)
@@ -70,14 +70,14 @@ namespace DaAPI.Host.ApiControllers
             {
                 return NotFound($"no scope with id {scopeId} found");
             }
-            List<LeaseOverview> result;
+            List<DHCPv6LeaseOverview> result;
             if (includeChildren == false)
             {
                 result = scope.Leases.GetAllLeases().Select(x => GetLeaseOverview(x, scope)).ToList();
             }
             else
             {
-                result = new List<LeaseOverview>();
+                result = new List<DHCPv6LeaseOverview>();
                 GetAllLesesRecursivly(result, scope);
             }
 

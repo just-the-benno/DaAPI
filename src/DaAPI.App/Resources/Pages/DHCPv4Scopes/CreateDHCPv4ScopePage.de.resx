@@ -1,0 +1,285 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AddANewPropertyButtonCaption" xml:space="preserve">
+    <value>Neuen Wert hinzufügen</value>
+  </data>
+  <data name="AddressAllocationStrategyNextCaption" xml:space="preserve">
+    <value>Nächste verfügbare Adresse</value>
+  </data>
+  <data name="AddressAllocationStrategyRandomizeCaption" xml:space="preserve">
+    <value>Zufällig</value>
+  </data>
+  <data name="AddressOptionsLabel" xml:space="preserve">
+    <value>Optionen</value>
+  </data>
+  <data name="AddressPropertyColumnForNewValue" xml:space="preserve">
+    <value>Neuer Wert</value>
+  </data>
+  <data name="AddressPropertyColumnForOverride" xml:space="preserve">
+    <value>Überschreiben?</value>
+  </data>
+  <data name="AddressPropertyColumnForParentValue" xml:space="preserve">
+    <value>Elternwert</value>
+  </data>
+  <data name="AddressPropertyColumnForProperty" xml:space="preserve">
+    <value>Eigenschaft</value>
+  </data>
+  <data name="AddressRelatedPropertiesCaption" xml:space="preserve">
+    <value>Address zugehörige Eigenschaften</value>
+  </data>
+  <data name="BreadcrumbHomeCaption" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="BreadcrumbHomeScopes" xml:space="preserve">
+    <value>DHCPv4 Bereiche</value>
+  </data>
+  <data name="BreadcrumbHomeSelfInCreateMode" xml:space="preserve">
+    <value>Neu</value>
+  </data>
+  <data name="BreadcrumbHomeSelfInEditMode" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="CreateModeSendButtonCaption" xml:space="preserve">
+    <value>Erstelllen</value>
+  </data>
+  <data name="CreateModeSuccessContent" xml:space="preserve">
+    <value>Bereich {0} erstellt</value>
+  </data>
+  <data name="CreatePageTitle" xml:space="preserve">
+    <value>Erstelle einen neuen DHCPv4 Bereich</value>
+  </data>
+  <data name="CustomOptionName" xml:space="preserve">
+    <value>Benutzerdefiniert</value>
+  </data>
+  <data name="DescriptionPlaceholder" xml:space="preserve">
+    <value>Fügen Sie eine Beschreibung für den Bereich hinzu (optional)</value>
+  </data>
+  <data name="EditModeSendButtonCaption" xml:space="preserve">
+    <value>Aktualisieren</value>
+  </data>
+  <data name="EditModeSuccessContent" xml:space="preserve">
+    <value>Bereich {0} bearbeitet</value>
+  </data>
+  <data name="EditSuccessCaption" xml:space="preserve">
+    <value>Erfolg</value>
+  </data>
+  <data name="EndAddressPlaceholder" xml:space="preserve">
+    <value>Letze Adresse des Bereichs</value>
+  </data>
+  <data name="ErrorCaption" xml:space="preserve">
+    <value>Fehler</value>
+  </data>
+  <data name="ErrorText" xml:space="preserve">
+    <value>Erstellung des neuen Bereichs fehlgeschlagen. Für weitere Informationen schauen Sie im Serverlog nach</value>
+  </data>
+  <data name="ExcludedAddressPlaceholder" xml:space="preserve">
+    <value>Geben Sie hier eine IPv4 Adresse ein</value>
+  </data>
+  <data name="GenerellPropertiesCaption" xml:space="preserve">
+    <value>Allgemeine Eigenschaften</value>
+  </data>
+  <data name="LoadingDetailsCaption" xml:space="preserve">
+    <value>Details werden geladen...</value>
+  </data>
+  <data name="NamePlaceholder" xml:space="preserve">
+    <value>Geben Sie den Namen des Bereichs an</value>
+  </data>
+  <data name="OptionAddressInputPlaceHolder" xml:space="preserve">
+    <value>Geben Sie hier eine IPv4 Adresse ein</value>
+  </data>
+  <data name="OptionColumnHeaderForDelete" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="OptionColumnHeaderForNewValue" xml:space="preserve">
+    <value>Neuer Wert</value>
+  </data>
+  <data name="OptionColumnHeaderForOption" xml:space="preserve">
+    <value>Option</value>
+  </data>
+  <data name="OptionColumnHeaderForOverride" xml:space="preserve">
+    <value>Überschreiben?</value>
+  </data>
+  <data name="OptionColumnHeaderForParentValue" xml:space="preserve">
+    <value>Elternwert</value>
+  </data>
+  <data name="OptionNumberValuePlaceholder" xml:space="preserve">
+    <value>Geben Sie eine Nummer hier ein</value>
+  </data>
+  <data name="OptionValueCaption" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="OverrideParentPropertiesIfNeededCaption" xml:space="preserve">
+    <value>Werte, wenn benötigt, überschreiben</value>
+  </data>
+  <data name="ParentEndAddressLabel" xml:space="preserve">
+    <value>Letzte Adresse des Elternteils</value>
+  </data>
+  <data name="ParentExludedAddressLabel" xml:space="preserve">
+    <value>Ausgeschlossene Adresses der Eltern Bereiche</value>
+  </data>
+  <data name="ParentNotSelectedValue" xml:space="preserve">
+    <value>--- Nichts ausgewählt ---</value>
+  </data>
+  <data name="ParentStartAddressLabel" xml:space="preserve">
+    <value>Erste Adresse des Elternteils</value>
+  </data>
+  <data name="PrefixPlaceholder" xml:space="preserve">
+    <value>Geben Sie hier ein Präfix ein</value>
+  </data>
+  <data name="PropertiesCaption" xml:space="preserve">
+    <value>Werte</value>
+  </data>
+  <data name="RemovePropertyButtonCaption" xml:space="preserve">
+    <value>Wert Entfernen</value>
+  </data>
+  <data name="ResolverCaption" xml:space="preserve">
+    <value>Zuordner</value>
+  </data>
+  <data name="ResolverNotSelectedCaption" xml:space="preserve">
+    <value>--- Wähle einen Zuordner ---</value>
+  </data>
+  <data name="SelectParentFirstForAddressPropertiesText" xml:space="preserve">
+    <value>Bevor Sie diese Eigenschaften bearbeiten können, müssen Sie den Elternbereich wählen</value>
+  </data>
+  <data name="StartAddressPlaceholder" xml:space="preserve">
+    <value>Erste Adresse vom Bereich</value>
+  </data>
+  <data name="SubmitButtionSendingCaption" xml:space="preserve">
+    <value>Wird gesendet...</value>
+  </data>
+  <data name="TimeSpanDaysCaption" xml:space="preserve">
+    <value>Tage</value>
+  </data>
+  <data name="TimeSpanHoursCaption" xml:space="preserve">
+    <value>Stunden</value>
+  </data>
+  <data name="TimeSpanMinutesCaption" xml:space="preserve">
+    <value>Minuten</value>
+  </data>
+  <data name="TimeSpanSecondsCaption" xml:space="preserve">
+    <value>Sekunden</value>
+  </data>
+  <data name="UpdatePageTitle" xml:space="preserve">
+    <value>Bearbeiten eines DHCPv4 Bereichs</value>
+  </data>
+  <data name="UpdatePageTitleWhenLoadingFinished" xml:space="preserve">
+    <value> DHCPv4 Bereich {0} bearbeiten</value>
+  </data>
+</root>

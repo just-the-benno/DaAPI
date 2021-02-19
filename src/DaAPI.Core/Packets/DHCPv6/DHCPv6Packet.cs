@@ -28,7 +28,7 @@ namespace DaAPI.Core.Packets.DHCPv6
 
         public IReadOnlyList<DHCPv6PacketOption> Options => _options.AsReadOnly();
 
-        public Boolean IsValid => PacketType != DHCPv6PacketTypes.Invalid;
+        public override Boolean IsValid => PacketType != DHCPv6PacketTypes.Invalid;
 
         #endregion
 
@@ -211,7 +211,6 @@ namespace DaAPI.Core.Packets.DHCPv6
 
         #endregion
 
-
         #region as responses
 
         private static void AddOptions(ICollection<DHCPv6PacketOption> packetOptions, DHCPv6Packet requestPacket, DUID serverDuid, DHCPv6ScopeAddressProperties addressProperties, DHCPv6ScopeProperties properties, Boolean onlyMinimialOptions)
@@ -258,8 +257,6 @@ namespace DaAPI.Core.Packets.DHCPv6
                 }
             }
         }
-
-
 
         private static DHCPv6Packet ConstructPacketWithHeader(DHCPv6Packet requestPacket, DHCPv6Packet innerResponse)
         {
@@ -544,19 +541,11 @@ namespace DaAPI.Core.Packets.DHCPv6
 
         public UInt16 GetSize()
         {
-            if (_byteRepresentation == null)
-            {
-                Byte[] stream = new byte[1800];
-                Int32 length = GetAsStream(stream);
-                Byte[] result = ByteHelper.CopyData(stream, 0, length);
-
-                _byteRepresentation = result;
-            }
-
+            PrepareStream();
             return (UInt16)_byteRepresentation.Length;
         }
 
-        public Byte[] GetAsStream()
+        public override Byte[] GetAsStream()
         {
             PrepareStream();
             return _byteRepresentation;

@@ -1,8 +1,10 @@
 ﻿using DaAPI.Core.Common;
 using DaAPI.Core.Packets.DHCPv4;
+using DaAPI.Core.Scopes;
 using DaAPI.Core.Scopes.DHCPv4;
 using DaAPI.Core.Services;
 using DaAPI.TestHelper;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -15,11 +17,23 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
 {
     public abstract class DHCPv4ScopeTesterBase
     {
-        protected static DHCPv4RootScope GetRootScope() =>
-            new DHCPv4RootScope(Guid.NewGuid(), Mock.Of<IDHCPv4ScopeResolverManager>());
+        protected static DHCPv4RootScope GetRootScope()
+        {
+            Mock<ILoggerFactory> factoryMock = new Mock<ILoggerFactory>(MockBehavior.Strict);
+            factoryMock.Setup(x => x.CreateLogger(It.IsAny<String>())).Returns(Mock.Of<ILogger<DHCPv4RootScope>>());
 
-        protected static DHCPv4RootScope GetRootScope(Mock<IDHCPv4ScopeResolverManager> mock) =>
-            new DHCPv4RootScope(Guid.NewGuid(), mock.Object);
+            var rootScope =  new DHCPv4RootScope(Guid.NewGuid(), Mock.Of<IScopeResolverManager<DHCPv4Packet, IPv4Address>>(), factoryMock.Object);
+            return rootScope;
+        }
+
+        protected static DHCPv4RootScope GetRootScope(Mock<IScopeResolverManager<DHCPv4Packet, IPv4Address>> mock)
+        {
+            Mock<ILoggerFactory> factoryMock = new Mock<ILoggerFactory>(MockBehavior.Strict);
+            factoryMock.Setup(x => x.CreateLogger(It.IsAny<String>())).Returns(Mock.Of<ILogger<DHCPv4RootScope>>());
+
+            var rootScope = new DHCPv4RootScope(Guid.NewGuid(), mock.Object, factoryMock.Object);
+            return rootScope;
+        }
 
 
         public static DHCPv4Packet GetInformPacket(Random random, IPv4Address clientAddress, IPv4Address serverAddress = null) =>
@@ -30,7 +44,7 @@ namespace DaAPI.UnitTests.Core.Scopes.DHCPv4
                 IPv4Address.Empty,
                 IPv4Address.Empty,
                 clientAddress,
-                new DHCPv4PacketMessageTypeOption(DHCPv4Packet.DHCPv4MessagesTypes.DHCPINFORM)
+                new DHCPv4PacketMessageTypeOption(DHCPv4MessagesTypes.Inform)
                 );
 
 

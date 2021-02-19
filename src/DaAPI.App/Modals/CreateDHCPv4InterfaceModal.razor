@@ -1,0 +1,79 @@
+﻿@inherits AdvancedFormComponent<CreateDHCPv4ListenerViewModel>
+@inject DaAPIService _service
+@inject IStringLocalizer<CreateDHCPv4InterfaceModal> L
+
+<CascadingValue Name="DisableFormElements" Value="@_sendingRequestInProgress">
+    <EditForm EditContext="@EditContext" OnValidSubmit="SendCreateDHCPv4InterfaceRequest">
+        <DataAnnotationsValidator />
+        <ModelBody>
+            <DefaultInputGroup Symbol="fas fa-ethernet" For="@(() => Model.Name)">
+                <BootstrapInputText @bind-Value="Model.Name" type="text" class="form-control" placeholder="@L["InterfaceNamePlaceholder"]" />
+            </DefaultInputGroup>
+
+            @if (_serviceErrorOccured)
+            {
+                <Alert Content="@L["ErrorMessage"]" />
+            }
+        </ModelBody>
+
+        <ModalFooter SendCaption="@L["CreateButtonCaption"]" SendingCaption="@L["CreateButtonExecutingCaption"]" CancelCaption="@L["CancelButtonCaption"]"
+                     FormIsValid="FormIsValid" SendingInProgress="_sendingRequestInProgress" Cancelor="Cancel" />
+    </EditForm>
+</CascadingValue>
+@code {
+
+    #region Fields
+
+    private Boolean _sendingRequestInProgress = false;
+    private Boolean _serviceErrorOccured = false;
+
+    #endregion
+
+    #region Properties
+
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+    [Parameter] public DHCPv4InterfaceEntry Entry { get; set; }
+
+    #endregion
+
+    #region Methods
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        base.Model = new CreateDHCPv4ListenerViewModel
+        {
+            InterfaceId = Entry?.PhysicalInterfaceId,
+            IPv4Address = Entry?.IPv4Address,
+            Name = "",
+        };
+
+        ResetEditContext();
+    }
+
+    public void Cancel() => BlazoredModal.Cancel();
+
+    public async Task SendCreateDHCPv4InterfaceRequest()
+    {
+        _serviceErrorOccured = false;
+        _sendingRequestInProgress = true;
+
+        Boolean serviceResult = await _service.CreateDHCPv4Interface(new CreateDHCPv4Listener
+        {
+            InterfaceId = Model.InterfaceId,
+            IPv4Address = Model.IPv4Address,
+            Name = Model.Name,
+        });
+
+        _serviceErrorOccured = !serviceResult;
+        _sendingRequestInProgress = false;
+        if (serviceResult == true)
+        {
+            await BlazoredModal.Close(ModalResult.Ok<Boolean>(true));
+        }
+    }
+
+    #endregion
+
+}

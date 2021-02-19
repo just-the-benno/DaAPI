@@ -1,0 +1,47 @@
+﻿@inject IStringLocalizer<DHCPv6ScopeTreeItem> L
+
+
+<li class="nav-item @(Item.ChildScopes.Any() == true ? " has-treeview" : String.Empty) menu-open">
+    <a class="nav-link mt-1 d-flex flex-row align-items-center">
+        <i class="far fa-circle nav-icon"></i>
+        <p>@Item.Name</p>
+        <span class="flex-fill"></span>
+        <div class="btn-group">
+            <button role="button" class="btn btn-default" @onclick="(() => NavigateToScopeDetails())"><i class="fas fa-info mr-2"></i>@L["DetailsButtonCaption"]</button>
+            <button role="button" class="btn btn-default" @onclick="(() => NavigateToEditScope())"><i class="fas fa-edit mr-2"></i>@L["EditButtonCaption"]</button>
+            <button role="button" class="btn btn-default" @onclick="(() => DeleteExecutor(Item))"><i class="fas fa-trash mr-2"></i>@L["DeleteButtonCaption"]</button>
+        </div>
+    </a>
+    @if (Item.ChildScopes.Any() == true)
+    {
+        <ul class="nav nav-treeview" style="display:block">
+            @foreach (var child in Item.ChildScopes)
+            {
+                <DHCPv6ScopeTreeItem Item="child" DeleteExecutor="DeleteExecutor" />
+            }
+        </ul>
+    }
+</li>
+
+@code {
+
+    [Parameter]
+    public DHCPv6ScopeTreeViewItem Item { get; set; }
+
+    [Parameter]
+    public Func<DHCPv6ScopeTreeViewItem, Task> DeleteExecutor { get; set; }
+
+    [Inject]
+    public NavigationManager NavigationManager { get; set; }
+
+    public void NavigateToEditScope()
+    {
+        NavigationManager.NavigateTo($"/scopes/dhcpv6/update/{Item.Id}");
+    }
+
+    public void NavigateToScopeDetails()
+    {
+        NavigationManager.NavigateTo($"/scopes/dhcpv6/details/{Item.Id}");
+    }
+
+}

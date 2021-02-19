@@ -25,7 +25,6 @@
             <LoadingWhileContentNull Item="_loadingDummy" OnlyHide="true">
                 <Chart @ref="_doughnutChartJs"
                        Config="@_config"
-                       TConfig="PieConfig"
                        Width="600"
                        Height="300" />
             </LoadingWhileContentNull>
@@ -45,7 +44,7 @@
 
     private Object _loadingDummy;
 
-    private Chart<PieConfig> _doughnutChartJs;
+    private Chart _doughnutChartJs;
     private PieConfig _config;
 
     [Parameter]
@@ -85,7 +84,7 @@
 
         _config = new PieConfig
         {
-            Options = new PieOptions(true)
+            Options = new PieOptions
             {
                 Title = new OptionsTitle
                 {
@@ -137,7 +136,10 @@
                 BorderWidth = 0,
             };
 
-            _config.Data.Labels.AddRange(dataSeries.Keys.Select(x => errorDict[GroupedBy].ContainsKey(x) == true ? errorDict[GroupedBy][x].Name : "unknown"));
+            foreach (var item in dataSeries.Keys.Select(x => errorDict[GroupedBy].ContainsKey(x) == true ? errorDict[GroupedBy][x].Name : "unknown"))
+            {
+                _config.Data.Labels.Add(item);
+            }
 
             doughnutSet.AddRange(dataSeries.Values.OrderBy(x => x).Select(x => (Double) x));
             _config.Data.Datasets.Add(doughnutSet);

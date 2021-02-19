@@ -1,0 +1,12 @@
+﻿<div class="container-fluid">
+    <div class="row">
+        @ChildContent
+    </div>
+</div>
+
+
+@code {
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+}

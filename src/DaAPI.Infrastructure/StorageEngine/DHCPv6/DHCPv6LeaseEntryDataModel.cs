@@ -5,7 +5,7 @@ using static DaAPI.Shared.Responses.StatisticsControllerResponses.V1;
 
 namespace DaAPI.Infrastructure.StorageEngine.DHCPv6
 {
-    public class DHCPv6LeaseEntryDataModel
+    public class DHCPv6LeaseEntryDataModel : ILeaseEntry
     {
         public Guid Id { get; set; }
         public Guid LeaseId { get; set; }

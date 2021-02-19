@@ -27,7 +27,7 @@ namespace DaAPI.Shared.Responses
                 public Byte Mask { get; set; }
             }
 
-            public class LeaseOverview
+            public class DHCPv6LeaseOverview
             {
                 public Guid Id { get; set; }
                 public DateTime Started { get; set; }

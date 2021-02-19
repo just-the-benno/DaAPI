@@ -40,7 +40,7 @@ namespace DaAPI.App
 
             builder.Services.AddApiAuthorization((opt) =>
            {
-               opt.ProviderOptions.ConfigurationEndpoint = "/_configuration/OidcClientConfig.json";
+               opt.ProviderOptions.ConfigurationEndpoint = "/Configuration/OidcClientConfig";
            });
 
             builder.Services.AddSingleton(new LayoutService());

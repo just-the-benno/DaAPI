@@ -72,6 +72,7 @@ namespace DaAPI.Host
             OpenIdConnectOptions openIdConnectOptions = Configuration.GetSection("OpenIdConnectOptions").Get<OpenIdConnectOptions>();
 
             services.AddSingleton(openIdConnectOptions);
+            services.AddSingleton(Configuration.GetSection("OpenIdConnectionConfiguration").Get<OpenIdConnectionConfiguration>());
 
             return new AppSettings
             {
@@ -257,6 +258,11 @@ namespace DaAPI.Host
                 typeof(Startup).Assembly);
             services.AddHostedService<HostedService.LeaseTimerHostedService>();
             services.AddHostedService<HostedService.CleanupDatabaseTimerHostedService>();
+
+            services.Configure<IISServerOptions>(options =>
+            {
+                options.AutomaticAuthentication = false;
+            });
         }
 
         public void Configure(IApplicationBuilder app)

@@ -14,5 +14,6 @@ namespace DaAPI.Host.Infrastrucutre
     public class AppSettings
     {
         public OpenIdConnectOptions OpenIdConnectOptions { get; set; }
+        public OpenIdConnectionConfiguration OpenIdConnectionConfiguration { get; set; }
     }
 }

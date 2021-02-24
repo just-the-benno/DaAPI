@@ -142,7 +142,7 @@
     <value>You have been successfully logout from DaAPI.</value>
   </data>
   <data name="LogoutSuccessTitle" xml:space="preserve">
-    <value>Sucess</value>
+    <value>Success</value>
   </data>
   <data name="LogoutText" xml:space="preserve">
     <value>We are signing you out</value>

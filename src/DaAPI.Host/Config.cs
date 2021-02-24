@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using DaAPI.Host.Infrastrucutre;
 using IdentityServer4.Models;
 using System.Collections.Generic;
 
@@ -24,7 +25,7 @@ namespace DaAPI.Host
             };
 
 
-        public static IEnumerable<Client> Clients =>
+        public static IEnumerable<Client> Clients(OpenIdConnectionConfiguration config) =>
             new Client[]
             {
                 // client credentials flow client
@@ -42,11 +43,11 @@ namespace DaAPI.Host
 
                     RedirectUris =
                     {
-                        "https://localhost:5001/authentication/login-callback",
+                        config.RedirectUri
                     },
 
-                    PostLogoutRedirectUris = { "https://localhost:5001/authentication/logout-callback" },
-                    AllowedCorsOrigins = { "http://localhost:5001" },
+                    PostLogoutRedirectUris = { config.PostLogoutRedirectUri },
+                    AllowedCorsOrigins = { config.Authority },
                     AllowedScopes = { "openid", "profile", "daapi", "offline-access" }
                 }
             };

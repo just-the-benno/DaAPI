@@ -72,11 +72,13 @@ namespace DaAPI.Host
             OpenIdConnectOptions openIdConnectOptions = Configuration.GetSection("OpenIdConnectOptions").Get<OpenIdConnectOptions>();
 
             services.AddSingleton(openIdConnectOptions);
-            services.AddSingleton(Configuration.GetSection("OpenIdConnectionConfiguration").Get<OpenIdConnectionConfiguration>());
+            var option = Configuration.GetSection("OpenIdConnectionConfiguration").Get<OpenIdConnectionConfiguration>();
+            services.AddSingleton(option);
 
             return new AppSettings
             {
                 OpenIdConnectOptions = openIdConnectOptions,
+                OpenIdConnectionConfiguration = option,
             };
         }
 
@@ -136,7 +138,7 @@ namespace DaAPI.Host
                 })
                 .AddInMemoryIdentityResources(Config.Ids)
                 .AddInMemoryApiScopes(Config.Apis)
-                .AddInMemoryClients(Config.Clients)
+                .AddInMemoryClients(Config.Clients(appSettings.OpenIdConnectionConfiguration))
                 .AddAspNetIdentity<ApplicationUser>();
 
             // not recommended for production - you need to store your key material somewhere secure
